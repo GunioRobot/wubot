@@ -21,6 +21,11 @@ has 'cache_file' => ( is => 'ro',
                       required => 1,
                   );
 
+has 'reactor'    => ( is       => 'ro',
+                      isa      => 'CodeRef',
+                      required => 1,
+                  );
+
 
 sub check {
     my ( $self, $config ) = @_;
@@ -35,6 +40,12 @@ sub check {
 
     # store the latest check cache data
     YAML::DumpFile( $self->cache_file, $cache_data );
+
+    if ( $results ) {
+        for my $result ( @{ $results } ) {
+            $self->reactor->( $result );
+        }
+    }
 
     return $results;
 }

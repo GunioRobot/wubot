@@ -1,0 +1,13 @@
+Changes
+MANIFEST
+Makefile.PL
+README
+lib/Wubot/Monitor.pm
+t/00.load.t
+t/changes.t.broken
+t/critic.t
+t/distmanifest.t.broken
+t/fixme.t.broken
+t/meta.t
+t/release-pod-coverage.t
+t/release-pod-syntax.t

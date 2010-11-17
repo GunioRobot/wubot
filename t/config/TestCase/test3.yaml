@@ -1,0 +1,6 @@
+---
+class: Wubot::Monitor::TestCase
+param3: value3
+hash1:
+  key1: value1
+  key2: value2

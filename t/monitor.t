@@ -60,16 +60,14 @@ use Wubot::Monitor::Check;
 
     eq_or_diff( $results,
                 [ { param2 => 'value2' },
-                  {
-                      param3 => 'value3' },
+                  { param3 => 'value3' },
               ],
                 "Checking that check data was written to cache file"
             );
 
     eq_or_diff( $reaction,
                 [ { param2 => 'value2' },
-                  {
-                      param3 => 'value3' },
+                  { param3 => 'value3' },
               ],
                 "Checking that check data was written to cache file"
             );

@@ -17,11 +17,16 @@ unless ( -d $config_directory ) {
     mkpath( $config_directory );
 }
 
+my $message_directory = "$ENV{HOME}/wubot/messages";
+unless ( -d $message_directory ) {
+    mkpath( $message_directory );
+}
+
 my $monitor_objs;
 my $schedule;
 
 my $config  = Wubot::Monitor::Config->new( { root => $config_directory } );
-my $reactor = sub { print YAML::Dump { got => \@_ } };
+my $reactor = \&store_messages;
 
 my $count;
 for my $monitor ( $config->get_monitors() ) {
@@ -35,6 +40,9 @@ for my $monitor ( $config->get_monitors() ) {
                                         reactor    => $reactor,
                                     } );
 
+    my $now = time;
+    push @{ $schedule->{$now} }, $monitor;
+
     $count++;
 }
 
@@ -42,16 +50,47 @@ unless ( $count ) {
     die "ERROR: no monitor config files processed in $config_directory";
 }
 
+print "Running...\n\n";
+
 # check
 while ( 1 ) {
-    for my $check ( keys %{ $monitor_objs } ) {
 
-        print "Running check: $check\n";
+    my $now = time;
 
-        # run the check
-        $monitor_objs->{$check}->check( $config->get_monitor_config( $check ) );
+    for my $time ( sort keys %{ $schedule } ) {
+
+        next if $time > $now;
+
+        for my $monitor ( @{ $schedule->{$time} } ) {
+            #print "running check: $monitor\n";
+
+            my $monitor_config = $config->get_monitor_config( $monitor );
+
+            $monitor_objs->{$monitor}->check( $monitor_config );
+
+            my $delay = $monitor_config->{delay} || 60;
+
+            my $next = time + $delay;
+            push @{ $schedule->{$next} }, $monitor;
+        }
+
+        delete $schedule->{$time};
 
     }
 
-    sleep 60;
+    sleep 5;
+}
+
+sub store_messages {
+    my ( @messages ) = @_;
+
+    for my $message ( @messages ) {
+
+        my $message_file = "$message_directory/$message->{checksum}.yaml";
+
+        #print "\t$message_file\n";
+        #print YAML::Dump $message;
+        YAML::DumpFile( $message_file, $message );
+    }
+
 }

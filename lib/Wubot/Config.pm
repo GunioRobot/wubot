@@ -74,36 +74,36 @@ sub read_config {
     return $config;
 }
 
-sub get_monitors {
+sub get_plugins {
     my ( $self ) = @_;
 
-    my @monitors;
+    my @plugins;
 
-    for my $monitor ( sort keys %{ $self->config } ) {
+    for my $plugin ( sort keys %{ $self->config } ) {
 
-        push @monitors, $self->config->{$monitor}->{key};
+        push @plugins, $self->config->{$plugin}->{key};
     }
 
-    return @monitors;
+    return @plugins;
 }
 
-sub get_monitor_config {
-    my ( $self, $monitor, $param ) = @_;
+sub get_plugin_config {
+    my ( $self, $plugin, $param ) = @_;
 
-    unless ( $self->config->{$monitor} ) {
-        die "ERROR: no config found for monitor $monitor";
+    unless ( $self->config->{$plugin} ) {
+        die "ERROR: no config found for plugin $plugin";
     }
 
     unless ( $param ) {
-        return $self->config->{$monitor}->{config};
+        return $self->config->{$plugin}->{config};
     }
 
-    unless ( $self->config->{$monitor}->{config}->{$param} ) {
-        warn "ERROR: config param $param not found for monitor $monitor";
+    unless ( $self->config->{$plugin}->{config}->{$param} ) {
+        warn "ERROR: config param $param not found for plugin $plugin";
         return;
     }
 
-    return $self->config->{$monitor}->{config}->{$param};
+    return $self->config->{$plugin}->{config}->{$param};
 }
 
 1;

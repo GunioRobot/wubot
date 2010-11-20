@@ -29,7 +29,6 @@ our $plugin_objs;
 my $schedule;
 
 my $config  = Wubot::Config->new( { root => $config_directory } );
-my $reactor = \&store_messages;
 
 my $count;
 for my $plugin ( $config->get_plugins() ) {
@@ -39,9 +38,9 @@ for my $plugin ( $config->get_plugins() ) {
 
     $plugin_objs->{ $plugin }
         = Wubot::Check->new( { class      => $plugin_config->{plugin},
-                                        cache_file => "$cache_directory/$plugin.yaml",
-                                        reactor    => $reactor,
-                                    } );
+                               cache_file => "$cache_directory/$plugin.yaml",
+                               reactor    => sub { store_messages( @_ ) },
+                           } );
 
     my $now = time;
     push @{ $schedule->{$now} }, $plugin;
@@ -91,12 +90,17 @@ print "Ended...\n";
 sub store_messages {
     my ( @messages ) = @_;
 
+  MESSAGE:
     for my $message ( @messages ) {
+
+        unless ( $message->{checksum} ) {
+            warn "ERROR: Message sent without checksum: ", YAML::Dump( $message ), "\n";
+            next MESSAGE;
+        }
 
         my $message_file = "$message_directory/$message->{checksum}.yaml";
 
         #print "\t$message_file\n";
-        #print YAML::Dump $message;
         YAML::DumpFile( $message_file, $message );
     }
 

@@ -9,7 +9,7 @@ sub check {
     my $results = [];
 
     for my $plugin ( keys %{ $main::plugin_objs } ) {
-        my $size = Devel::Size::total_size( $main::plugin_objs->{$plugin} );
+        my $size = Devel::Size::total_size( $main::plugin_objs->{$plugin}->{instance} );
 
         if ( $cache->{$plugin}->{size} ) {
             if ( $size > $cache->{$plugin}->{size} ) {

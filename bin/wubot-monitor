@@ -1,6 +1,9 @@
 #!/usr/local/bin/perl -w
 use strict;
 
+use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
+
+use AnyEvent;
 use File::Path;
 use YAML;
 
@@ -50,36 +53,40 @@ unless ( $count ) {
     die "ERROR: no monitor config files processed in $config_directory";
 }
 
+print "Setting up timer...\n";
+my $end = AnyEvent->condvar;
+
+my $timer = AnyEvent->timer( after    => 1,
+                             interval => 5,
+                             cb       => sub {
+
+                                 my $now = time;
+
+                                 for my $time ( sort keys %{ $schedule } ) {
+
+                                     next if $time > $now;
+
+                                     for my $monitor ( @{ $schedule->{$time} } ) {
+                                         #print "running check: $monitor\n";
+
+                                         my $monitor_config = $config->get_monitor_config( $monitor );
+
+                                         $monitor_objs->{$monitor}->check( $monitor_config );
+
+                                         my $delay = $monitor_config->{delay} || 60;
+
+                                         my $next = time + $delay;
+                                         push @{ $schedule->{$next} }, $monitor;
+                                     }
+
+                                     delete $schedule->{$time};
+                                 }
+                             } );
+
 print "Running...\n\n";
+$end->recv;
+print "Ended...\n";
 
-# check
-while ( 1 ) {
-
-    my $now = time;
-
-    for my $time ( sort keys %{ $schedule } ) {
-
-        next if $time > $now;
-
-        for my $monitor ( @{ $schedule->{$time} } ) {
-            #print "running check: $monitor\n";
-
-            my $monitor_config = $config->get_monitor_config( $monitor );
-
-            $monitor_objs->{$monitor}->check( $monitor_config );
-
-            my $delay = $monitor_config->{delay} || 60;
-
-            my $next = time + $delay;
-            push @{ $schedule->{$next} }, $monitor;
-        }
-
-        delete $schedule->{$time};
-
-    }
-
-    sleep 5;
-}
 
 sub store_messages {
     my ( @messages ) = @_;

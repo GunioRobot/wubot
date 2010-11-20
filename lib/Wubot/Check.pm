@@ -45,13 +45,15 @@ sub check {
     my ( $results, $cache ) = $self->instance->check( $config, $cache_data );
 
     # store the latest check cache data
+    $cache->{lastupdate} = time;
     YAML::DumpFile( $self->cache_file, $cache );
 
     if ( $results ) {
         for my $result ( @{ $results } ) {
 
-            $result->{checksum} = $self->checksum( $result );
-            $result->{plugin}   = $self->{class};
+            $result->{checksum}   = $self->checksum( $result );
+            $result->{lastupdate} = $cache->{lastupdate};
+            $result->{plugin}     = $self->{class};
 
             $self->reactor->( $result );
         }

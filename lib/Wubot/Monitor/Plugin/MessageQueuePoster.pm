@@ -38,10 +38,12 @@ sub check {
     my $request = POST( $config->{url}, [ 'message' => $data_text ] );
     my $content = $ua->request($request)->as_string();
 
-    #my $cgi = CGI->new();
-    #print $cgi->header(), $content;
-
-    unlink $path;
+    if ( $content =~ m|\!OK\!| ) {
+        unlink $path;
+    }
+    else {
+        warn "ERROR: enable to verify message received: $path\n";
+    }
 
     return ( undef,
              $cache,
@@ -49,3 +51,4 @@ sub check {
 }
 
 1;
+

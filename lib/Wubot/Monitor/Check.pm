@@ -12,6 +12,9 @@ has 'instance'   => ( is      => 'ro',
                           my $self = shift;
                           my $class = $self->class;
                           eval "require $class";
+                          if ( $@ ) {
+                              die "ERROR: loading class: $class => $@";
+                          }
                           return $class->new();
                       },
                   );
@@ -39,7 +42,7 @@ sub check {
     my ( $results, $cache ) = $self->instance->check( $config, $cache_data );
 
     # store the latest check cache data
-    YAML::DumpFile( $self->cache_file, $cache_data );
+    YAML::DumpFile( $self->cache_file, $cache );
 
     if ( $results ) {
         for my $result ( @{ $results } ) {

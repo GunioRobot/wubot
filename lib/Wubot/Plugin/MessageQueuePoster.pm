@@ -5,6 +5,9 @@ use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };
 use CGI;
 use YAML;
+use Sys::Hostname;
+
+my $hostname = hostname();
 
 sub check {
     my ( $self, $config, $cache ) = @_;
@@ -30,7 +33,7 @@ sub check {
     my $path = "$config->{directory}/$file";
 
     my $data = YAML::LoadFile( $path );
-    $data->{service} = 'wubot-monitor';
+    $data->{service} = "wubot-$hostname";
 
     my $data_text = YAML::Dump $data;
 

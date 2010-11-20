@@ -1,0 +1,57 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+use File::Path;
+use YAML;
+
+use Wubot::Monitor::Config;
+use Wubot::Monitor::Check;
+
+my $cache_directory = "$ENV{HOME}/wubot/cache";
+unless ( -d $cache_directory ) {
+    mkpath( $cache_directory );
+}
+
+my $config_directory = "$ENV{HOME}/wubot/config";
+unless ( -d $config_directory ) {
+    mkpath( $config_directory );
+}
+
+my $monitor_objs;
+my $schedule;
+
+my $config  = Wubot::Monitor::Config->new( { root => $config_directory } );
+my $reactor = sub { print YAML::Dump { got => \@_ } };
+
+my $count;
+for my $monitor ( $config->get_monitors() ) {
+    print "Creating check instance for monitor: $monitor\n";
+
+    my $monitor_config = $config->get_monitor_config( $monitor );
+
+    $monitor_objs->{ $monitor }
+        = Wubot::Monitor::Check->new( { class      => $monitor_config->{plugin},
+                                        cache_file => "$cache_directory/$monitor.yaml",
+                                        reactor    => $reactor,
+                                    } );
+
+    $count++;
+}
+
+unless ( $count ) {
+    die "ERROR: no monitor config files processed in $config_directory";
+}
+
+# check
+while ( 1 ) {
+    for my $check ( keys %{ $monitor_objs } ) {
+
+        print "Running check: $check\n";
+
+        # run the check
+        $monitor_objs->{$check}->check( $config->get_monitor_config( $check ) );
+
+    }
+
+    sleep 60;
+}

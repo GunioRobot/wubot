@@ -1,6 +1,9 @@
 package Wubot::Monitor::Check;
 use Moose;
 
+use YAML;
+use Digest::MD5 qw( md5_hex );
+
 has 'class'      => ( is => 'ro',
                       isa => 'Str',
                       required => 1,
@@ -46,11 +49,22 @@ sub check {
 
     if ( $results ) {
         for my $result ( @{ $results } ) {
+
+            $result->{checksum} = $self->checksum( $result );
+            $result->{plugin}   = $self->{class};
+
             $self->reactor->( $result );
         }
     }
 
     return $results;
+}
+
+
+sub checksum {
+    my ( $self, $message ) = @_;
+
+    return md5_hex( YAML::Dump $message );
 }
 
 1;

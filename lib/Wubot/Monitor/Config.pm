@@ -30,15 +30,15 @@ sub read_config {
     opendir( $mod_dir_h, $directory ) or die "Can't opendir $directory: $!";
 
   MODULES:
-    while ( defined( my $dir_entry = readdir( $mod_dir_h ) ) ) {
-        next unless $dir_entry;
-        next if $dir_entry =~ m|^\.|;
+    while ( defined( my $plugin = readdir( $mod_dir_h ) ) ) {
+        next unless $plugin;
+        next if $plugin =~ m|^\.|;
 
-        my $plugin_dir = "$directory/$dir_entry";
+        my $plugin_dir = "$directory/$plugin";
 
         next unless -d $plugin_dir;
 
-        print "Reading plugin directory: $dir_entry\n";
+        print "Reading plugin directory: $plugin\n";
 
         my $instance_dir_h;
 
@@ -53,13 +53,14 @@ sub read_config {
 
             print "\tReading instance config: $instance_entry\n";
 
-            my $key = join( "-", $dir_entry, $instance_entry );
+            my $key = join( "-", $plugin, $instance_entry );
             $key =~ s|.yaml$||;
 
             my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
+            $instance_config->{plugin} = "Wubot::Monitor::Plugin::$plugin";
 
             $config->{$key} = { file   => $instance_entry,
-                                dir    => $dir_entry,
+                                dir    => $plugin,
                                 config => $instance_config,
                                 key    => $key,
                             };

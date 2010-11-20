@@ -26,11 +26,11 @@ use Wubot::Monitor::Check;
 
     my $details = ( @{ $results } )[0];
 
-    ok( exists $details->{idle_mins},
-        "Checking that check returned idle minutes: $details->{idle_mins}"
+    ok( exists $details->{idle_min},
+        "Checking that check returned idle minutes: $details->{idle_min}"
     );
 
-    like( $details->{idle_mins},
+    like( $details->{idle_min},
           qr/^\d+$/,
           "Checking that check returned a number of idle minutes"
       );
@@ -53,14 +53,14 @@ use Wubot::Monitor::Check;
 
     my $now = time;
 
-    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{idle_mins},
+    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{idle_min},
         0,
-        "Checking that calculate_idle_status calculated idle_mins for 0 seconds"
+        "Checking that calculate_idle_status calculated idle_min for 0 seconds"
     );
 
-    is( $idle->calculate_idle_stats( $now, 60, {}, {} )->{idle_mins},
+    is( $idle->calculate_idle_stats( $now, 60, {}, {} )->{idle_min},
         1,
-        "Checking that calculate_idle_status calculated idle_mins for 60 seconds"
+        "Checking that calculate_idle_status calculated idle_min for 60 seconds"
     );
 
     is( $idle->calculate_idle_stats( $now, 23, {}, {} )->{idle_sec},
@@ -78,9 +78,9 @@ use Wubot::Monitor::Check;
 
     my $now = time;
 
-    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{active_mins},
+    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{active_min},
         0,
-        "Checking that calculate_idle_status calculated initial active_state_mins as 0"
+        "Checking that calculate_idle_status calculated initial active_state_min as 0"
     );
 
     is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{idle_state},
@@ -138,7 +138,12 @@ use Wubot::Monitor::Check;
         "Checking that calculate_idle_status cleared idle_since when going active"
     );
 
-    is( $idle->calculate_idle_stats( $now, 600, {}, { idle_since => $now-60 } )->{idle_since},
+    is( $idle->calculate_idle_stats( $now, 60*3, {}, { active_since => $now-60*5 } )->{active_min},
+        2,
+        "Checking that calculate_idle_status calculated subtracted small idle time from active_min when active"
+    );
+
+        is( $idle->calculate_idle_stats( $now, 600, {}, { idle_since => $now-60 } )->{idle_since},
         $now-60,
         "Checking that calculate_idle_status did not touch idle_since when still idle"
      );
@@ -148,18 +153,19 @@ use Wubot::Monitor::Check;
         "Checking that calculate_idle_status calculated initial idle_since using start of idle time"
     );
 
-    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{idle_mins},
+    is( $idle->calculate_idle_stats( $now, 0, {}, {} )->{idle_min},
         0,
         "Checking that calculate_idle_status calculated 0 minutes of idle time"
     );
 
-    is( $idle->calculate_idle_stats( $now, 600, {}, {} )->{idle_mins},
+    is( $idle->calculate_idle_stats( $now, 600, {}, {} )->{idle_min},
         '10',
         "Checking that calculate_idle_status calculated 10 minutes of idle status"
     );
 
-    is( $idle->calculate_idle_stats( $now, 600, {}, { idle_since => $now-1200 } )->{idle_mins},
+    is( $idle->calculate_idle_stats( $now, 600, {}, { idle_since => $now-1200 } )->{idle_min},
         10,
-        "Checking that calculate_idle_status calculated idle_mins using idle time, not idle_since"
+        "Checking that calculate_idle_status calculated idle_min using idle time, not idle_since"
      );
+
 }

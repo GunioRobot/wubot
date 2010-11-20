@@ -1,4 +1,4 @@
-package Wubot::Monitor::Plugin::TestCase;
+package Wubot::Plugin::TestCase;
 use Moose;
 
 sub check {

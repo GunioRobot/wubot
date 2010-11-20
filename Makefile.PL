@@ -3,7 +3,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME                => 'Wubot::Monitor',
+    NAME                => 'Wubot',
     AUTHOR              => 'Alex White <VVu@geekfarm.org>',
     VERSION_FROM        => 'lib/Wubot/Monitor.pm',
     ABSTRACT_FROM       => 'lib/Wubot/Monitor.pm',

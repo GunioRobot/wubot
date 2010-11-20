@@ -1,4 +1,4 @@
-package Wubot::Monitor::Plugin::OsxIdle;
+package Wubot::Plugin::OsxIdle;
 use Moose;
 
 use Sys::Hostname;

@@ -3,10 +3,10 @@ use strict;
 
 use Test::More 'no_plan';
 
-use Wubot::Monitor::Config;
+use Wubot::Config;
 
-ok( my $config = Wubot::Monitor::Config->new( { root => 't/config' } ),
-    "Creating new Wubot::Monitor::Config object"
+ok( my $config = Wubot::Config->new( { root => 't/config' } ),
+    "Creating new Wubot::Config object"
 );
 
 is_deeply( [ $config->get_monitors() ],
@@ -16,7 +16,7 @@ is_deeply( [ $config->get_monitors() ],
 
 is_deeply( $config->get_monitor_config( 'TestCase-test1' ),
            {
-               class => 'Wubot::Monitor::TestCase',
+               class => 'Wubot::TestCase',
                param1 => 'value1',
                hash1 => { key1 => 'value1', key2 => 'value2' },
            },

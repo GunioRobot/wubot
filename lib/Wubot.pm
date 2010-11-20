@@ -1,4 +1,4 @@
-package Wubot::Monitor;
+package Wubot;
 use Moose;
 
 our $VERSION = '0.01';
@@ -11,12 +11,12 @@ use Carp;
 
 =head1 NAME
 
-Wubot::Monitor - <One-line description of module's purpose>
+Wubot - <One-line description of module's purpose>
 
 
 =head1 SYNOPSIS
 
-    use Wubot::Monitor;
+    use Wubot;
 
 =head1 DESCRIPTION
 

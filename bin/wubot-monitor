@@ -7,8 +7,8 @@ use AnyEvent;
 use File::Path;
 use YAML;
 
-use Wubot::Monitor::Config;
-use Wubot::Monitor::Check;
+use Wubot::Config;
+use Wubot::Check;
 
 my $cache_directory = "$ENV{HOME}/wubot/cache";
 unless ( -d $cache_directory ) {
@@ -28,7 +28,7 @@ unless ( -d $message_directory ) {
 my $monitor_objs;
 my $schedule;
 
-my $config  = Wubot::Monitor::Config->new( { root => $config_directory } );
+my $config  = Wubot::Config->new( { root => $config_directory } );
 my $reactor = \&store_messages;
 
 my $count;
@@ -38,7 +38,7 @@ for my $monitor ( $config->get_monitors() ) {
     my $monitor_config = $config->get_monitor_config( $monitor );
 
     $monitor_objs->{ $monitor }
-        = Wubot::Monitor::Check->new( { class      => $monitor_config->{plugin},
+        = Wubot::Check->new( { class      => $monitor_config->{plugin},
                                         cache_file => "$cache_directory/$monitor.yaml",
                                         reactor    => $reactor,
                                     } );

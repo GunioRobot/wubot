@@ -1,4 +1,4 @@
-package Wubot::Monitor::Plugin::AppWubotGrowlQueue;
+package Wubot::Plugin::AppWubotGrowlQueue;
 use Moose;
 
 use DBI;

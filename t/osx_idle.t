@@ -9,11 +9,11 @@ use YAML;
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
-use Wubot::Monitor::Check;
+use Wubot::Check;
 
 {
     my $reaction = [];
-    ok( my $check = Wubot::Monitor::Check->new( { class      => 'Wubot::Monitor::Plugin::OsxIdle',
+    ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
                                                   reactor    => sub { push @{ $reaction }, $_[0] },
                                               } ),
@@ -47,7 +47,7 @@ use Wubot::Monitor::Check;
 }
 
 {
-    ok( my $idle = Wubot::Monitor::Plugin::OsxIdle->new(),
+    ok( my $idle = Wubot::Plugin::OsxIdle->new(),
         "Creating an OSX Idle plugin directly"
     );
 
@@ -72,7 +72,7 @@ use Wubot::Monitor::Check;
 
 # active duration
 {
-    ok( my $idle = Wubot::Monitor::Plugin::OsxIdle->new(),
+    ok( my $idle = Wubot::Plugin::OsxIdle->new(),
         "Creating an OSX Idle plugin directly"
     );
 

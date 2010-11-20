@@ -1,5 +1,5 @@
 ---
-class: Wubot::Monitor::TestCase
+class: Wubot::TestCase
 param3: value3
 hash1:
   key1: value1

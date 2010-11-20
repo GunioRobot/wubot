@@ -1,4 +1,4 @@
-package Wubot::Monitor::Config;
+package Wubot::Config;
 use Moose;
 
 use YAML;
@@ -57,7 +57,7 @@ sub read_config {
             $key =~ s|.yaml$||;
 
             my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
-            $instance_config->{plugin} = "Wubot::Monitor::Plugin::$plugin";
+            $instance_config->{plugin} = "Wubot::Plugin::$plugin";
 
             $config->{$key} = { file   => $instance_entry,
                                 dir    => $plugin,

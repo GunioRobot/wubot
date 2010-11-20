@@ -9,11 +9,11 @@ use YAML;
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
-use Wubot::Monitor::Check;
+use Wubot::Check;
 
 {
     my $reaction = [];
-    ok( my $check = Wubot::Monitor::Check->new( { class      => 'Wubot::Monitor::Plugin::TestCase',
+    ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
                                                   cache_file => $cache_file,
                                                   reactor    => sub { push @{ $reaction }, $_[0] },
                                               } ),
@@ -47,7 +47,7 @@ use Wubot::Monitor::Check;
 
 {
     my $reaction = [];
-    ok( my $check = Wubot::Monitor::Check->new( { class      => 'Wubot::Monitor::Plugin::TestCase',
+    ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
                                                   cache_file => $cache_file,
                                                   reactor    => sub { push @{ $reaction }, $_[0] },
                                               } ),

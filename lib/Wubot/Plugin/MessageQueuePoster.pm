@@ -1,4 +1,4 @@
-package Wubot::Monitor::Plugin::MessageQueuePoster;
+package Wubot::Plugin::MessageQueuePoster;
 use Moose;
 
 use LWP::UserAgent;

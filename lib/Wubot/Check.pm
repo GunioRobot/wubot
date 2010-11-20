@@ -1,4 +1,4 @@
-package Wubot::Monitor::Check;
+package Wubot::Check;
 use Moose;
 
 use YAML;

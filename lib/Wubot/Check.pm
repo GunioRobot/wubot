@@ -50,6 +50,7 @@ sub check {
 
     if ( $results ) {
         for my $result ( @{ $results } ) {
+            next unless $results;
 
             $result->{checksum}   = $self->checksum( $result );
             $result->{lastupdate} = $cache->{lastupdate};

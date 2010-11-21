@@ -49,7 +49,7 @@ sub check {
         }
     }
 
-     $self->logger->info( "idle_mins:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
+     $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
 
     return ( [ $results ],
              $cache,
@@ -130,8 +130,6 @@ sub check {
 
      }
 
-     #print YAML::Dump $stats;
-
      if ( $stats->{idle_state_change} ) {
          if ( $stats->{idle_state} ) {
              $stats->{text} = "Idle after being active for $stats->{last_active_min} minutes";
@@ -140,6 +138,18 @@ sub check {
          else {
              $stats->{text} =  "Active after being idle for $stats->{last_idle_min} minutes";
              $self->logger->warn( $stats->{text} );
+         }
+     }
+     elsif ( $stats->{idle_state} ) {
+         if ( $stats->{idle_min} % 60 == 0 ) {
+             my $hours_idle = int( $stats->{idle_min} / 60 );
+             $self->logger->warn( "Active for $hours_idle hour(s)" );
+         }
+     }
+     else {
+         if ( $stats->{active_min} % 60 == 0 ) {
+             my $hours_active = int( $stats->{active_min} / 60 );
+             $self->logger->warn( "Active for $hours_active hour(s)" );
          }
      }
 

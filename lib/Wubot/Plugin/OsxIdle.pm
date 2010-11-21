@@ -1,9 +1,16 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
-use Sys::Hostname;
+use Log::Log4perl;
 
-my $hostname = hostname();
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
 my $command = "ioreg -c IOHIDSystem";
 
 sub check {
@@ -42,7 +49,7 @@ sub check {
         }
     }
 
-     print "Idle: idle mins:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}\n";
+     $self->logger->info( "idle_mins:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
 
     return ( [ $results ],
              $cache,
@@ -61,7 +68,7 @@ sub check {
      if ( $cache->{lastupdate} ) {
          my $age = $now - $cache->{lastupdate};
          if ( $age >= $idle_threshold*60 ) {
-             print "\tcache expired\n";
+             $self->logger->warn( "\tidle cache expired" );
              $stats->{cache_expired} = 1;
              delete $cache->{last_idle_state};
              delete $cache->{idle_since};

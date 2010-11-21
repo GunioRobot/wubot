@@ -1,6 +1,7 @@
 package Wubot::Config;
 use Moose;
 
+use Log::Log4perl;
 use YAML;
 
 has 'root'   => ( is      => 'ro',
@@ -13,10 +14,19 @@ has 'config' => ( is      => 'ro',
                   default => sub { $_[0]->read_config() },
               );
 
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+
 sub read_config {
     my ( $self ) = @_;
 
-    print "Reading configuration!\n";
+    $self->logger->info( "Reading configuration!" );
 
     my $config = {};
 
@@ -38,7 +48,7 @@ sub read_config {
 
         next unless -d $plugin_dir;
 
-        print "Reading plugin directory: $plugin\n";
+        $self->logger->info( "Reading plugin directory: $plugin" );
 
         my $instance_dir_h;
 
@@ -48,10 +58,11 @@ sub read_config {
         while ( defined( my $instance_entry = readdir( $instance_dir_h ) ) ) {
             next unless $instance_entry;
 
+            next unless $instance_entry =~ m|\.yaml$|;
             next if -d "$plugin_dir/$instance_entry";
             next if $instance_entry =~ m|^\.|;
 
-            print "\tReading instance config: $instance_entry\n";
+            $self->logger->info( "\tReading instance config: $instance_entry" );
 
             my $key = join( "-", $plugin, $instance_entry );
             $key =~ s|.yaml$||;

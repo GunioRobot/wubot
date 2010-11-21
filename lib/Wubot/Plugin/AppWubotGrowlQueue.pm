@@ -4,8 +4,17 @@ use Moose;
 use DBI;
 use DBD::Pg;
 use Growl::Tiny;
+use Log::Log4perl;
 use SQL::Abstract;
 use YAML;
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
 
 my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;
@@ -45,7 +54,7 @@ sub check {
         $count++;
         return if $count > $default_limit;
 
-        print "Growl: $notification->{subject}\n";
+        $self->logger->info( "Growl: $notification->{subject}" );
 
         if ( $notification->{image} ) {
             my $image = $notification->{image};

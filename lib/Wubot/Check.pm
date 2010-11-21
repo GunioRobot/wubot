@@ -1,8 +1,14 @@
 package Wubot::Check;
 use Moose;
 
-use YAML;
+use Log::Log4perl;
 use Digest::MD5 qw( md5_hex );
+use YAML;
+
+has 'key'      => ( is => 'ro',
+                    isa => 'Str',
+                    required => 1,
+                );
 
 has 'class'      => ( is => 'ro',
                       isa => 'Str',
@@ -18,7 +24,7 @@ has 'instance'   => ( is      => 'ro',
                           if ( $@ ) {
                               die "ERROR: loading class: $class => $@";
                           }
-                          return $class->new();
+                          return $class->new( key => $self->key );
                       },
                   );
 
@@ -33,6 +39,16 @@ has 'reactor'    => ( is       => 'ro',
                   );
 
 
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+
+
 sub check {
     my ( $self, $config ) = @_;
 
@@ -41,6 +57,8 @@ sub check {
     if ( -r $self->cache_file ) {
         $cache_data = YAML::LoadFile( $self->cache_file );
     }
+
+    $self->logger->debug( "calling check for instance: ", $self->key );
 
     my ( $results, $cache ) = $self->instance->check( $config, $cache_data );
 
@@ -55,6 +73,7 @@ sub check {
             $result->{checksum}   = $self->checksum( $result );
             $result->{lastupdate} = $cache->{lastupdate};
             $result->{plugin}     = $self->{class};
+            $result->{key}       = $self->{key};
 
             $self->reactor->( $result );
         }

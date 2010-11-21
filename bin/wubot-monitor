@@ -5,7 +5,23 @@ use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 use AnyEvent;
 use File::Path;
+use Log::Log4perl qw(:easy);
 use YAML;
+
+Log::Log4perl->init(\ <<'EOT');
+                log4perl.category = INFO, Screen
+                log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
+                log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+                log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
+                log4perl.appender.Screen.color.trace = cyan
+                log4perl.appender.Screen.color.debug = blue
+                log4perl.appender.Screen.color.info  = green
+                log4perl.appender.Screen.color.warn  = magenta
+                log4perl.appender.Screen.color.error = yellow
+                log4perl.appender.Screen.color.fatal = red
+EOT
+
+my $logger = get_logger( 'default' );
 
 use Wubot::Config;
 use Wubot::Check;
@@ -32,7 +48,7 @@ my $config  = Wubot::Config->new( { root => $config_directory } );
 
 my $count;
 for my $plugin ( $config->get_plugins() ) {
-    print "Creating check instance for plugin: $plugin\n";
+    $logger->info( "Creating check instance for plugin: $plugin" );
 
     my $plugin_config = $config->get_plugin_config( $plugin );
 
@@ -40,6 +56,7 @@ for my $plugin ( $config->get_plugins() ) {
         = Wubot::Check->new( { class      => $plugin_config->{plugin},
                                cache_file => "$cache_directory/$plugin.yaml",
                                reactor    => sub { store_messages( @_ ) },
+                               key        => $plugin,
                            } );
 
     my $now = time;
@@ -52,7 +69,7 @@ unless ( $count ) {
     die "ERROR: no plugin config files processed in $config_directory";
 }
 
-print "Setting up timer...\n";
+$logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
 
 my $timer = AnyEvent->timer( after    => 1,
@@ -66,8 +83,6 @@ my $timer = AnyEvent->timer( after    => 1,
                                      next if $time > $now;
 
                                      for my $plugin ( @{ $schedule->{$time} } ) {
-                                         #print "running check: $plugin\n";
-
                                          my $plugin_config = $config->get_plugin_config( $plugin );
 
                                          $plugin_objs->{$plugin}->check( $plugin_config );
@@ -82,9 +97,9 @@ my $timer = AnyEvent->timer( after    => 1,
                                  }
                              } );
 
-print "Running...\n\n";
+$logger->error( "Running..." );
 $end->recv;
-print "Ended...\n";
+$logger->error( "Ended..." );
 
 
 sub store_messages {
@@ -100,7 +115,7 @@ sub store_messages {
 
         my $message_file = "$message_directory/$message->{checksum}.yaml";
 
-        #print "\t$message_file\n";
+        $logger->debug( "\twrote: $message_file" );
         YAML::DumpFile( $message_file, $message );
     }
 

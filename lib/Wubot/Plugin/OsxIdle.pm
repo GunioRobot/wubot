@@ -85,10 +85,11 @@ sub check {
 
      $stats->{lastupdate} = $now;
 
-     if ( $cache->{idle_state} ) {
-         $stats->{last_idle_state} = $cache->{idle_state};
+     if ( exists $cache->{idle_state} ) {
+         $stats->{last_idle_state} = $cache->{idle_state} || 0;
      }
 
+     $stats->{last_idle_min} = $cache->{idle_min};
      $stats->{idle_state} = $stats->{idle_min} >= $idle_threshold ? 1 : 0;
 
      if ( exists $stats->{last_idle_state} && $stats->{last_idle_state} != $stats->{idle_state} ) {
@@ -101,7 +102,10 @@ sub check {
      if ( $stats->{idle_state} ) {
          # user is currently idle
          $stats->{active_since} = undef;
+
+         $stats->{last_active_min} = $cache->{active_min} || 0;
          $stats->{active_min} = 0;
+
 
          if ( $cache->{idle_since} ) {
              $stats->{idle_since} = $cache->{idle_since};
@@ -124,6 +128,19 @@ sub check {
              $stats->{active_min} = 0;
          }
 
+     }
+
+     #print YAML::Dump $stats;
+
+     if ( $stats->{idle_state_change} ) {
+         if ( $stats->{idle_state} ) {
+             $stats->{text} = "Idle after being active for $stats->{last_active_min} minutes";
+             $self->logger->warn( $stats->{text} );
+         }
+         else {
+             $stats->{text} =  "Active after being idle for $stats->{last_idle_min} minutes";
+             $self->logger->warn( $stats->{text} );
+         }
      }
 
      return $stats;

@@ -14,9 +14,10 @@ use Wubot::Check;
 {
     my $reaction = [];
     ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::OsxIdle',
-                                                  cache_file => $cache_file,
-                                                  reactor    => sub { push @{ $reaction }, $_[0] },
-                                              } ),
+                                         cache_file => $cache_file,
+                                         reactor    => sub { push @{ $reaction }, $_[0] },
+                                         key        => 'OsxIdle-testcase',
+                                     } ),
         "Creating a new OSX Idle check instance"
     );
 
@@ -167,5 +168,69 @@ use Wubot::Check;
         10,
         "Checking that calculate_idle_status calculated idle_min using idle time, not idle_since"
      );
+
+    # is( $idle->calculate_idle_stats( $now, 0, {}, { active_since => $now-1200 } )->{idle_state_change},
+    #     1,
+    #     "Checking for idle_state_change flag when going active"
+    # );
+}
+
+# active after idle
+{
+    ok( my $idle = Wubot::Plugin::OsxIdle->new(),
+        "Creating an OSX Idle plugin directly"
+    );
+
+    my $now = time;
+
+    my $cache ={ idle_since    => $now-60*15,
+                 idle_state    => 1,
+                 idle_min      => 15,
+             };
+
+    is( $idle->calculate_idle_stats( $now, 0, {}, $cache )->{idle_state},
+        0,
+        "Checking for idle_state flag when going active"
+    );
+
+    is( $idle->calculate_idle_stats( $now, 0, {}, $cache )->{idle_state_change},
+        1,
+        "Checking for idle_state_change flag when going active"
+    );
+
+    like( $idle->calculate_idle_stats( $now, 0, {}, $cache )->{text},
+          qr/Active after being idle for 15 minutes/,
+          "Checking for 'active after being idle' message"
+      );
+}
+
+
+# idle after active
+{
+    ok( my $idle = Wubot::Plugin::OsxIdle->new(),
+        "Creating an OSX Idle plugin directly"
+    );
+
+    my $now = time;
+
+    my $cache ={ active_since    => $now-60*15,
+                 idle_state      => 0,
+                 active_min      => 15,
+             };
+
+    is( $idle->calculate_idle_stats( $now, 60*15, {}, $cache )->{idle_state},
+        1,
+        "Checking for idle_state flag when going active"
+    );
+
+    is( $idle->calculate_idle_stats( $now, 60*15, {}, $cache )->{idle_state_change},
+        1,
+        "Checking for idle_state_change flag when going active"
+    );
+
+    like( $idle->calculate_idle_stats( $now, 60*15, {}, $cache )->{text},
+          qr/Idle after being active for 15 minutes/,
+          "Checking for 'idle after being active' message"
+      );
 
 }

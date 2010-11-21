@@ -4,8 +4,17 @@ use Moose;
 use DBI;
 use DBD::Pg;
 use Growl::Tiny;
+use Log::Log4perl;
 use SQL::Abstract;
 use YAML;
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
 
 my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;
@@ -39,18 +48,18 @@ sub check {
     $self->{sth}->execute;
 
     while ( my $entry = $self->{sth}->fetchrow_hashref() ){
-        print "Voice: $entry->{text}\n";
-
         my $text = $entry->{text};
 
-        $text =~ s|\bcci\b| CCI |g;
-        $text =~ s|\birc\b| IRC |g;
-        $text =~ s|\bwubot\b| wubot |g;
-        $text =~ s|\but3\b| U T 3 |g;
-        $text =~ s|\bbuji\b| booji |g;
-        $text =~ s|\bswt\b| sweeet |g;
+        for my $text ( keys %{ $config->{word_fix} } ) {
+            $text =~ s/\b$text\b/$config->{word_fix}->{$text}/i;
+        }
 
-        system( '/usr/bin/say', $text );
+        my $rate  = $config->{voice_rate} || 350;
+        my $voice = $config->{voice} || 'zarvox';
+
+        $self->logger->info( "transformed text: $text" );
+
+        system( '/usr/bin/say', '-v', $voice, "[[rate $rate]] $text" );
         $sql->delete( 'notify_voice', { id => $entry->{id} } );
 
         $self->{dbh}->do( "DELETE FROM $config->{tablename} WHERE ID = '$entry->{id}'" )

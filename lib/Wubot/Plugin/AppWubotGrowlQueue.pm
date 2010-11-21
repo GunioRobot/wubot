@@ -6,6 +6,7 @@ use DBD::Pg;
 use Growl::Tiny;
 use Log::Log4perl;
 use SQL::Abstract;
+use Term::ANSIColor;
 use YAML;
 
 has 'logger'  => ( is => 'ro',
@@ -18,6 +19,17 @@ has 'logger'  => ( is => 'ro',
 
 my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;
+
+my $valid_colors = { blue    => 'blue',
+                     cyan    => 'cyan',
+                     red     => 'red',
+                     white   => 'white',
+                     green   => 'green',
+                     orange  => 'yellow',
+                     yellow  => 'bold yellow',
+                     purple  => 'magenta',
+                     magenta => 'magenta',
+                 };
 
 my $sql = SQL::Abstract->new;
 
@@ -54,8 +66,6 @@ sub check {
         $count++;
         return if $count > $default_limit;
 
-        $self->logger->info( "Growl: $notification->{subject}" );
-
         if ( $notification->{image} ) {
             my $image = $notification->{image};
             $image =~ s|^.*\/||;
@@ -65,8 +75,28 @@ sub check {
 
         Growl::Tiny::notify( $notification );
 
+        my $color = 'white';
+        if ( $notification->{color} && $valid_colors->{ $notification->{color} } ) {
+            $color = $valid_colors->{ $notification->{color} };
+        }
+
+        if ( $notification->{urgent} && $color !~ m/bold/ ) {
+            print color "bold $color";
+        }
+        else {
+            print color $color;
+        }
+
+        my $subject = $notification->{subject};
+        my $title   = $notification->{title};
+        utf8::encode( $subject );
+        utf8::encode( $title );
+        print "growl: ", $title, " => ", $subject . "\n";
+        print color 'reset';
+
         $self->{dbh}->do( "DELETE FROM $config->{tablename} WHERE ID = '$notification->{id}'" )
             or die $self->{dbh}->errstr;
+
     }
 
     return ( undef,

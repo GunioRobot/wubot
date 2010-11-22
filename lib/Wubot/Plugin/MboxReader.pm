@@ -44,11 +44,11 @@ sub check {
         }
 
         # new message
-        push @{ $results }, { subject => $msg->header->{subject},
-                              from    => $msg->header->{from},
-                              cc      => $msg->header->{cc},
-                              to      => $msg->header->{to},
-                              date    => $msg->header->{date},
+        push @{ $results }, { subject  => $msg->header->{subject},
+                              username => $msg->header->{from},
+                              cc       => $msg->header->{cc},
+                              to_user  => $msg->header->{to},
+                              date     => $msg->header->{date},
                           };
 
     }

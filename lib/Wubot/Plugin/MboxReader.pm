@@ -1,7 +1,23 @@
 package Wubot::Plugin::MboxReader;
 use Moose;
 
+use Log::Log4perl;
 use Mail::MboxParser;
+
+has 'key'     => ( is => 'ro',
+                   isa => 'Str',
+                   required => 1,
+               );
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+
 
 sub check {
     my ( $self, $config, $cache ) = @_;
@@ -14,14 +30,14 @@ sub check {
         cache_file_name => 'mail/cache-file',
     };
 
+    my $key = $self->key;
+
     my $mb = Mail::MboxParser->new( $config->{path},
                                     decode     => 'ALL',
                                     parseropts => $parseropts
                                 );
 
     my $now = time;
-
-    print "Reading: $config->{path}\n";
 
   MESSAGE:
     while (my $msg = $mb->next_message) {
@@ -53,11 +69,20 @@ sub check {
 
     }
 
+    if ( $results ) {
+        my $count = scalar @{ $results };
+        $self->logger->info( "Found new emails: $key: $count" );
+    }
+
+    my $delete_count = 0;
     for my $id ( keys %{ $cache->{seen} } ) {
         unless ( $cache->{seen}->{ $id } == $now ) {
-            #warn "Message removed: $id\n";
             delete $cache->{seen}->{ $id };
+            $delete_count++;
         }
+    }
+    if ( $delete_count ) {
+        $self->logger->info( "Email removed from mailbox: $key: $delete_count" );
     }
 
     return ( $results, $cache );

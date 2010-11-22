@@ -4,14 +4,18 @@ use strict;
 use Test::More 'no_plan';
 use YAML;
 
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($INFO);
+
 use Wubot::Plugin::MboxReader;
 
 # note: install this for faster parsing!
 #use Mail::Mbox::MessageParser;
 
 my $test_file = "/Users/wu/tmp/wu";
+my $key = "MboxReader-testcase";
 
-ok( my $reader = Wubot::Plugin::MboxReader->new(),
+ok( my $reader = Wubot::Plugin::MboxReader->new( key => $key ),
     "Creating a new reader object"
 );
 

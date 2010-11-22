@@ -8,6 +8,7 @@ use YAML;
 use Sys::Hostname;
 
 my $hostname = hostname();
+$hostname =~ s|\..*$||;
 
 sub check {
     my ( $self, $config, $cache ) = @_;
@@ -33,7 +34,7 @@ sub check {
     my $path = "$config->{directory}/$file";
 
     my $data = YAML::LoadFile( $path );
-    $data->{service} = "wubot-$hostname";
+    $data->{service} = $data->{key};
 
     my $data_text = YAML::Dump $data;
 

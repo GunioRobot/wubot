@@ -21,6 +21,8 @@ sub check {
 
     my $now = time;
 
+    print "Reading: $config->{path}\n";
+
   MESSAGE:
     while (my $msg = $mb->next_message) {
 

@@ -9,7 +9,7 @@ sub check {
     my $results = [];
 
     my $parseropts = {
-        enable_cache    => 1,
+        enable_cache    => 0,
         enable_grep     => 1,
         cache_file_name => 'mail/cache-file',
     };

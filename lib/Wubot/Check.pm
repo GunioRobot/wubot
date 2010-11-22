@@ -4,6 +4,17 @@ use Moose;
 use Log::Log4perl;
 use Digest::MD5 qw( md5_hex );
 use YAML;
+use Sys::Hostname qw();
+
+has 'hostname' => ( is => 'ro',
+                    isa => 'Str',
+                    lazy => 1,
+                    default => sub {
+                        my $hostname = Sys::Hostname::hostname();
+                        $hostname =~ s|\..*$||;
+                        return $hostname;
+                    },
+                );
 
 has 'key'      => ( is => 'ro',
                     isa => 'Str',
@@ -73,7 +84,8 @@ sub check {
             $result->{checksum}   = $self->checksum( $result );
             $result->{lastupdate} = $cache->{lastupdate};
             $result->{plugin}     = $self->{class};
-            $result->{key}       = $self->{key};
+            $result->{key}        = $self->{key};
+            $result->{hostname}  = $self->hostname;
 
             $self->reactor->( $result );
         }

@@ -39,6 +39,7 @@ sub check {
 
     my $now = time;
 
+    my $new_count = 0;
   MESSAGE:
     while (my $msg = $mb->next_message) {
 
@@ -54,10 +55,11 @@ sub check {
 
             next MESSAGE;
         }
-        else {
-            # update the last seen time
-            $cache->{seen}->{ $id } = $now;
-        }
+
+        # cache this new id
+        $cache->{seen}->{ $id } = $now;
+
+        $new_count++;
 
         # new message
         push @{ $results }, { subject  => $msg->header->{subject},
@@ -68,10 +70,8 @@ sub check {
                           };
 
     }
-
-    if ( $results ) {
-        my $count = scalar @{ $results };
-        $self->logger->info( "Found new emails: $key: $count" );
+    if ( $new_count ) {
+        $self->logger->info( "Found new emails: $key: $new_count" );
     }
 
     my $delete_count = 0;

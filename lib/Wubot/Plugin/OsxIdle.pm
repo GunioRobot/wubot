@@ -132,25 +132,27 @@ sub check {
 
      if ( $stats->{idle_state_change} ) {
          if ( $stats->{idle_state} ) {
-             $stats->{text} = "Idle after being active for $stats->{last_active_min} minutes";
-             $self->logger->warn( $stats->{text} );
+             $stats->{subject} = "Idle after being active for $stats->{last_active_min} minutes";
          }
          else {
-             $stats->{text} =  "Active after being idle for $stats->{last_idle_min} minutes";
-             $self->logger->warn( $stats->{text} );
+             $stats->{subject} =  "Active after being idle for $stats->{last_idle_min} minutes";
          }
      }
      elsif ( $stats->{idle_state} ) {
          if ( $stats->{idle_min} % 60 == 0 ) {
              my $hours_idle = int( $stats->{idle_min} / 60 );
-             $self->logger->warn( "Active for $hours_idle hour(s)" );
+             $stats->{subject} = "Active for $hours_idle hour(s)";
          }
      }
      else {
          if ( $stats->{active_min} % 60 == 0 ) {
              my $hours_active = int( $stats->{active_min} / 60 );
-             $self->logger->warn( "Active for $hours_active hour(s)" );
+             $stats->{subject} = "Active for $hours_active hour(s)";
          }
+     }
+
+     if ( $stats->{subject} ) {
+         $self->logger->warn( $stats->{subject} );
      }
 
      return $stats;

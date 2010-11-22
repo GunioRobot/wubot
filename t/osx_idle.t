@@ -198,7 +198,7 @@ use Wubot::Check;
         "Checking for idle_state_change flag when going active"
     );
 
-    like( $idle->calculate_idle_stats( $now, 0, {}, $cache )->{text},
+    like( $idle->calculate_idle_stats( $now, 0, {}, $cache )->{subject},
           qr/Active after being idle for 15 minutes/,
           "Checking for 'active after being idle' message"
       );
@@ -228,7 +228,7 @@ use Wubot::Check;
         "Checking for idle_state_change flag when going active"
     );
 
-    like( $idle->calculate_idle_stats( $now, 60*15, {}, $cache )->{text},
+    like( $idle->calculate_idle_stats( $now, 60*15, {}, $cache )->{subject},
           qr/Idle after being active for 15 minutes/,
           "Checking for 'idle after being active' message"
       );

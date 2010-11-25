@@ -38,20 +38,61 @@ sub check {
         my $name = $entry;
         $name =~ s|.org$||;
 
+        # the task is 'done' until any incomplete tasks are found
+        my $done = 1;
+        my $color;
+        if ( $content =~ m|^\s+\-\s\[\s\]\s|m ) {
+            $done = 0;
+
+            if ( $entry =~ m|^\d\d\d\d\.\d\d\.\d\d| ) {
+                $color = 'yellow';
+            }
+            else {
+                $color = 'blue';
+            }
+        }
+        else {
+            if ( $entry =~ m|^\d\d\d\d\.\d\d\.\d\d| ) {
+                $color = 'green';
+            }
+            else {
+                $color = '';
+            }
+        }
+
+        for my $block ( split /\n\*+\s/, $content ) {
+
+            $block =~ s|^\s+\*\s+||mg;
+
+            $block =~ m|^(\w+)|;
+            my $name = $1;
+
+            next unless $name;
+
+            if ( $name =~ m|meta|i ) {
+                if ( $block =~ m|^\s+\-\scolor\:\s([\w]+)$|m ) {
+                    $color = "$1";
+                }
+            }
+        }
+
         push @results, { name      => $name,
                          timestamp => $updated,
                          subject   => "org file updated: $entry",
                          body      => $content,
+                         done      => $done,
+                         color     => $color,
                      };
 
         # attempt to commit file to git if it isn't already
         local $CWD = $config->{directory};
 
-        system( "git", "add", $entry );
-        system( "git", "commit", "-m", "$entry committed by wubot" );
+        if ( $config->{git} ) {
+            system( "git", "add", $entry );
+            system( "git", "commit", "-m", "$entry committed by wubot" );
+        }
     }
     closedir( $dir_h );
-
 
     return ( \@results, $cache );
 }

@@ -5,11 +5,32 @@ use Growl::Tiny;
 use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };
 use CGI;
+use Log::Log4perl;
 use YAML;
 use Sys::Hostname;
 
 my $hostname = hostname();
 $hostname =~ s|\..*$||;
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+with 'Wubot::Plugin::Roles::RetryDelay';
+
+sub init {
+    my ( $self, $config, $cache ) = @_;
+
+    # schedule next retry immediately, then go back to waiting on the
+    # normal delay count
+    $cache->{next_retry} = time;
+
+    return $cache;
+}
 
 sub check {
     my ( $self, $config, $cache ) = @_;
@@ -64,7 +85,7 @@ sub check {
         }
         else {
             $cache->{retry_failures}++;
-            $cache->{next_retry} = get_next_retry_utime( $cache->{retry_failures} );
+            $cache->{next_retry} = $self->get_next_retry_utime( $cache->{retry_failures} );
             my $subject = "$cache->{retry_failures} error(s) sending message, retry after " . scalar localtime( $cache->{next_retry} );
             Growl::Tiny::notify( { title   => 'Wubot Message Queue',
                                    subject => $subject,
@@ -75,20 +96,6 @@ sub check {
     }
 
     return ( undef, $cache );
-}
-
-sub get_next_retry_utime {
-    my ( $retry_count ) = @_;
-
-    my $delay = $retry_count * 2 + 5;
-
-    my $now   = time;
-
-    my $next = $delay + $now;
-
-    #$self->logger->debug( "retry_count=$retry_count delay=$delay now=$now retry_next=$next retry_time=" . scalar( localtime( $next ) ) );
-
-    return $next;
 }
 
 1;

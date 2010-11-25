@@ -2,7 +2,18 @@ package Wubot::Config;
 use Moose;
 
 use Log::Log4perl;
+use Sys::Hostname qw();
 use YAML;
+
+has 'hostname' => ( is => 'ro',
+                    isa => 'Str',
+                    lazy => 1,
+                    default => sub {
+                        my $hostname = Sys::Hostname::hostname();
+                        $hostname =~ s|\..*$||;
+                        return $hostname;
+                    },
+                );
 
 has 'root'   => ( is      => 'ro',
                   isa     => 'Str',
@@ -22,7 +33,6 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
-
 sub read_config {
     my ( $self ) = @_;
 
@@ -38,6 +48,9 @@ sub read_config {
 
     my $mod_dir_h;
     opendir( $mod_dir_h, $directory ) or die "Can't opendir $directory: $!";
+
+    my $hostname = $self->hostname;
+    print "hostname: $hostname\n";
 
   MODULES:
     while ( defined( my $plugin = readdir( $mod_dir_h ) ) ) {
@@ -58,14 +71,14 @@ sub read_config {
         while ( defined( my $instance_entry = readdir( $instance_dir_h ) ) ) {
             next unless $instance_entry;
 
-            next unless $instance_entry =~ m|\.yaml$|;
+            next unless $instance_entry =~ m|.yaml(?:\.$hostname)?$|;
             next if -d "$plugin_dir/$instance_entry";
             next if $instance_entry =~ m|^\.|;
 
             $self->logger->info( "\tReading instance config: $instance_entry" );
 
             my $key = join( "-", $plugin, $instance_entry );
-            $key =~ s|.yaml$||;
+            $key =~ s|.yaml(?:\.$hostname)?$||;
 
             my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
             $instance_config->{plugin} = "Wubot::Plugin::$plugin";

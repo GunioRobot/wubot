@@ -23,7 +23,10 @@ has 'instance'   => ( is      => 'ro',
                           if ( $@ ) {
                               die "ERROR: loading class: $class => $@";
                           }
-                          return $class->new( key => $self->key, reactor => $self->reactor );
+                          return $class->new( key     => $self->key,
+                                              reactor => $self->reactor,
+                                              class   => $self->class,
+                                          );
                       },
                   );
 

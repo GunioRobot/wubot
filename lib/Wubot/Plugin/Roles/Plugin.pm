@@ -8,6 +8,10 @@ has 'key'      => ( is => 'ro',
                     required => 1,
                 );
 
+has 'class'      => ( is => 'ro',
+                      isa => 'Str',
+                      required => 1,
+                  );
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',

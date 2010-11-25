@@ -9,6 +9,7 @@ use Term::ANSIColor;
 use YAML;
 
 with 'Wubot::Plugin::Roles::Plugin';
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Reactor';
 
 
@@ -29,7 +30,7 @@ my $valid_colors = { blue    => 'blue',
 my $sql = SQL::Abstract->new;
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     unless ( $self->{dbh} ) {
         $self->{dbh} = DBI->connect("dbi:Pg:dbname=$config->{dbname};host=$config->{host};port=$config->{port};options=''",
@@ -94,7 +95,7 @@ sub check {
 
     }
 
-    return $cache
+    return 1;
 }
 
 

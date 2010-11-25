@@ -50,7 +50,6 @@ sub read_config {
     opendir( $mod_dir_h, $directory ) or die "Can't opendir $directory: $!";
 
     my $hostname = $self->hostname;
-    print "hostname: $hostname\n";
 
   MODULES:
     while ( defined( my $plugin = readdir( $mod_dir_h ) ) ) {

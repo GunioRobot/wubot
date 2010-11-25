@@ -18,12 +18,13 @@ has 'tail' => ( is => 'rw',
                 }
             );
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     $self->path( $config->{path} );
 
@@ -40,7 +41,7 @@ sub check {
         $self->logger->info( "$key: $line" );
     }
 
-    return $cache;
+    return 1;
 }
 
 1;

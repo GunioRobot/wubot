@@ -3,11 +3,12 @@ use Moose;
 
 use File::chdir;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     my $dir_h;
 
@@ -20,9 +21,9 @@ sub check {
 
         my $updated = ( stat "$config->{directory}/$entry" )[9];
 
-        next if exists $cache->{files}->{$entry}->{lastupdate} && $updated == $cache->{files}->{$entry}->{lastupdate};
+        next if exists $self->cache->{files}->{$entry}->{lastupdate} && $updated == $self->cache->{files}->{$entry}->{lastupdate};
 
-        $cache->{files}->{$entry}->{lastupdate} = $updated;
+        $self->cache->{files}->{$entry}->{lastupdate} = $updated;
 
         print "Checking updated file: $config->{directory}/$entry => $updated\n";
 
@@ -95,7 +96,7 @@ sub check {
     }
     closedir( $dir_h );
 
-    return $cache;
+    return 1;
 }
 
 1;

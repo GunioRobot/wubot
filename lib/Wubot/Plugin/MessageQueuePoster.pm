@@ -6,26 +6,26 @@ use HTTP::Request::Common qw{ POST };
 use CGI;
 use YAML;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 with 'Wubot::Plugin::Roles::RetryDelay';
 
 sub init {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     # schedule next retry immediately, then go back to waiting on the
     # normal delay count
-    $cache->{next_retry} = time;
+    $self->cache->{next_retry} = time;
 
-    return $cache;
 }
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     my $now = time;
-    if ( $cache->{next_retry} && $cache->{next_retry} > $now ) {
-        return $cache;
+    if ( $self->cache->{next_retry} && $self->cache->{next_retry} > $now ) {
+        return;
     }
 
     my @files;
@@ -42,7 +42,7 @@ sub check {
     @files = sort { -M "$config->{directory}/$a" <=> -M "$config->{directory}/$b" } @files;
 
     unless ( scalar @files ) {
-        return $cache;
+        return;
     }
 
     my $max = scalar @files > 10 ? 10 : scalar @files;
@@ -56,7 +56,7 @@ sub check {
         my $file = pop @files;
 
         unless ( $file ) {
-            return $cache;
+            return;
         }
 
         my $path = "$config->{directory}/$file";
@@ -72,21 +72,21 @@ sub check {
 
         if ( $content =~ m|\!OK\!| ) {
             unlink $path;
-            $cache->{retry_failures} = 0;
-            $cache->{next_retry} = undef;
-            $cache->{last_ok} = $now;
+            $self->cache->{retry_failures} = 0;
+            $self->cache->{next_retry} = undef;
+            $self->cache->{last_ok} = $now;
         }
         else {
-            $cache->{retry_failures}++;
-            $cache->{next_retry} = $self->get_next_retry_utime( $cache->{retry_failures} );
-            my $subject = "$cache->{retry_failures} error(s) sending message, retry after " . scalar localtime( $cache->{next_retry} );
+            $self->cache->{retry_failures}++;
+            $self->cache->{next_retry} = $self->get_next_retry_utime( $self->cache->{retry_failures} );
+            my $subject = "$self->{cache}->{retry_failures} error(s) sending message, retry after " . scalar localtime( $self->cache->{next_retry} );
             $self->react( { subject => $subject } );
             warn "MessageQueuePoster: $subject\n";
             last MESSAGE;
         }
     }
 
-    return $cache;
+    return 1;
 }
 
 1;

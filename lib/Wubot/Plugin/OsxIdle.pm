@@ -1,13 +1,14 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 my $command = "ioreg -c IOHIDSystem";
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     my $idle_sec;
 
@@ -30,26 +31,26 @@ sub check {
 
     my $results;
 
-    my $stats = $self->calculate_idle_stats( time, $idle_sec, $config, $cache );
+    my $stats = $self->calculate_idle_stats( time, $idle_sec, $config );
     for my $stat ( keys %{ $stats } ) {
         if ( defined $stats->{$stat} ) {
             $results->{$stat} = $stats->{$stat};
-            $cache->{$stat}   = $stats->{$stat};
+            $self->cache->{$stat}   = $stats->{$stat};
         }
         else {
             # value is 'undef', remove it from the cache data
-            delete $cache->{$stat};
+            delete $self->cache->{$stat};
         }
     }
 
     $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
     $self->react( $results );
 
-    return $cache;
+    return 1;
 }
 
  sub calculate_idle_stats {
-     my ( $self, $now, $seconds, $config, $cache ) = @_;
+     my ( $self, $now, $seconds, $config ) = @_;
 
      my $stats;
      $stats->{idle_sec} = $seconds;
@@ -57,14 +58,14 @@ sub check {
 
      my $idle_threshold = $config->{idle_threshold} || 10;
 
-     if ( $cache->{lastupdate} ) {
-         my $age = $now - $cache->{lastupdate};
+     if ( $self->cache->{lastupdate} ) {
+         my $age = $now - $self->cache->{lastupdate};
          if ( $age >= $idle_threshold*60 ) {
              $self->logger->warn( "OsxIdle: cache expired" );
              $stats->{cache_expired} = 1;
-             delete $cache->{last_idle_state};
-             delete $cache->{idle_since};
-             delete $cache->{active_since};
+             delete $self->cache->{last_idle_state};
+             delete $self->cache->{idle_since};
+             delete $self->cache->{active_since};
          }
          else {
              $stats->{cache_expired} = undef;
@@ -77,11 +78,11 @@ sub check {
 
      $stats->{lastupdate} = $now;
 
-     if ( exists $cache->{idle_state} ) {
-         $stats->{last_idle_state} = $cache->{idle_state} || 0;
+     if ( exists $self->cache->{idle_state} ) {
+         $stats->{last_idle_state} = $self->cache->{idle_state} || 0;
      }
 
-     $stats->{last_idle_min} = $cache->{idle_min};
+     $stats->{last_idle_min} = $self->cache->{idle_min};
      $stats->{idle_state} = $stats->{idle_min} >= $idle_threshold ? 1 : 0;
 
      if ( exists $stats->{last_idle_state} && $stats->{last_idle_state} != $stats->{idle_state} ) {
@@ -95,12 +96,12 @@ sub check {
          # user is currently idle
          $stats->{active_since} = undef;
 
-         $stats->{last_active_min} = $cache->{active_min} || 0;
+         $stats->{last_active_min} = $self->cache->{active_min} || 0;
          $stats->{active_min} = 0;
 
 
-         if ( $cache->{idle_since} ) {
-             $stats->{idle_since} = $cache->{idle_since};
+         if ( $self->cache->{idle_since} ) {
+             $stats->{idle_since} = $self->cache->{idle_since};
          }
          else {
              $stats->{idle_since} = $now - $stats->{idle_sec};
@@ -111,9 +112,9 @@ sub check {
 
          $stats->{idle_since} = undef;
 
-         if ( $cache->{active_since} ) {
-             $stats->{active_since} = $cache->{active_since};
-             $stats->{active_min} = int( ( $now - $cache->{active_since} ) / 60 ) - $stats->{idle_min};
+         if ( $self->cache->{active_since} ) {
+             $stats->{active_since} = $self->cache->{active_since};
+             $stats->{active_min} = int( ( $now - $self->cache->{active_since} ) / 60 ) - $stats->{idle_min};
          }
          else {
              $stats->{active_since} = $now;

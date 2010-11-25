@@ -5,11 +5,12 @@ use Encode qw(encode decode);
 use LWP::UserAgent;
 use XML::Feed;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     my $ua = new LWP::UserAgent;
 
@@ -34,7 +35,7 @@ sub check {
 
     unless ( $res->is_success ) {
         $self->logger->error( "Failure getting content: ", $res->status_line || "no error text" );
-        return $cache;
+        return;
     }
 
     my $content = $res->content;
@@ -43,7 +44,7 @@ sub check {
 
     unless ( $feed ) {
         $self->logger->error( "Failure parsing XML Feed: ", XML::Feed->errstr || "no error text" );
-        return $cache;
+        return;
     }
 
     my @entries = $feed->entries;
@@ -51,11 +52,8 @@ sub check {
     my $count = scalar @entries;
     unless ( $count ) {
         $self->logger->warn( "No items in feed" );
-        return $cache;
+        return;
     }
-
-    my $newfeed = 0;
-    if ( ! $cache->{seen} ) { $newfeed = 1 }
 
     my $newcount = 0;
 
@@ -74,15 +72,19 @@ sub check {
         next ARTICLE unless $subject;
 
         # if we've already seen this item, move along
-        if ( $cache->{seen}->{$subject} ) {
+        if ( $self->cache_is_seen( $subject ) ) {
             $self->logger->debug( "Already seen: ", $subject );
+
+            # touch cache time on this subject
+            $self->cache_mark_seen( $subject );
+
             next ARTICLE;
         }
 
         $newcount++;
 
         # keep track of this item so we don't fetch it again
-        $cache->{seen}->{$subject} = $now;
+        $self->cache_mark_seen( $subject );
 
         my $body = $i->content->body;
 
@@ -96,25 +98,15 @@ sub check {
             $article->{tag} = $config->{tag};
         }
 
-        if ( $newfeed ) {
-            $article->{newfeed} = $newfeed;
-        }
-
         $self->react( $article );
     }
 
-    for my $subject ( keys %{ $cache->{seen} } ) {
-        unless ( $cache->{seen}->{ $subject } == $now ) {
-            delete $cache->{seen}->{ $subject };
-            $self->logger->info( "Removing item from cache: $subject" );
-        }
-    }
+    $self->cache_expire();
 
     my $output = "check successful: $newcount new items in feed ($count total)";
-    if ( $newfeed ) { $output .= " [first check]" }
     $self->logger->info( $output );
 
-    return $cache;
+    return 1;
 }
 
 

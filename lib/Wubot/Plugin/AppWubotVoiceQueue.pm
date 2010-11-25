@@ -7,6 +7,7 @@ use Growl::Tiny;
 use SQL::Abstract;
 use YAML;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
@@ -16,7 +17,7 @@ my $default_limit = 10;
 my $sql = SQL::Abstract->new;
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     unless ( $self->{dbh} ) {
         $self->{dbh} = DBI->connect("dbi:Pg:dbname=$config->{dbname};host=$config->{host};port=$config->{port};options=''",
@@ -60,7 +61,7 @@ sub check {
             or die $self->{dbh}->errstr;
     }
 
-    return $cache;
+    return 1;
 }
 
 

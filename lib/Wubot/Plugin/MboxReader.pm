@@ -3,11 +3,12 @@ use Moose;
 
 use Mail::MboxParser;
 
+with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config, $cache ) = @_;
+    my ( $self, $config ) = @_;
 
     my $parseropts = {
         enable_cache    => 0,
@@ -31,18 +32,18 @@ sub check {
         my $id = $msg->header->{'message-id'};
 
         # ignore messages we've already seen
-        if ( $cache->{seen}->{ $id } ) {
+        if ( $self->cache_is_seen( $id ) ) {
 
             #print "Seen: $id\n";
 
             # update the last seen time
-            $cache->{seen}->{ $id } = $now;
+            $self->cache_mark_seen( $id );
 
             next MESSAGE;
         }
 
         # cache this new id
-        $cache->{seen}->{ $id } = $now;
+        $self->cache_mark_seen( $id );
 
         $new_count++;
 
@@ -59,18 +60,10 @@ sub check {
         $self->logger->info( "Found new emails: $key: $new_count" );
     }
 
-    my $delete_count = 0;
-    for my $id ( keys %{ $cache->{seen} } ) {
-        unless ( $cache->{seen}->{ $id } == $now ) {
-            delete $cache->{seen}->{ $id };
-            $delete_count++;
-        }
-    }
-    if ( $delete_count ) {
-        $self->logger->info( "Email removed from mailbox: $key: $delete_count" );
-    }
+    # expire old subjects from the cache
+    $self->cache_expire();
 
-    return $cache;
+    return 1;
 }
 
 1;

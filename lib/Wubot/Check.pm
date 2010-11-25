@@ -23,9 +23,10 @@ has 'instance'   => ( is      => 'ro',
                           if ( $@ ) {
                               die "ERROR: loading class: $class => $@";
                           }
-                          return $class->new( key     => $self->key,
-                                              reactor => $self->reactor,
-                                              class   => $self->class,
+                          return $class->new( key        => $self->key,
+                                              reactor    => $self->reactor,
+                                              class      => $self->class,
+                                              cache_file => $self->cache_file,
                                           );
                       },
                   );
@@ -55,46 +56,23 @@ sub init {
 
     return unless $self->instance->can( 'init' );
 
-    my $cache_data = $self->get_cache();
+    $self->instance->get_cache();
 
-    my ( $cache ) = $self->instance->init( $config, $cache_data );
+    $self->instance->init( $config );
 
-    $self->write_cache( $cache );
-}
-
-sub get_cache {
-    my ( $self ) = @_;
-
-    # read the cache data
-    my $cache_data = {};
-    if ( -r $self->cache_file ) {
-        $cache_data = YAML::LoadFile( $self->cache_file );
-    }
-
-    return $cache_data;
-}
-
-sub write_cache {
-    my ( $self, $cache ) = @_;
-
-    YAML::DumpFile( $self->cache_file, $cache );
-
+    $self->instance->write_cache();
 }
 
 sub check {
     my ( $self, $config ) = @_;
 
-    my $cache_data = $self->get_cache();
+    $self->instance->get_cache();
 
     $self->logger->debug( "calling check for instance: ", $self->key );
 
-    my $cache = $self->instance->check( $config, $cache_data );
+    $self->instance->check( $config );
 
-    # store the latest check cache data
-    $cache->{lastupdate} = time;
-
-    $self->write_cache( $cache );
-
+    $self->instance->write_cache();
 }
 
 1;

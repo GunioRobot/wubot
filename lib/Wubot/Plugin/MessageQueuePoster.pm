@@ -59,6 +59,10 @@ sub check {
 
     my $max = scalar @files > 10 ? 10 : scalar @files;
 
+    if ( scalar @files > $max ) {
+        $self->logger->warn( "MessageQueuePoster: queue length is ", scalar @files );
+    }
+
   MESSAGE:
     for my $count ( 1 .. $max ) {
         my $file = pop @files;
@@ -82,6 +86,7 @@ sub check {
             unlink $path;
             $cache->{retry_failures} = 0;
             $cache->{next_retry} = undef;
+            $cache->{last_ok} = $now;
         }
         else {
             $cache->{retry_failures}++;

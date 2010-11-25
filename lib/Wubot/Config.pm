@@ -78,7 +78,7 @@ sub read_config {
             $self->logger->info( "\tReading instance config: $instance_entry" );
 
             my $key = join( "-", $plugin, $instance_entry );
-            $key =~ s|.yaml(?:\.$hostname)?$||;
+            $key =~ s|\.yaml.*$||;
 
             my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
             $instance_config->{plugin} = "Wubot::Plugin::$plugin";

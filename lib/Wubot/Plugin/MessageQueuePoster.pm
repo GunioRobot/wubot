@@ -1,16 +1,11 @@
 package Wubot::Plugin::MessageQueuePoster;
 use Moose;
 
-use Growl::Tiny;
 use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };
 use CGI;
 use Log::Log4perl;
 use YAML;
-use Sys::Hostname;
-
-my $hostname = hostname();
-$hostname =~ s|\..*$||;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -21,6 +16,7 @@ has 'logger'  => ( is => 'ro',
                );
 
 with 'Wubot::Plugin::Roles::RetryDelay';
+with 'Wubot::Plugin::Roles::Reactor';
 
 sub init {
     my ( $self, $config, $cache ) = @_;
@@ -92,9 +88,7 @@ sub check {
             $cache->{retry_failures}++;
             $cache->{next_retry} = $self->get_next_retry_utime( $cache->{retry_failures} );
             my $subject = "$cache->{retry_failures} error(s) sending message, retry after " . scalar localtime( $cache->{next_retry} );
-            Growl::Tiny::notify( { title   => 'Wubot Message Queue',
-                                   subject => $subject,
-                               } );
+            $self->react( { subject => $subject } );
             warn "MessageQueuePoster: $subject\n";
             last MESSAGE;
         }

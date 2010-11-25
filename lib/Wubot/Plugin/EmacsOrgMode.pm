@@ -25,7 +25,7 @@ sub check {
 
         $self->cache->{files}->{$entry}->{lastupdate} = $updated;
 
-        print "Checking updated file: $config->{directory}/$entry => $updated\n";
+        $self->logger->info( "Checking updated file: $config->{directory}/$entry => $updated" );
 
         open(my $fh, "<", "$config->{directory}/$entry" )
             or die "Couldn't open $config->{directory}/$entry for reading: $!\n";

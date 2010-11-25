@@ -34,8 +34,6 @@ sub check {
         # ignore messages we've already seen
         if ( $self->cache_is_seen( $id ) ) {
 
-            #print "Seen: $id\n";
-
             # update the last seen time
             $self->cache_mark_seen( $id );
 

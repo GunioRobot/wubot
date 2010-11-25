@@ -68,7 +68,7 @@ sub check {
      if ( $cache->{lastupdate} ) {
          my $age = $now - $cache->{lastupdate};
          if ( $age >= $idle_threshold*60 ) {
-             $self->logger->warn( "\tidle cache expired" );
+             $self->logger->warn( "OsxIdle: cache expired" );
              $stats->{cache_expired} = 1;
              delete $cache->{last_idle_state};
              delete $cache->{idle_since};
@@ -139,13 +139,13 @@ sub check {
          }
      }
      elsif ( $stats->{idle_state} ) {
-         if ( $stats->{idle_min} % 60 == 0 ) {
+         if ( $stats->{idle_min} % 60 == 0 && $stats->{idle_min} > 0 ) {
              my $hours_idle = int( $stats->{idle_min} / 60 );
-             $stats->{subject} = "Active for $hours_idle hour(s)";
+             $stats->{subject} = "Idle for $hours_idle hour(s)";
          }
      }
      else {
-         if ( $stats->{active_min} % 60 == 0 ) {
+         if ( $stats->{active_min} % 60 == 0 && $stats->{active_min} > 0 ) {
              my $hours_active = int( $stats->{active_min} / 60 );
              $stats->{subject} = "Active for $hours_active hour(s)";
          }

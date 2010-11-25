@@ -66,9 +66,7 @@ sub check {
             or die $self->{dbh}->errstr;
     }
 
-    return ( undef,
-             $cache,
-         );
+    return $cache;
 }
 
 

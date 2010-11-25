@@ -3,6 +3,8 @@ use Moose;
 
 use Log::Log4perl;
 
+with 'Wubot::Plugin::Roles::Reactor';
+
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,
@@ -49,11 +51,10 @@ sub check {
         }
     }
 
-     $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
+    $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
+    $self->react( $results );
 
-    return ( [ $results ],
-             $cache,
-         );
+    return $cache;
 }
 
  sub calculate_idle_stats {

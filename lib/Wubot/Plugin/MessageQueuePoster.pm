@@ -37,7 +37,7 @@ sub check {
 
     my $now = time;
     if ( $cache->{next_retry} && $cache->{next_retry} > $now ) {
-        return ( undef, $cache );
+        return $cache;
     }
 
     my @files;
@@ -54,7 +54,7 @@ sub check {
     @files = sort { -M "$config->{directory}/$a" <=> -M "$config->{directory}/$b" } @files;
 
     unless ( scalar @files ) {
-        return ( undef, $cache );
+        return $cache;
     }
 
     my $max = scalar @files > 10 ? 10 : scalar @files;
@@ -68,7 +68,7 @@ sub check {
         my $file = pop @files;
 
         unless ( $file ) {
-            return ( undef, $cache );
+            return $cache;
         }
 
         my $path = "$config->{directory}/$file";
@@ -100,7 +100,7 @@ sub check {
         }
     }
 
-    return ( undef, $cache );
+    return $cache;
 }
 
 1;

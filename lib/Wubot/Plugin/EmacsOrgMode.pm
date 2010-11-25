@@ -3,10 +3,10 @@ use Moose;
 
 use File::chdir;
 
+with 'Wubot::Plugin::Roles::Reactor';
+
 sub check {
     my ( $self, $config, $cache ) = @_;
-
-    my @results;
 
     my $dir_h;
 
@@ -76,13 +76,13 @@ sub check {
             }
         }
 
-        push @results, { name      => $name,
-                         timestamp => $updated,
-                         subject   => "org file updated: $entry",
-                         body      => $content,
-                         done      => $done,
-                         color     => $color,
-                     };
+        $self->react( { name      => $name,
+                        timestamp => $updated,
+                        subject   => "org file updated: $entry",
+                        body      => $content,
+                        done      => $done,
+                        color     => $color,
+                    } );
 
         # attempt to commit file to git if it isn't already
         local $CWD = $config->{directory};
@@ -94,7 +94,7 @@ sub check {
     }
     closedir( $dir_h );
 
-    return ( \@results, $cache );
+    return $cache;
 }
 
 1;

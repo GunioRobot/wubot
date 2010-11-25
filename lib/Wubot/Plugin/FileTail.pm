@@ -37,8 +37,6 @@ has 'logger'  => ( is => 'ro',
 sub check {
     my ( $self, $config, $cache ) = @_;
 
-    my $results = [];
-
     $self->path( $config->{path} );
 
     unless ( -r $self->path ) {
@@ -54,7 +52,7 @@ sub check {
         $self->logger->info( "$key: $line" );
     }
 
-    return ( $results, $cache );
+    return $cache;
 }
 
 1;

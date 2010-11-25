@@ -99,9 +99,7 @@ sub check {
 
     }
 
-    return ( undef,
-             $cache,
-         );
+    return $cache
 }
 
 

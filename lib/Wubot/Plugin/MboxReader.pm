@@ -4,6 +4,8 @@ use Moose;
 use Log::Log4perl;
 use Mail::MboxParser;
 
+with 'Wubot::Plugin::Roles::Reactor';
+
 has 'key'     => ( is => 'ro',
                    isa => 'Str',
                    required => 1,
@@ -21,8 +23,6 @@ has 'logger'  => ( is => 'ro',
 
 sub check {
     my ( $self, $config, $cache ) = @_;
-
-    my $results = [];
 
     my $parseropts = {
         enable_cache    => 0,
@@ -62,12 +62,12 @@ sub check {
         $new_count++;
 
         # new message
-        push @{ $results }, { subject  => $msg->header->{subject},
-                              username => $msg->header->{from},
-                              cc       => $msg->header->{cc},
-                              to_user  => $msg->header->{to},
-                              date     => $msg->header->{date},
-                          };
+        $self->react( { subject  => $msg->header->{subject},
+                        username => $msg->header->{from},
+                        cc       => $msg->header->{cc},
+                        to_user  => $msg->header->{to},
+                        date     => $msg->header->{date},
+                    } );
 
     }
     if ( $new_count ) {
@@ -85,7 +85,7 @@ sub check {
         $self->logger->info( "Email removed from mailbox: $key: $delete_count" );
     }
 
-    return ( $results, $cache );
+    return $cache;
 }
 
 1;

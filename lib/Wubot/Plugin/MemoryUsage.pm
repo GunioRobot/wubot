@@ -15,8 +15,6 @@ has 'logger'  => ( is => 'ro',
 sub check {
     my ( $self, $config, $cache ) = @_;
 
-    my $results = [];
-
     for my $plugin ( keys %{ $main::plugin_objs } ) {
         my $size = Devel::Size::total_size( $main::plugin_objs->{$plugin}->{instance} );
 
@@ -29,7 +27,7 @@ sub check {
         $cache->{$plugin}->{size} = $size;
     }
 
-    return ( $results, $cache );
+    return $cache;
 }
 
 1;

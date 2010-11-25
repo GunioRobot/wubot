@@ -2,19 +2,7 @@ package Wubot::Check;
 use Moose;
 
 use Log::Log4perl;
-use Digest::MD5 qw( md5_hex );
 use YAML;
-use Sys::Hostname qw();
-
-has 'hostname' => ( is => 'ro',
-                    isa => 'Str',
-                    lazy => 1,
-                    default => sub {
-                        my $hostname = Sys::Hostname::hostname();
-                        $hostname =~ s|\..*$||;
-                        return $hostname;
-                    },
-                );
 
 has 'key'      => ( is => 'ro',
                     isa => 'Str',
@@ -35,7 +23,7 @@ has 'instance'   => ( is      => 'ro',
                           if ( $@ ) {
                               die "ERROR: loading class: $class => $@";
                           }
-                          return $class->new( key => $self->key );
+                          return $class->new( key => $self->key, reactor => $self->reactor );
                       },
                   );
 
@@ -97,35 +85,13 @@ sub check {
 
     $self->logger->debug( "calling check for instance: ", $self->key );
 
-    my ( $results, $cache ) = $self->instance->check( $config, $cache_data );
+    my $cache = $self->instance->check( $config, $cache_data );
 
     # store the latest check cache data
     $cache->{lastupdate} = time;
 
     $self->write_cache( $cache );
 
-    if ( $results ) {
-        for my $result ( @{ $results } ) {
-            next unless $results;
-
-            $result->{checksum}   = $self->checksum( $result );
-            $result->{lastupdate} = $cache->{lastupdate};
-            $result->{plugin}     = $self->{class};
-            $result->{key}        = $self->{key};
-            $result->{hostname}  = $self->hostname;
-
-            $self->reactor->( $result );
-        }
-    }
-
-    return $results;
-}
-
-
-sub checksum {
-    my ( $self, $message ) = @_;
-
-    return md5_hex( YAML::Dump $message );
 }
 
 1;

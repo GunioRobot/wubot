@@ -8,8 +8,8 @@ use File::Path;
 use Log::Log4perl qw(:easy);
 use YAML;
 
-Log::Log4perl->init(\ <<'EOT');
-    log4perl.category = INFO, Screen
+Log::Log4perl->init(\ <<"EOT");
+    log4perl.category = INFO, Screen, Logfile
     log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
     log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
     log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
@@ -19,9 +19,21 @@ Log::Log4perl->init(\ <<'EOT');
     log4perl.appender.Screen.color.warn  = magenta
     log4perl.appender.Screen.color.error = yellow
     log4perl.appender.Screen.color.fatal = red
+
+    log4perl.appender.Logfile = Log::Dispatch::FileRotate
+    log4perl.appender.Logfile.filename    = $ENV{HOME}/logs/wubot-agent.log
+    log4perl.appender.Logfile.max         = 10
+    log4perl.appender.Logfile.mode        = append
+    log4perl.appender.Logfile.DatePattern = yyyy-MM-dd
+    log4perl.appender.Logfile.TZ          = PST
+    log4perl.appender.Logfile.layout      = Log::Log4perl::Layout::PatternLayout
+    log4perl.appender.Logfile.layout.ConversionPattern = %d %m %n
+
 EOT
 
 my $logger = get_logger( 'default' );
+$logger->warn( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
+$logger->warn( "Staring Up..." );
 
 use Wubot::Config;
 use Wubot::Check;
@@ -58,6 +70,8 @@ for my $plugin ( $config->get_plugins() ) {
                                reactor    => sub { store_messages( @_ ) },
                                key        => $plugin,
                            } );
+
+    $plugin_objs->{ $plugin }->init();
 
     my $now = time;
     push @{ $schedule->{$now} }, $plugin;

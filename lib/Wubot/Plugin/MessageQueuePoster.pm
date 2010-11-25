@@ -4,19 +4,11 @@ use Moose;
 use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };
 use CGI;
-use Log::Log4perl;
 use YAML;
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
-
-with 'Wubot::Plugin::Roles::RetryDelay';
+with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
+with 'Wubot::Plugin::Roles::RetryDelay';
 
 sub init {
     my ( $self, $config, $cache ) = @_;

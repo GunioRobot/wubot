@@ -34,7 +34,7 @@ sub react {
         $data->{plugin}     = $self->{class};
     }
 
-    $data->{key}        = $self->{key};
+    $data->{key}        = $self->key;
 
     $data->{hostname}  = $self->hostname;
 

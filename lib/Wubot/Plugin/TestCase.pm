@@ -1,6 +1,7 @@
 package Wubot::Plugin::TestCase;
 use Moose;
 
+with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {

@@ -1,17 +1,8 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
-use Log::Log4perl;
-
+with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
-
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
 
 my $command = "ioreg -c IOHIDSystem";
 

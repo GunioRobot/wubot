@@ -4,18 +4,13 @@ use Moose;
 use DBI;
 use DBD::Pg;
 use Growl::Tiny;
-use Log::Log4perl;
 use SQL::Abstract;
 use Term::ANSIColor;
 use YAML;
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
+with 'Wubot::Plugin::Roles::Plugin';
+with 'Wubot::Plugin::Roles::Reactor';
+
 
 my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;

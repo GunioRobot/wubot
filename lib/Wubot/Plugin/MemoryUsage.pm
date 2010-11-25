@@ -2,15 +2,8 @@ package Wubot::Plugin::MemoryUsage;
 use Moose;
 
 use Devel::Size;
-use Log::Log4perl;
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
+with 'Wubot::Plugin::Roles::Plugin';
 
 sub check {
     my ( $self, $config, $cache ) = @_;

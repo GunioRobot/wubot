@@ -1,13 +1,7 @@
 package Wubot::Plugin::FileTail;
 use Moose;
 
-use Log::Log4perl;
 use File::Tail;
-
-has 'key'      => ( is => 'ro',
-                    isa => 'Str',
-                    required => 1,
-                );
 
 has 'path' => ( is => 'rw',
                 isa => 'Str',
@@ -24,14 +18,8 @@ has 'tail' => ( is => 'rw',
                 }
             );
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
-
+with 'Wubot::Plugin::Roles::Plugin';
+with 'Wubot::Plugin::Roles::Reactor';
 
 
 sub check {

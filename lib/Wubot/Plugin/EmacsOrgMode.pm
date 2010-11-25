@@ -3,6 +3,7 @@ use Moose;
 
 use File::chdir;
 
+with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {

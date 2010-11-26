@@ -73,8 +73,23 @@ for my $plugin ( $config->get_plugins() ) {
 
     $plugin_objs->{ $plugin }->init();
 
-    my $now = time;
-    push @{ $schedule->{$now} }, $plugin;
+    my $now        = time;
+    my $delay      = $plugin_config->{delay} || 1;
+
+    my $lastupdate = $plugin_objs->{ $plugin }->instance->cache->{lastupdate} || 0;
+
+    my $schedule_time;
+    if ( $lastupdate + $delay > $now ) {
+        $schedule_time = $lastupdate + $delay;
+    }
+    else {
+        $schedule_time = $now;
+    }
+
+    my $diff = $schedule_time - $now;
+    print "Scheduling next run of $plugin in $diff seconds\n";
+
+    push @{ $schedule->{$schedule_time} }, $plugin;
 
     $count++;
 }

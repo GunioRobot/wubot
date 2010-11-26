@@ -15,7 +15,7 @@ has 'logger'  => ( is => 'ro',
 sub get_next_retry_utime {
     my ( $self, $retry_count ) = @_;
 
-    my $delay = $retry_count * 2 + 5;
+    my $delay = $retry_count ** 2 + 5;
 
     my $now   = time;
 

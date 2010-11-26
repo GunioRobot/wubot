@@ -59,10 +59,19 @@ my $schedule;
 my $config  = Wubot::Config->new( { root => $config_directory } );
 
 my $count;
+
+PLUGIN:
 for my $plugin ( $config->get_plugins() ) {
     $logger->info( "Creating check instance for plugin: $plugin" );
 
     my $plugin_config = $config->get_plugin_config( $plugin );
+
+    if ( exists $plugin_config->{enabled} ) {
+        unless ( $plugin_config->{enabled} ) {
+            $logger->warn( "Plugin disabled: $plugin" );
+            next PLUGIN;
+        }
+    }
 
     $plugin_objs->{ $plugin }
         = Wubot::Check->new( { class      => $plugin_config->{plugin},

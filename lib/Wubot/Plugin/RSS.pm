@@ -104,7 +104,7 @@ sub check {
     $self->cache_expire();
 
     my $output = $self->key . ": check successful: $newcount new items in feed ($count total)";
-    $self->logger->info( $output );
+    $self->logger->debug( $output );
 
     return 1;
 }

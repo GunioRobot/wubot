@@ -66,6 +66,8 @@ sub read_config {
 
         opendir( $instance_dir_h, $plugin_dir ) or die "Can't opendir $plugin_dir: $!";
 
+        my $instance_count = 0;
+
       INSTANCES:
         while ( defined( my $instance_entry = readdir( $instance_dir_h ) ) ) {
             next unless $instance_entry;
@@ -74,7 +76,7 @@ sub read_config {
             next if -d "$plugin_dir/$instance_entry";
             next if $instance_entry =~ m|^\.|;
 
-            $self->logger->info( "\tReading instance config: $instance_entry" );
+            $self->logger->debug( "\tReading instance config: $instance_entry" );
 
             my $key = join( "-", $plugin, $instance_entry );
             $key =~ s|\.yaml.*$||;
@@ -87,7 +89,11 @@ sub read_config {
                                 config => $instance_config,
                                 key    => $key,
                             };
+
+            $instance_count++;
         }
+
+        $self->logger->info( "\tloaded config for $instance_count instances" );
 
         closedir( $instance_dir_h );
     }

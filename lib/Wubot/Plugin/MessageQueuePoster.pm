@@ -62,7 +62,8 @@ sub check {
         my $path = "$config->{directory}/$file";
 
         my $data = YAML::LoadFile( $path );
-        $data->{service} = $data->{key};
+        $data->{service}   = $data->{key};
+        $data->{timestamp} = $data->{lastupdate};
 
         my $data_text = YAML::Dump $data;
 

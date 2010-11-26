@@ -37,7 +37,7 @@ has 'cache_file' => ( is => 'ro',
                   );
 
 has 'reactor'    => ( is       => 'ro',
-                      isa      => 'CodeRef',
+                      isa      => 'Wubot::Reactor',
                       required => 1,
                   );
 

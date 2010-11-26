@@ -35,8 +35,9 @@ my $logger = get_logger( 'default' );
 $logger->warn( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 $logger->warn( "Staring Up..." );
 
-use Wubot::Config;
 use Wubot::Check;
+use Wubot::Config;
+use Wubot::Reactor;
 
 my $cache_directory = "$ENV{HOME}/wubot/cache";
 unless ( -d $cache_directory ) {
@@ -48,21 +49,18 @@ unless ( -d $config_directory ) {
     mkpath( $config_directory );
 }
 
-my $message_directory = "$ENV{HOME}/wubot/messages";
-unless ( -d $message_directory ) {
-    mkpath( $message_directory );
-}
-
 our $plugin_objs;
 my $schedule;
 
 my $config  = Wubot::Config->new( { root => $config_directory } );
 
+my $reactor = Wubot::Reactor->new();
+
 my $count;
 
 PLUGIN:
 for my $plugin ( $config->get_plugins() ) {
-    $logger->info( "Creating check instance for plugin: $plugin" );
+    $logger->debug( "Creating check instance for plugin: $plugin" );
 
     my $plugin_config = $config->get_plugin_config( $plugin );
 
@@ -76,7 +74,7 @@ for my $plugin ( $config->get_plugins() ) {
     $plugin_objs->{ $plugin }
         = Wubot::Check->new( { class      => $plugin_config->{plugin},
                                cache_file => "$cache_directory/$plugin.yaml",
-                               reactor    => sub { store_messages( @_ ) },
+                               reactor    => $reactor,
                                key        => $plugin,
                            } );
 
@@ -96,15 +94,18 @@ for my $plugin ( $config->get_plugins() ) {
     }
 
     my $diff = $schedule_time - $now;
-    print "Scheduling next run of $plugin in $diff seconds\n";
+    $logger->debug( "Scheduling next run of $plugin in $diff seconds" );
 
     push @{ $schedule->{$schedule_time} }, $plugin;
 
     $count++;
 }
 
-unless ( $count ) {
-    die "ERROR: no plugin config files processed in $config_directory";
+if ( $count ) {
+    $logger->info( "Initialized $count enabled plugin instances" );
+}
+else {
+    $logger->logdie( "ERROR: no plugin config files processed in $config_directory" );
 }
 
 $logger->info( "Setting up timer..." );
@@ -139,22 +140,3 @@ $logger->error( "Running..." );
 $end->recv;
 $logger->error( "Ended..." );
 
-
-sub store_messages {
-    my ( @messages ) = @_;
-
-  MESSAGE:
-    for my $message ( @messages ) {
-
-        unless ( $message->{checksum} ) {
-            warn "ERROR: Message sent without checksum: ", YAML::Dump( $message ), "\n";
-            next MESSAGE;
-        }
-
-        my $message_file = "$message_directory/$message->{checksum}.yaml";
-
-        $logger->debug( "\twrote: $message_file" );
-        YAML::DumpFile( $message_file, $message );
-    }
-
-}

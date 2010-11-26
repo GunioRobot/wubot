@@ -15,7 +15,7 @@ has 'hostname' => ( is => 'ro',
                 );
 
 has 'reactor'  => ( is       => 'ro',
-                    isa      => 'CodeRef',
+                    isa      => 'Wubot::Reactor',
                     required => 1,
                 );
 
@@ -38,7 +38,7 @@ sub react {
 
     $data->{hostname}  = $self->hostname;
 
-    $self->reactor->( $data );
+    $self->reactor->react( $data );
 
     return $data;
 }

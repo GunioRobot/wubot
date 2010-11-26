@@ -18,13 +18,14 @@ sub get_cache {
 
     $self->logger->debug( "Reading cache: ", $self->cache_file );
 
-    if ( -r $self->cache_file ) {
-        $self->cache( YAML::LoadFile( $self->cache_file ) );
+    if ( ! -r $self->cache_file ) {
+        $self->logger->debug( "Cache file not found: ", $self->cache_file );
+        return {};
     }
 
-    $self->logger->debug( "Cache file not found" );
+    $self->cache( YAML::LoadFile( $self->cache_file ) );
 
-    return {};
+    return $self->cache;
 }
 
 sub write_cache {
@@ -35,7 +36,11 @@ sub write_cache {
     # store the latest check cache data
     $self->cache->{lastupdate} = time;
 
-    YAML::DumpFile( $self->cache_file, $self->cache );
+    my $tempfile = join ".", $self->cache_file, "tmp";
+
+    YAML::DumpFile( $tempfile, $self->cache );
+
+    system( "mv", $tempfile, $self->cache_file );
 }
 
 sub cache_mark_seen {

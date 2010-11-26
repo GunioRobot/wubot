@@ -34,7 +34,7 @@ sub check {
     my $res = $ua->request( $req );
 
     unless ( $res->is_success ) {
-        $self->logger->error( "Failure getting content: ", $res->status_line || "no error text" );
+        $self->logger->error( $self->key . ": Failure getting content: ", $res->status_line || "no error text" );
         return;
     }
 
@@ -43,7 +43,7 @@ sub check {
     eval { $feed = XML::Feed->parse( \$content ) };
 
     unless ( $feed ) {
-        $self->logger->error( "Failure parsing XML Feed: ", XML::Feed->errstr || "no error text" );
+        $self->logger->error( $self->key . ": Failure parsing XML Feed: ", XML::Feed->errstr || "no error text" );
         return;
     }
 
@@ -103,7 +103,7 @@ sub check {
 
     $self->cache_expire();
 
-    my $output = "check successful: $newcount new items in feed ($count total)";
+    my $output = $self->key . ": check successful: $newcount new items in feed ($count total)";
     $self->logger->info( $output );
 
     return 1;

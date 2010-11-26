@@ -46,7 +46,11 @@ sub react {
 sub checksum {
     my ( $self, $message ) = @_;
 
-    return md5_hex( YAML::Dump $message );
+    my $text = YAML::Dump $message;
+
+    utf8::encode( $text );
+
+    return md5_hex( $text );
 }
 
 1;

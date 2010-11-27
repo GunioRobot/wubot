@@ -11,6 +11,7 @@ use Log::Log4perl;
 use Maildir::Lite;
 use MIME::Entity;
 use MIME::Parser;
+use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML;
 
@@ -51,7 +52,8 @@ sub store {
     my $subject = join( ": ", $message->{key}, $message->{subject} || $message->{checksum} );
 
     my $time = $message->{lastupdate} || time;
-    my $date = localtime( $time );
+
+    my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
 
     my $msg = MIME::Entity->build(
         Type        => 'text/plain',

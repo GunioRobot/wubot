@@ -11,7 +11,11 @@ use Log::Log4perl;
 use Maildir::Lite;
 use MIME::Entity;
 use MIME::Parser;
+use Sys::Hostname qw();
 use YAML;
+
+# Maildir::Lite has a bug where it does not properly handle hostnames with dashes
+*Maildir::Lite::hostname = sub { my $hostname = Sys::Hostname::hostname(); $hostname =~ s|\-||g; return $hostname };
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -71,6 +75,8 @@ sub store {
 
 sub get {
     my ( $self, $directory ) = @_;
+
+    return unless -d "$directory/new";
 
     my $maildir = Maildir::Lite->new( dir => $directory );
 

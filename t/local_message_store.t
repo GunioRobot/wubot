@@ -72,11 +72,11 @@ use Wubot::LocalMessageStore;
 
     for my $message_number ( 1 .. 9 ) {
 
-        is_deeply( $messenger->get( $directory ),
-                   { %{ $message },
+        is_deeply( [ $messenger->get( $directory ) ],
+                   [ { %{ $message },
                      number     => $message_number,
                      lastupdate => $timestamp+$message_number*100,
-                 },
+                 } ],
                    "Checking retrieved message order sorts properly with different dates"
                );
     }
@@ -116,6 +116,19 @@ use Wubot::LocalMessageStore;
     is_deeply( [ @message_order ],
                [ 1 .. 19 ],
                "Checking sort order on message in queue where timestamp is identical"
+           );
+}
+
+
+
+{
+    my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $messenger = Wubot::LocalMessageStore->new();
+
+    is_deeply( [ $messenger->get( $directory ) ],
+               [ ],
+               "Calling get() when 'new' sub-directory does not exist"
            );
 }
 

@@ -1,0 +1,7 @@
+---
+depends: network
+enabled: 1
+image: perl.png
+tag: perl
+url: http://perlhacks.com/atom.xml
+delay: 3600

@@ -1,0 +1,6 @@
+---
+depends: network
+enabled: 1
+tag: perl
+url: http://news.perlfoundation.org/atom.xml
+delay: 3600

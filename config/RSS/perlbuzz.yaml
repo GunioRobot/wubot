@@ -1,0 +1,6 @@
+---
+depends: network
+enabled: 1
+tag: perl
+url: http://feeds.feedburner.com/PerlBuzz?format=xml
+delay: 3600

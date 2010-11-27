@@ -1,0 +1,5 @@
+---
+enable: 1
+directory: /Users/dude/org
+delay: 300
+git: 1

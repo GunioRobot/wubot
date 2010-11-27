@@ -1,0 +1,7 @@
+---
+depends: network
+enabled: 1
+image: perl.png
+tag: perl
+url: http://www.oreillynet.com/pub/feed/16
+delay: 3600

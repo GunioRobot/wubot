@@ -1,0 +1,6 @@
+---
+depends: network
+enabled: 1
+tag: perl
+url: http://use.perl.org/index.rss
+delay: 3600

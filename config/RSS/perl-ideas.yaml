@@ -1,0 +1,6 @@
+---
+depends: network
+enabled: 1
+tag: perl
+url: http://perlid.blogspot.com/feeds/posts/default
+delay: 3600

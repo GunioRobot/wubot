@@ -1,0 +1,6 @@
+---
+depends: network
+enabled: 1
+interval: 43200
+url: http://perlcast.com/feed/
+delay: 3600

@@ -60,7 +60,7 @@ sub read_config {
 
         next unless -d $plugin_dir;
 
-        $self->logger->info( "Reading plugin directory: $plugin" );
+        $self->logger->debug( "Reading plugin directory: $plugin" );
 
         my $instance_dir_h;
 
@@ -93,7 +93,9 @@ sub read_config {
             $instance_count++;
         }
 
-        $self->logger->info( "\tloaded config for $instance_count instances" );
+        if ( $instance_count ) {
+            $self->logger->info( "Config: loaded $instance_count instance(s) of $plugin" );
+        }
 
         closedir( $instance_dir_h );
     }

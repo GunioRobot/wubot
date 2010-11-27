@@ -6,6 +6,7 @@ use Moose;
 # - warn if queue length above a certain size
 
 
+use File::Sync 'fsync';
 use Log::Log4perl;
 use Maildir::Lite;
 use MIME::Entity;
@@ -45,7 +46,8 @@ sub store {
 
     my $subject = join( ": ", $message->{key}, $message->{subject} || $message->{checksum} );
 
-    my $date = localtime( $message->{lastupdate}||time );
+    my $time = $message->{lastupdate} || time;
+    my $date = localtime( $time );
 
     my $msg = MIME::Entity->build(
         Type        => 'text/plain',
@@ -59,9 +61,10 @@ sub store {
     $msg->print($fh);
 
     my $filename = $maildir->{__message_fh}->{fileno $fh}->{filename};
-    system( "touch", "--date", $date, "$directory/tmp/$filename" );
 
     die "delivery failed!\n" if $maildir->deliver_message($fh);
+
+    utime $time, $time, "$directory/new/$filename";
 
     return 1;
 }

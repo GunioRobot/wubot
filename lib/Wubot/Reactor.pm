@@ -1,7 +1,37 @@
 package Wubot::Reactor;
 use Moose;
 
+use Digest::MD5 qw( md5_hex );
 use Log::Log4perl;
+use Sys::Hostname qw();
+
+use Wubot::LocalMessageStore;
+
+has 'directory' => ( is => 'ro',
+                     isa => 'Str',
+                     default => sub {
+                         my $dir = "$ENV{HOME}/wubot/messages";
+                         return $dir;
+                     },
+                 );
+
+has 'mailbox'   => ( is      => 'ro',
+                     isa     => 'Wubot::LocalMessageStore',
+                     lazy    => 1,
+                     default => sub {
+                         return Wubot::LocalMessageStore->new();
+                     },
+                 );
+
+has 'hostname' => ( is => 'ro',
+                    isa => 'Str',
+                    lazy => 1,
+                    default => sub {
+                        my $hostname = Sys::Hostname::hostname();
+                        $hostname =~ s|\..*$||;
+                        return $hostname;
+                    },
+                );
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -11,29 +41,42 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
-has 'message_directory' => ( is => 'ro',
-                             isa => 'Str',
-                             default => sub {
-                                 my $dir = "$ENV{HOME}/wubot/messages";
-                                 return $dir;
-                             },
-                         );
+has 'count'    => ( is => 'rw',
+                    isa => 'Num',
+                    default => 1,
+                );
+
 
 sub react {
     my ( $self, $message ) = @_;
 
-    unless ( $message->{checksum} ) {
-        $self->logger->warn( "ERROR: Message sent without checksum: ", YAML::Dump( $message ) );
-        next MESSAGE;
+    return unless $message;
+
+    $message->{checksum}   = $self->checksum( $message );
+
+    unless ( $message->{lastupdate} ) {
+        $message->{lastupdate} = time;
     }
 
-    my $message_file = join( "/", $self->message_directory, "$message->{checksum}.yaml" );
+    $message->{hostname}  = $self->hostname;
 
-    $self->logger->debug( "\twriting: $message_file" );
-    YAML::DumpFile( $message_file, $message );
+    my $count = $self->count;
+    $message->{reactor_id} = $count;
+    $self->count( $count+1 );
 
-    print YAML::Dump { file => $message_file, message => $message };
-
+    $self->mailbox->store( $message, $self->directory );
 }
+
+
+sub checksum {
+    my ( $self, $message ) = @_;
+
+    my $text = YAML::Dump $message;
+
+    utf8::encode( $text );
+
+    return md5_hex( $text );
+}
+
 
 1;

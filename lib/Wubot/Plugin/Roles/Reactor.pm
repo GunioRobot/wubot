@@ -1,19 +1,6 @@
 package Wubot::Plugin::Roles::Reactor;
 use Moose::Role;
 
-use Digest::MD5 qw( md5_hex );
-use Sys::Hostname qw();
-
-has 'hostname' => ( is => 'ro',
-                    isa => 'Str',
-                    lazy => 1,
-                    default => sub {
-                        my $hostname = Sys::Hostname::hostname();
-                        $hostname =~ s|\..*$||;
-                        return $hostname;
-                    },
-                );
-
 has 'reactor'  => ( is       => 'ro',
                     isa      => 'Wubot::Reactor',
                     required => 1,
@@ -24,33 +11,15 @@ sub react {
 
     return unless $data;
 
-    $data->{checksum}   = $self->checksum( $data );
+    # use our class name for the 'plugin' field
+    $data->{plugin}     = $self->{class};
 
-    unless ( $data->{lastupdate} ) {
-        $data->{lastupdate} = time;
-    }
-
-    unless ( $data->{plugin} ) {
-        $data->{plugin}     = $self->{class};
-    }
-
+    # use our instance key name for the 'key' field
     $data->{key}        = $self->key;
-
-    $data->{hostname}  = $self->hostname;
 
     $self->reactor->react( $data );
 
     return $data;
-}
-
-sub checksum {
-    my ( $self, $message ) = @_;
-
-    my $text = YAML::Dump $message;
-
-    utf8::encode( $text );
-
-    return md5_hex( $text );
 }
 
 1;

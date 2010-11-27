@@ -144,7 +144,7 @@ sub sort {
             else {
                 open( my $f,"<", "$path/$file" );
                 while( my $line=<$f> ) {
-                    if ( $line =~ m/^\s*reactor_id\:\s(\d+)/ ) {
+                    if ( $line =~ m/^reactor_id\:\s(\d+)/ ) {
                         $id = $1;
                         last;
                     }

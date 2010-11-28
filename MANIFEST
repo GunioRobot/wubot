@@ -40,8 +40,10 @@ lib/Wubot/Reactor/MessageQueue.pm
 Makefile.PL
 MANIFEST
 README
+release-test.sh
 t/00.load.t
 t/changes.t.broken
+t/check.t
 t/config.t
 t/config/plugins/TestCase/test1.yaml
 t/config/plugins/TestCase/test2.yaml
@@ -57,5 +59,8 @@ t/meta.t
 t/monitor.t
 t/osx_idle.t
 t/pureascii.t
+t/release-meta.t.broken
 t/release-pod-coverage.t
+t/release-pod-coverage.t.broken
 t/release-pod-syntax.t
+t/release-prereq.t

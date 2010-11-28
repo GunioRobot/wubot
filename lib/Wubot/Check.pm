@@ -56,23 +56,29 @@ sub init {
 
     return unless $self->instance->can( 'init' );
 
-    $self->instance->get_cache();
+    my $cache = $self->instance->get_cache();
 
-    $self->instance->init( $config );
+    my $results = $self->instance->init( { config => $config, cache => $cache } );
 
-    $self->instance->write_cache();
+    if ( $results->{cache} ) {
+        $self->instance->write_cache( $results->{cache} );
+    }
 }
 
 sub check {
     my ( $self, $config ) = @_;
 
-    $self->instance->get_cache();
+    my $cache = $self->instance->get_cache();
 
     $self->logger->debug( "calling check for instance: ", $self->key );
 
-    $self->instance->check( $config );
+    my $results = $self->instance->check( { config => $config, cache => $cache } );
 
-    $self->instance->write_cache();
+    if ( $results->{cache} ) {
+        $self->instance->write_cache( $results->{cache} );
+    }
+
+    # todo: always touch 'cache' file with latest date
 }
 
 1;

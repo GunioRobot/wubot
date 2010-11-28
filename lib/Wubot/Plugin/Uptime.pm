@@ -6,7 +6,7 @@ with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
 
     my $uptime_output = `uptime`;
 

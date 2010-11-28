@@ -10,7 +10,10 @@ with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $config = $inputs->{config};
+    my $cache  = $inputs->{cache};
 
     my $ua = new LWP::UserAgent;
 
@@ -35,7 +38,7 @@ sub check {
 
     unless ( $res->is_success ) {
         $self->logger->error( $self->key . ": Failure getting content: ", $res->status_line || "no error text" );
-        return;
+        return { cache => $cache };
     }
 
     my $content = $res->content;
@@ -44,7 +47,7 @@ sub check {
 
     unless ( $feed ) {
         $self->logger->error( $self->key . ": Failure parsing XML Feed: ", XML::Feed->errstr || "no error text" );
-        return;
+        return { cache => $cache };
     }
 
     my @entries = $feed->entries;
@@ -52,7 +55,7 @@ sub check {
     my $count = scalar @entries;
     unless ( $count ) {
         $self->logger->warn( "No items in feed" );
-        return;
+        return { cache => $cache };
     }
 
     my $newcount = 0;
@@ -72,11 +75,11 @@ sub check {
         next ARTICLE unless $subject;
 
         # if we've already seen this item, move along
-        if ( $self->cache_is_seen( $subject ) ) {
+        if ( $self->cache_is_seen( $cache, $subject ) ) {
             $self->logger->debug( "Already seen: ", $subject );
 
             # touch cache time on this subject
-            $self->cache_mark_seen( $subject );
+            $self->cache_mark_seen( $cache, $subject );
 
             next ARTICLE;
         }
@@ -84,7 +87,7 @@ sub check {
         $newcount++;
 
         # keep track of this item so we don't fetch it again
-        $self->cache_mark_seen( $subject );
+        $self->cache_mark_seen( $cache, $subject );
 
         my $body = $i->content->body;
 
@@ -101,12 +104,12 @@ sub check {
         $self->react( $article );
     }
 
-    $self->cache_expire();
+    $self->cache_expire( $cache );
 
     my $output = $self->key . ": check successful: $newcount new items in feed ($count total)";
     $self->logger->debug( $output );
 
-    return 1;
+    return { cache => $cache };
 }
 
 

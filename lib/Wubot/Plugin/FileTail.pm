@@ -24,7 +24,9 @@ with 'Wubot::Plugin::Roles::Reactor';
 
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $config = $inputs->{config};
 
     $self->path( $config->{path} );
 
@@ -41,7 +43,7 @@ sub check {
         $self->logger->info( "$key: $line" );
     }
 
-    return 1;
+    return;
 }
 
 1;

@@ -3,11 +3,6 @@ use Moose::Role;
 
 use YAML;
 
-has 'cache'      => ( is => 'rw',
-                      isa => 'HashRef',
-                      default => sub { return $_[0]->get_cache() },
-                  );
-
 has 'cache_file' => ( is => 'ro',
                       isa => 'Str',
                       required => 1,
@@ -23,51 +18,53 @@ sub get_cache {
         return {};
     }
 
-    $self->cache( YAML::LoadFile( $self->cache_file ) );
+    my $cache = YAML::LoadFile( $self->cache_file );
 
-    return $self->cache;
+    # todo: handle broken cache file
+
+    return $cache;
 }
 
 sub write_cache {
-    my ( $self ) = @_;
+    my ( $self, $cache ) = @_;
 
     $self->logger->debug( "Writing cache..." );
 
     # store the latest check cache data
-    $self->cache->{lastupdate} = time;
+    $cache->{lastupdate} = time;
 
     my $tempfile = join ".", $self->cache_file, "tmp";
 
-    YAML::DumpFile( $tempfile, $self->cache );
+    YAML::DumpFile( $tempfile, $cache );
 
     system( "mv", $tempfile, $self->cache_file );
 }
 
 sub cache_mark_seen {
-    my ( $self, $id ) = @_;
+    my ( $self, $cache, $id ) = @_;
 
     $self->logger->debug( "Cache seen: $id" );
-    $self->cache->{seen}->{$id} = time;
+    $cache->{seen}->{$id} = time;
 
 }
 
 sub cache_is_seen {
-    my ( $self, $id ) = @_;
+    my ( $self, $cache, $id ) = @_;
 
-    return unless $self->cache->{seen};
+    return unless $cache->{seen};
 
-    return $self->cache->{seen}->{$id};
+    return $cache->{seen}->{$id};
 }
 
 sub cache_expire {
-    my ( $self ) = @_;
+    my ( $self, $cache ) = @_;
 
     # anything older than 7 days ago is expired
     my $expired = time - 60*60*24*7;
 
-    for my $id ( keys %{ $self->cache->{seen} } ) {
-        if ( $self->cache->{seen}->{ $id } < $expired ) {
-            delete $self->cache->{seen}->{ $id };
+    for my $id ( keys %{ $cache->{seen} } ) {
+        if ( $cache->{seen}->{ $id } < $expired ) {
+            delete $cache->{seen}->{ $id };
             $self->logger->debug( "Removing item from cache: $id" );
         }
     }

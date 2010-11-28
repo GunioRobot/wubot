@@ -94,7 +94,7 @@ for my $plugin ( $config->get_plugins() ) {
     my $now        = time;
     my $delay      = $plugin_config->{delay} || 1;
 
-    my $lastupdate = $plugin_objs->{ $plugin }->instance->cache->{lastupdate} || 0;
+    my $lastupdate = $plugin_objs->{ $plugin }->instance->get_cache->{lastupdate} || 0;
 
     my $schedule_time;
     if ( $lastupdate + $delay > $now ) {

@@ -8,7 +8,10 @@ with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $config = $inputs->{config};
+    my $cache  = $inputs->{cache};
 
     my $parseropts = {
         enable_cache    => 0,
@@ -32,16 +35,16 @@ sub check {
         my $id = $msg->header->{'message-id'};
 
         # ignore messages we've already seen
-        if ( $self->cache_is_seen( $id ) ) {
+        if ( $self->cache_is_seen( $cache, $id ) ) {
 
             # update the last seen time
-            $self->cache_mark_seen( $id );
+            $self->cache_mark_seen( $cache, $id );
 
             next MESSAGE;
         }
 
         # cache this new id
-        $self->cache_mark_seen( $id );
+        $self->cache_mark_seen( $cache, $id );
 
         $new_count++;
 
@@ -59,9 +62,9 @@ sub check {
     }
 
     # expire old subjects from the cache
-    $self->cache_expire();
+    $self->cache_expire( $cache );
 
-    return 1;
+    return { cache => $cache };
 }
 
 1;

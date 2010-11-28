@@ -6,16 +6,20 @@ with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Reactor';
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $cache  = $inputs->{cache};
+    my $config = $inputs->{config};
 
     # just setting the cache params in the config
     for my $key ( keys %{ $config } ) {
-        $self->cache->{$key}   = $config->{$key};
+
+        $cache->{$key}   = $config->{$key};
 
         $self->react( { $key => $config->{$key} } );
     }
 
-    return 1;
+    return { cache => $cache };
 }
 
 1;

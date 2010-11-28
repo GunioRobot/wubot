@@ -23,19 +23,25 @@ with 'Wubot::Plugin::Roles::Reactor';
 with 'Wubot::Plugin::Roles::RetryDelay';
 
 sub init {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $cache = $inputs->{cache};
 
     # schedule next retry immediately, then go back to waiting on the
     # normal delay count
-    $self->cache->{next_retry} = time;
+    $cache->{next_retry} = time;
 
+    return { cache => $cache };
 }
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $config = $inputs->{config};
+    my $cache  = $inputs->{cache};
 
     my $now = time;
-    if ( $self->cache->{next_retry} && $self->cache->{next_retry} > $now ) {
+    if ( $cache->{next_retry} && $cache->{next_retry} > $now ) {
         return;
     }
 
@@ -53,19 +59,19 @@ sub check {
     my $content = $ua->request($request)->as_string();
 
     unless ( $content =~ m|\!OK\!| ) {
-        $self->cache->{retry_failures}++;
-        $self->cache->{next_retry} = $self->get_next_retry_utime( $self->cache->{retry_failures} );
-        my $subject = "$self->{cache}->{retry_failures} error(s) sending message, retry after " . scalar localtime( $self->cache->{next_retry} );
+        $cache->{retry_failures}++;
+        $cache->{next_retry} = $self->get_next_retry_utime( $cache->{retry_failures} );
+        my $subject = "$self->{cache}->{retry_failures} error(s) sending message, retry after " . scalar localtime( $cache->{next_retry} );
         $self->react( { subject => $subject } );
         warn "MessageQueuePoster: $subject\n";
-        return;
+        return { cache => $cache };
     }
 
-    $self->cache->{retry_failures} = 0;
-    $self->cache->{next_retry} = undef;
-    $self->cache->{last_ok} = $now;
+    $cache->{retry_failures} = 0;
+    $cache->{next_retry} = undef;
+    $cache->{last_ok} = $now;
 
-    return 1;
+    return { cache => $cache };
 }
 
 1;

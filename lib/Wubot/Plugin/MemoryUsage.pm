@@ -7,21 +7,23 @@ with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $cache = $inputs->{cache};
 
     for my $plugin ( keys %{ $main::plugin_objs } ) {
         my $size = Devel::Size::total_size( $main::plugin_objs->{$plugin}->{instance} );
 
-        if ( $self->cache->{$plugin}->{size} ) {
-            if ( $size > $self->cache->{$plugin}->{size} ) {
-                $self->logger->warn( "memory increased for plugin $plugin: $self->{cache}->{$plugin}->{size} => $size" );
+        if ( $cache->{$plugin}->{size} ) {
+            if ( $size > $cache->{$plugin}->{size} ) {
+                $self->logger->warn( "memory increased for plugin $plugin: $cache->{$plugin}->{size} => $size" );
             }
         }
 
-        $self->cache->{$plugin}->{size} = $size;
+        $cache->{$plugin}->{size} = $size;
     }
 
-    return 1;
+    return { cache => $cache };
 }
 
 1;

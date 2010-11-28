@@ -17,7 +17,9 @@ my $default_limit = 10;
 my $sql = SQL::Abstract->new;
 
 sub check {
-    my ( $self, $config ) = @_;
+    my ( $self, $inputs ) = @_;
+
+    my $config = $inputs->{config};
 
     unless ( $self->{dbh} ) {
         $self->{dbh} = DBI->connect("dbi:Pg:dbname=$config->{dbname};host=$config->{host};port=$config->{port};options=''",
@@ -61,7 +63,7 @@ sub check {
             or die $self->{dbh}->errstr;
     }
 
-    return 1;
+    return;
 }
 
 

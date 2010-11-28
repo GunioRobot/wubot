@@ -43,8 +43,6 @@ sub react {
         $priority = $color_priorities{red};
     }
 
-    utf8::encode( $subject );
-
     my $notification = { sticky   => $sticky,
                          priority => $priority,
                          subject  => $subject,
@@ -67,7 +65,6 @@ sub react {
         }
         $title .= " $date";
     }
-    utf8::encode( $title );
     $notification->{title} = $title;
 
     my $image = $notification->{image} || "wubot.png";

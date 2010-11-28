@@ -40,67 +40,70 @@ sub read_config {
 
     my $config = {};
 
-    my $directory = $self->root;
-
-    unless ( -d $directory ) {
-        die "ERROR: config root directory does not exist: $directory\n";
-    }
-
-    my $mod_dir_h;
-    opendir( $mod_dir_h, $directory ) or die "Can't opendir $directory: $!";
-
     my $hostname = $self->hostname;
 
-  MODULES:
-    while ( defined( my $plugin = readdir( $mod_dir_h ) ) ) {
-        next unless $plugin;
-        next if $plugin =~ m|^\.|;
+    # monitor plugins
+    {
+        my $directory = join( "/", $self->root, "plugins" );
 
-        my $plugin_dir = "$directory/$plugin";
-
-        next unless -d $plugin_dir;
-
-        $self->logger->debug( "Reading plugin directory: $plugin" );
-
-        my $instance_dir_h;
-
-        opendir( $instance_dir_h, $plugin_dir ) or die "Can't opendir $plugin_dir: $!";
-
-        my $instance_count = 0;
-
-      INSTANCES:
-        while ( defined( my $instance_entry = readdir( $instance_dir_h ) ) ) {
-            next unless $instance_entry;
-
-            next unless $instance_entry =~ m|.yaml(?:\.$hostname)?$|;
-            next if -d "$plugin_dir/$instance_entry";
-            next if $instance_entry =~ m|^\.|;
-
-            $self->logger->debug( "\tReading instance config: $instance_entry" );
-
-            my $key = join( "-", $plugin, $instance_entry );
-            $key =~ s|\.yaml.*$||;
-
-            my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
-            $instance_config->{plugin} = "Wubot::Plugin::$plugin";
-
-            $config->{$key} = { file   => $instance_entry,
-                                dir    => $plugin,
-                                config => $instance_config,
-                                key    => $key,
-                            };
-
-            $instance_count++;
+        unless ( -d $directory ) {
+            die "ERROR: config root directory does not exist: $directory\n";
         }
 
-        if ( $instance_count ) {
-            $self->logger->info( "Config: loaded $instance_count instance(s) of $plugin" );
+        my $mod_dir_h;
+        opendir( $mod_dir_h, $directory ) or die "Can't opendir $directory: $!";
+
+      MODULES:
+        while ( defined( my $plugin = readdir( $mod_dir_h ) ) ) {
+            next unless $plugin;
+            next if $plugin =~ m|^\.|;
+
+            my $plugin_dir = "$directory/$plugin";
+
+            next unless -d $plugin_dir;
+
+            $self->logger->debug( "Reading plugin directory: $plugin" );
+
+            my $instance_dir_h;
+
+            opendir( $instance_dir_h, $plugin_dir ) or die "Can't opendir $plugin_dir: $!";
+
+            my $instance_count = 0;
+
+          INSTANCES:
+            while ( defined( my $instance_entry = readdir( $instance_dir_h ) ) ) {
+                next unless $instance_entry;
+
+                next unless $instance_entry =~ m|.yaml(?:\.$hostname)?$|;
+                next if -d "$plugin_dir/$instance_entry";
+                next if $instance_entry =~ m|^\.|;
+
+                $self->logger->debug( "\tReading instance config: $instance_entry" );
+
+                my $key = join( "-", $plugin, $instance_entry );
+                $key =~ s|\.yaml.*$||;
+
+                my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
+                $instance_config->{plugin} = "Wubot::Plugin::$plugin";
+
+                $config->{$key} = { file   => $instance_entry,
+                                    dir    => $plugin,
+                                    config => $instance_config,
+                                    key    => $key,
+                                };
+
+                $instance_count++;
+            }
+
+            if ( $instance_count ) {
+                $self->logger->info( "Config: loaded $instance_count instance(s) of $plugin" );
+            }
+
+            closedir( $instance_dir_h );
         }
 
-        closedir( $instance_dir_h );
+        closedir( $mod_dir_h );
     }
-
-    closedir( $mod_dir_h );
 
     return $config;
 }

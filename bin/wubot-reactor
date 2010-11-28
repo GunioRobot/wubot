@@ -1,0 +1,78 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+#use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
+
+use AnyEvent;
+use Getopt::Long;
+use YAML;
+
+use Wubot::Logger;
+my $logger = Log::Log4perl::get_logger( 'default' );
+
+use Wubot::Check;
+use Wubot::Config;
+use Wubot::Reactor;
+use Wubot::Reactor::MessagePoster;
+use Wubot::Reactor::Growl;
+use Wubot::Reactor::Console;
+#use Wubot::Reactor::Voice;
+
+my $config_directory = "$ENV{HOME}/wubot/config";
+unless ( -d $config_directory ) {
+    mkpath( $config_directory );
+}
+
+my $message_directory = "$ENV{HOME}/wubot/reactor";
+
+#my $config  = Wubot::Config->new( { root => $config_directory } );
+
+my $messenger = Wubot::LocalMessageStore->new();
+
+#my $reactor = Wubot::Reactor->new();
+my $poster  = Wubot::Reactor::MessagePoster->new();
+my $growl   = Wubot::Reactor::Growl->new();
+my $console = Wubot::Reactor::Console->new();
+#my $voice   = Wubot::Reactor::Voice->new();
+
+$logger->info( "Setting up timer..." );
+my $end = AnyEvent->condvar;
+
+my $timer = AnyEvent->timer( after    => 1,
+                             interval => 5,
+                             cb       => sub {
+
+                                 while ( my $message = $messenger->get( $message_directory ) ) {
+                                     react( $message );
+                                 }
+                             },
+                         );
+
+$logger->error( "Running..." );
+$end->recv;
+$logger->error( "Ended..." );
+
+
+sub react {
+    my ( $message ) = @_;
+
+    $logger->debug( "Message received from: $message->{key}" );
+
+    if ( $message->{subject} ) {
+
+        $growl->react(   $message );
+
+        $console->react( $message );
+
+        #$voice->react(   $message );
+
+    }
+
+    unless ( $message->{no_post} ) {
+
+        $poster->react( $message,
+                        { url => 'http://wubot/cgi-bin/wubot-message.cgi' },
+                    );
+    }
+
+}

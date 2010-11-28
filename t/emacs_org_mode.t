@@ -10,6 +10,12 @@ use YAML;
 Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
 
+use Wubot::Plugin::EmacsOrgMode;
+use Wubot::Reactor;
+
+my $reactor = Wubot::Reactor->new();
+
+
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
@@ -19,10 +25,6 @@ create_file3( $tempdir );
 create_file4( $tempdir );
 create_file5( $tempdir );
 
-use Wubot::Plugin::EmacsOrgMode;
-use Wubot::Reactor;
-
-my $reactor = Wubot::Reactor->new();
 
 {
 

@@ -4,34 +4,17 @@ use Moose;
 use DBI;
 use DBD::Pg;
 use Growl::Tiny;
-use SQL::Abstract;
-use Term::ANSIColor;
 use YAML;
 
 with 'Wubot::Plugin::Roles::Plugin';
 with 'Wubot::Plugin::Roles::Cache';
-with 'Wubot::Plugin::Roles::Reactor';
 
-
-my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;
-
-my $valid_colors = { blue    => 'blue',
-                     cyan    => 'cyan',
-                     red     => 'red',
-                     white   => 'white',
-                     green   => 'green',
-                     orange  => 'yellow',
-                     yellow  => 'bold yellow',
-                     purple  => 'magenta',
-                     magenta => 'magenta',
-                 };
-
-my $sql = SQL::Abstract->new;
 
 sub check {
     my ( $self, $inputs ) = @_;
 
+    my $cache  = $inputs->{cache};
     my $config = $inputs->{config};
 
     unless ( $self->{dbh} ) {
@@ -47,6 +30,17 @@ sub check {
                                   } );
     }
 
+    # delete any ids that were previously marked for deletion.
+    if ( $cache->{deleteme} ) {
+        for my $id ( keys %{ $cache->{deleteme} } ) {
+
+            $self->{dbh}->do( "DELETE FROM $config->{tablename} WHERE id = $id" )
+                or die $self->{dbh}->errstr;
+
+            delete $cache->{deleteme}->{$id};
+        }
+    }
+
     unless ( $self->{sth} ) {
         $self->{sth} = $self->{dbh}->prepare( "SELECT * FROM $config->{tablename} ORDER BY id" );
 
@@ -57,6 +51,8 @@ sub check {
 
     $self->{sth}->execute;
 
+    my @results;
+
     my $count;
 
     while ( my $notification = $self->{sth}->fetchrow_hashref() ){
@@ -64,39 +60,20 @@ sub check {
         $count++;
         return if $count > $default_limit;
 
-        if ( $notification->{image} ) {
-            my $image = $notification->{image};
-            $image =~ s|^.*\/||;
-            $image = join( "/", $image_dir, $image );
-            $notification->{image} = $image;
-        }
+        # do not forward this on to another host, could cause an infinite loop
+        $notification->{no_post} = 1;
 
-        Growl::Tiny::notify( $notification );
+        push @results, $notification;
 
-        my $color = 'white';
-        if ( $notification->{color} && $valid_colors->{ $notification->{color} } ) {
-            $color = $valid_colors->{ $notification->{color} };
-        }
-
-        if ( $notification->{urgent} && $color !~ m/bold/ ) {
-            print color "bold $color";
-        }
-        else {
-            print color $color;
-        }
-
-        my $subject = $notification->{subject};
-        my $title   = $notification->{title};
-        utf8::encode( $subject );
-        utf8::encode( $title );
-        print "growl: ", $title, " => ", $subject . "\n";
-        print color 'reset';
-
-        $self->{dbh}->do( "DELETE FROM $config->{tablename} WHERE ID = '$notification->{id}'" )
-            or die $self->{dbh}->errstr;
+        # mark these ids for deletion next time this check runs.  we
+        # don't want to delete them immediately or else we risk the
+        # possibility that they may never be delivered.  This is the
+        # reason that the cache won't be written until after the
+        # reaction messages are sent.
+        $cache->{deleteme}->{ $notification->{id} } = 1;
     }
 
-    return;
+    return { cache => $cache, react => \@results };
 }
 
 

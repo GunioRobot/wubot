@@ -65,6 +65,10 @@ sub check {
         # infinite loop
         $notification->{hostname} = "wubot";
 
+        # 'growl_title' replaces 'title' which was overloaded.  this
+        # is a change between the old App::Wubot and the new Wubot
+        $notification->{growl_title} = $notification->{title};
+
         push @results, $notification;
 
         # mark these ids for deletion next time this check runs.  we

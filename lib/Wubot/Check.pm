@@ -71,6 +71,8 @@ sub init {
     if ( $results->{cache} ) {
         $self->instance->write_cache( $results->{cache} );
     }
+
+    return $results;
 }
 
 sub check {
@@ -92,6 +94,7 @@ sub check {
 
     # todo: always touch 'cache' file with latest date
 
+    return $results;
 }
 
 1;

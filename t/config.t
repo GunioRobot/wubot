@@ -1,7 +1,11 @@
 #!/perl
 use strict;
 
+use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
+
+Log::Log4perl->easy_init($INFO);
+my $logger = get_logger( 'default' );
 
 use Wubot::Config;
 
@@ -16,9 +20,9 @@ is_deeply( [ $config->get_plugins() ],
 
 is_deeply( $config->get_plugin_config( 'TestCase-test1' ),
            {
-               class => 'Wubot::TestCase',
+               plugin => 'Wubot::Plugin::TestCase',
                param1 => 'value1',
-               hash1 => { key1 => 'value1', key2 => 'value2' },
+               hash1  => { key1 => 'value1', key2 => 'value2' },
            },
            "Checking that test case 1 config read"
        );

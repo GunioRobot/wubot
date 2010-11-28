@@ -54,6 +54,10 @@ has 'logger'  => ( is => 'ro',
 sub init {
     my ( $self, $config ) = @_;
 
+    if ( $self->instance->can( 'validate_config' ) ) {
+        $self->instance->validate_config( $config );
+    }
+
     return unless $self->instance->can( 'init' );
 
     my $cache = $self->instance->get_cache();

@@ -89,7 +89,7 @@ for my $plugin ( $config->get_plugins() ) {
                                key        => $plugin,
                            } );
 
-    $plugin_objs->{ $plugin }->init();
+    $plugin_objs->{ $plugin }->init( $plugin_config );
 
     my $now        = time;
     my $delay      = $plugin_config->{delay} || 1;

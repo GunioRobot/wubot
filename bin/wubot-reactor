@@ -64,7 +64,9 @@ sub react {
 
     if ( $message->{subject} ) {
 
-        $growl->react(   $message );
+        $growl->react( $message,
+                       { image_dir => "$ENV{HOME}/.icons", },
+                   );
 
         $console->react( $message );
 
@@ -77,7 +79,7 @@ sub react {
     if ( $message->{hostname} eq $hostname && ! $message->{no_post} ) {
 
         $poster->react( $message,
-                        { url => 'http://wubot/cgi-bin/wubot-message.cgi' },
+                        { url => 'http://wubot/cgi-bin/wubot-message.cgi', },
                     );
     }
 

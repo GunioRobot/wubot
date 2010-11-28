@@ -58,11 +58,15 @@ sub check {
     my $request = POST( $config->{url}, [ 'message' => $message_text ] );
     my $content = $ua->request($request)->as_string();
 
+    my @react;
+
     unless ( $content =~ m|\!OK\!| ) {
         $cache->{retry_failures}++;
         $cache->{next_retry} = $self->get_next_retry_utime( $cache->{retry_failures} );
         my $subject = "$self->{cache}->{retry_failures} error(s) sending message, retry after " . scalar localtime( $cache->{next_retry} );
-        $self->react( { subject => $subject } );
+
+        push @react, { subject => $subject };
+
         warn "MessageQueuePoster: $subject\n";
         return { cache => $cache };
     }
@@ -71,7 +75,7 @@ sub check {
     $cache->{next_retry} = undef;
     $cache->{last_ok} = $now;
 
-    return { cache => $cache };
+    return { cache => $cache, react => \@react };
 }
 
 1;

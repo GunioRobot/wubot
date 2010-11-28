@@ -15,6 +15,8 @@ sub check {
 
     my $dir_h;
 
+    my @react;
+
   FILE:
     opendir( $dir_h, $config->{directory} ) or die "Can't opendir $config->{directory}: $!";
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
@@ -81,13 +83,13 @@ sub check {
             }
         }
 
-        $self->react( { name      => $name,
-                        timestamp => $updated,
-                        subject   => "org file updated: $entry",
-                        body      => $content,
-                        done      => $done,
-                        color     => $color,
-                    } );
+        push @react, { name      => $name,
+                       timestamp => $updated,
+                       subject   => "org file updated: $entry",
+                       body      => $content,
+                       done      => $done,
+                       color     => $color,
+                   };
 
         # attempt to commit file to git if it isn't already
         local $CWD = $config->{directory};
@@ -99,7 +101,7 @@ sub check {
     }
     closedir( $dir_h );
 
-    return { cache => $cache };
+    return { cache => $cache, react => \@react };
 }
 
 1;

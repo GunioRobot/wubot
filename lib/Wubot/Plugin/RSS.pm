@@ -58,9 +58,10 @@ sub check {
         return { cache => $cache };
     }
 
-    my $newcount = 0;
+    my @react;
 
     my $now = time;
+    my $newcount = 0;
 
     # walk through the current feed and display items that aren't
     # already in the db.  reverse the order of the entries since
@@ -101,7 +102,7 @@ sub check {
             $article->{tag} = $config->{tag};
         }
 
-        $self->react( $article );
+        push @react, $article;
     }
 
     $self->cache_expire( $cache );
@@ -109,7 +110,7 @@ sub check {
     my $output = $self->key . ": check successful: $newcount new items in feed ($count total)";
     $self->logger->debug( $output );
 
-    return { cache => $cache };
+    return { cache => $cache, react => \@react };
 }
 
 

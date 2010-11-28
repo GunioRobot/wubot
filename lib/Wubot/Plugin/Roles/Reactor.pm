@@ -7,19 +7,29 @@ has 'reactor'  => ( is       => 'ro',
                 );
 
 sub react {
-    my ( $self, $data ) = @_;
+    my ( $self, $react_h ) = @_;
 
-    return unless $data;
+    return unless $react_h;
 
-    # use our class name for the 'plugin' field
-    $data->{plugin}     = $self->{class};
+    my @results;
+    if ( ref $react_h eq "ARRAY" ) {
+        @results = @{ $react_h };
+    }
+    else {
+        push @results, $react_h;
 
-    # use our instance key name for the 'key' field
-    $data->{key}        = $self->key;
+    }
 
-    $self->reactor->react( $data );
+    for my $result ( @results ) {
+        # use our class name for the 'plugin' field
+        $result->{plugin}     = $self->{class};
+        # use our instance key name for the 'key' field
+        $result->{key}        = $self->key;
 
-    return $data;
+        $self->reactor->react( $result );
+    }
+
+    return $react_h;
 }
 
 1;

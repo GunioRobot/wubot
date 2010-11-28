@@ -49,9 +49,8 @@ sub check {
     }
 
     $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
-    $self->react( $results );
 
-    return { cache => $cache };
+    return { cache => $cache, react => $results };
 }
 
  sub calculate_idle_stats {

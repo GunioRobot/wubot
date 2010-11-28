@@ -60,6 +60,10 @@ sub init {
 
     my $results = $self->instance->init( { config => $config, cache => $cache } );
 
+    if ( $results->{react} ) {
+        $self->instance->react( $results->{react} );
+    }
+
     if ( $results->{cache} ) {
         $self->instance->write_cache( $results->{cache} );
     }
@@ -74,11 +78,16 @@ sub check {
 
     my $results = $self->instance->check( { config => $config, cache => $cache } );
 
+    if ( $results->{react} ) {
+        $self->instance->react( $results->{react} );
+    }
+
     if ( $results->{cache} ) {
         $self->instance->write_cache( $results->{cache} );
     }
 
     # todo: always touch 'cache' file with latest date
+
 }
 
 1;

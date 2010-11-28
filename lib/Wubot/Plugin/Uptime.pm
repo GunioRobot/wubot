@@ -14,12 +14,12 @@ sub check {
 
     $self->logger->info( "load: $1 => $2 => $3" );
 
-    $self->react( { '1min'  => $1,
+    my $results = { '1min'  => $1,
                     '5min'  => $2,
                     '15min' => $3,
-                } );
+                };
 
-    return;
+    return { react => $results };
 }
 
 1;

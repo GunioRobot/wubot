@@ -11,15 +11,17 @@ sub check {
     my $cache  = $inputs->{cache};
     my $config = $inputs->{config};
 
+    my @react;
+
     # just setting the cache params in the config
     for my $key ( keys %{ $config } ) {
 
         $cache->{$key}   = $config->{$key};
 
-        $self->react( { $key => $config->{$key} } );
+        push @react, { $key => $config->{$key} };
     }
 
-    return { cache => $cache };
+    return { cache => $cache, react => \@react };
 }
 
 1;

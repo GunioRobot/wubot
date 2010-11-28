@@ -26,6 +26,8 @@ sub check {
                                     parseropts => $parseropts
                                 );
 
+    my @react;
+
     my $now = time;
 
     my $new_count = 0;
@@ -49,12 +51,12 @@ sub check {
         $new_count++;
 
         # new message
-        $self->react( { subject  => $msg->header->{subject},
-                        username => $msg->header->{from},
-                        cc       => $msg->header->{cc},
-                        to_user  => $msg->header->{to},
-                        date     => $msg->header->{date},
-                    } );
+        push @react, { subject  => $msg->header->{subject},
+                       username => $msg->header->{from},
+                       cc       => $msg->header->{cc},
+                       to_user  => $msg->header->{to},
+                       date     => $msg->header->{date},
+                   };
 
     }
     if ( $new_count ) {
@@ -64,7 +66,7 @@ sub check {
     # expire old subjects from the cache
     $self->cache_expire( $cache );
 
-    return { cache => $cache };
+    return { cache => $cache, react => \@react };
 }
 
 1;

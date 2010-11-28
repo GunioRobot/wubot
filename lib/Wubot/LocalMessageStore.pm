@@ -69,7 +69,9 @@ sub store {
         $message->{lastupdate} = time;
     }
 
-    $message->{hostname}  = $self->hostname;
+    unless ( $message->{hostname} ) {
+        $message->{hostname}  = $self->hostname;
+    }
 
     # set message store count and increment counter
     $self->{store_count}++;

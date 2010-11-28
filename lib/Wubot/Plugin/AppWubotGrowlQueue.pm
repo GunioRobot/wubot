@@ -60,8 +60,10 @@ sub check {
         $count++;
         return if $count > $default_limit;
 
-        # do not forward this on to another host, could cause an infinite loop
-        $notification->{no_post} = 1;
+        # set the hostname that the message came from, prevents
+        # routing the message back to wubot which would cause an
+        # infinite loop
+        $notification->{hostname} = "wubot";
 
         push @results, $notification;
 

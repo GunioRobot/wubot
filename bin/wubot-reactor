@@ -5,6 +5,7 @@ use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 use AnyEvent;
 use Getopt::Long;
+use Sys::Hostname;
 use YAML;
 
 use Wubot::Logger;
@@ -34,6 +35,9 @@ my $poster  = Wubot::Reactor::MessagePoster->new();
 my $growl   = Wubot::Reactor::Growl->new();
 my $console = Wubot::Reactor::Console->new();
 #my $voice   = Wubot::Reactor::Voice->new();
+
+my $hostname = Sys::Hostname::hostname();
+$hostname =~ s|\..*$||;
 
 $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
@@ -68,7 +72,9 @@ sub react {
 
     }
 
-    unless ( $message->{no_post} ) {
+    # if the message originated on this host, and the 'no_post' option
+    # is not set, then forward the message to my App::Wubot instance
+    if ( $message->{hostname} eq $hostname && ! $message->{no_post} ) {
 
         $poster->react( $message,
                         { url => 'http://wubot/cgi-bin/wubot-message.cgi' },

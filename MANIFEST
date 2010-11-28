@@ -56,6 +56,8 @@ t/local_message_store.t
 t/mbox_parser.t.broken
 t/osx_idle.t
 t/pureascii.t
+t/react_console.t
+t/react_growl.t
 t/release-meta.t.broken
 t/release-pod-coverage.t.broken
 t/release-pod-syntax.t

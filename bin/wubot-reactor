@@ -72,6 +72,13 @@ sub react {
 
         #$voice->react(   $message );
 
+        # navi is my laptop--if the message originates there, it will
+        # already go through growl/voice notification--no need to
+        # trigger another notification.
+        if ( $hostname eq "navi" ) {
+            $message->{quiet_growl} = 1;
+            $message->{quiet_voice} = 1;
+        }
     }
 
     # if the message originated on this host, and the 'no_post' option

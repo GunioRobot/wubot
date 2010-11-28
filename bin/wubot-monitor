@@ -48,7 +48,7 @@ $logger->warn( "Staring Up..." );
 
 use Wubot::Check;
 use Wubot::Config;
-use Wubot::Reactor;
+use Wubot::LocalMessageStore;
 
 my $cache_directory = "$ENV{HOME}/wubot/cache";
 unless ( -d $cache_directory ) {
@@ -65,7 +65,9 @@ my $schedule;
 
 my $config  = Wubot::Config->new( { root => $config_directory } );
 
-my $reactor = Wubot::Reactor->new();
+# all the plugins share a message store object rather than letting
+# each create their own
+my $message_store = Wubot::LocalMessageStore->new();
 
 my $count;
 
@@ -83,10 +85,10 @@ for my $plugin ( $config->get_plugins() ) {
     }
 
     $plugin_objs->{ $plugin }
-        = Wubot::Check->new( { class      => $plugin_config->{plugin},
-                               cache_file => "$cache_directory/$plugin.yaml",
-                               reactor    => $reactor,
-                               key        => $plugin,
+        = Wubot::Check->new( { class         => $plugin_config->{plugin},
+                               cache_file    => "$cache_directory/$plugin.yaml",
+                               key           => $plugin,
+                               reactor_queue => $message_store,
                            } );
 
     $plugin_objs->{ $plugin }->init( $plugin_config );

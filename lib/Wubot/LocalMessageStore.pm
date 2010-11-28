@@ -3,6 +3,7 @@ use Moose;
 
 # todo - warn if queue length above a certain size
 
+use Digest::MD5 qw( md5_hex );
 use File::Sync 'fsync';
 use Log::Log4perl;
 use Maildir::Lite;
@@ -30,6 +31,16 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
+has 'hostname' => ( is => 'ro',
+                    isa => 'Str',
+                    lazy => 1,
+                    default => sub {
+                        my $hostname = Sys::Hostname::hostname();
+                        $hostname =~ s|\..*$||;
+                        return $hostname;
+                    },
+                );
+
 has 'id_cache' => ( is => 'ro',
                     isa => 'HashRef',
                     default => sub { {} },
@@ -44,29 +55,33 @@ has 'store_count' => ( is => 'ro',
 sub store {
     my ( $self, $message, $directory ) = @_;
 
-    unless ( $message->{checksum} ) {
-        $self->logger->warn( "ERROR: Message sent without checksum: ", YAML::Dump( $message ) );
-        next MESSAGE;
-    }
-
     my $maildir = Maildir::Lite->new( dir => $directory );
 
     my ($fh,$stat0)=$maildir->creat_message();
 
     die "creat_message failed" if $stat0;
 
+    unless ( $message->{checksum} ) {
+        $message->{checksum}   = $self->checksum( $message );
+    }
+
+    unless ( $message->{lastupdate} ) {
+        $message->{lastupdate} = time;
+    }
+
+    $message->{hostname}  = $self->hostname;
+
     # set message store count and increment counter
-    $message->{store_count} = $self->store_count;
     $self->{store_count}++;
+    $message->{store_count} = $self->store_count;
 
     my $message_text = YAML::Dump $message;
     utf8::encode( $message_text );
 
-    my $subject = join( ": ", $message->{key}, $message->{subject} || $message->{checksum} );
-
     my $time = $message->{lastupdate} || time;
-
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
+
+    my $subject = join( ": ", $message->{key}, $message->{subject} || $date );
 
     my $msg = MIME::Entity->build(
         Type        => 'text/plain',
@@ -187,5 +202,14 @@ sub sort {
                     } keys %files );
 }
 
+sub checksum {
+    my ( $self, $message ) = @_;
+
+    my $text = YAML::Dump $message;
+
+    utf8::encode( $text );
+
+    return md5_hex( $text );
+}
 
 1;

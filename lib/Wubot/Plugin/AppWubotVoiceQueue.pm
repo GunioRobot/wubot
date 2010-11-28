@@ -9,7 +9,6 @@ use YAML;
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
-with 'Wubot::Plugin::Roles::Reactor';
 
 my $image_dir = '/Users/wu/.icons';
 my $default_limit = 10;

@@ -3,7 +3,6 @@ use Moose;
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
-with 'Wubot::Plugin::Roles::Reactor';
 
 my $command = "ioreg -c IOHIDSystem";
 

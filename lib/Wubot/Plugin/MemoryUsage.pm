@@ -4,7 +4,6 @@ use Moose;
 use Devel::Size;
 
 with 'Wubot::Plugin::Roles::Cache';
-with 'Wubot::Plugin::Roles::Plugin';
 
 sub check {
     my ( $self, $inputs ) = @_;

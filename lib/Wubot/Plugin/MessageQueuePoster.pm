@@ -19,7 +19,6 @@ has 'mailbox'   => ( is      => 'ro',
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
-with 'Wubot::Plugin::Roles::Reactor';
 with 'Wubot::Plugin::Roles::RetryDelay';
 
 sub init {

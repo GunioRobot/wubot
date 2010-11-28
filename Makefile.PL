@@ -5,8 +5,8 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME                => 'Wubot',
     AUTHOR              => 'Alex White <VVu@geekfarm.org>',
-    VERSION_FROM        => 'lib/Wubot/Monitor.pm',
-    ABSTRACT_FROM       => 'lib/Wubot/Monitor.pm',
+    VERSION_FROM        => 'lib/Wubot.pm',
+    ABSTRACT_FROM       => 'lib/Wubot.pm',
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,

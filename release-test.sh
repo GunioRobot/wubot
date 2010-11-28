@@ -7,6 +7,7 @@ make clean
 perl Makefile.PL || exit 1
 
 make manifest || exit 2
+rm MANIFEST.bak
 
 make || exit 3
 

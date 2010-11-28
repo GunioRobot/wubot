@@ -54,7 +54,7 @@ sub check {
 
     my $count = scalar @entries;
     unless ( $count ) {
-        $self->logger->warn( "No items in feed" );
+        $self->logger->warn( $self->key, ": No items in feed" );
         return { cache => $cache };
     }
 

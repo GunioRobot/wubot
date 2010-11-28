@@ -1,5 +1,6 @@
 bin/test-msg
 bin/wubot-monitor
+bin/wubot-reactor
 Changes
 config/plugins/DiskSpace/hostname.yaml
 config/plugins/EmacsOrgMode/hostname.yaml
@@ -18,6 +19,7 @@ lib/Wubot.pm
 lib/Wubot/Check.pm
 lib/Wubot/Config.pm
 lib/Wubot/LocalMessageStore.pm
+lib/Wubot/Logger.pm
 lib/Wubot/Plugin/AppWubotGrowlQueue.pm
 lib/Wubot/Plugin/AppWubotVoiceQueue.pm
 lib/Wubot/Plugin/DiskSpace.pm
@@ -35,6 +37,9 @@ lib/Wubot/Plugin/RSS.pm
 lib/Wubot/Plugin/TestCase.pm
 lib/Wubot/Plugin/Uptime.pm
 lib/Wubot/Reactor.pm
+lib/Wubot/Reactor/Console.pm
+lib/Wubot/Reactor/Growl.pm
+lib/Wubot/Reactor/MessagePoster.pm
 lib/Wubot/Reactor/MessageQueue.pm
 Makefile.PL
 MANIFEST

@@ -1,6 +1,7 @@
 package Wubot::Reactor::Console;
 use Moose;
 
+use POSIX qw(strftime);
 use Term::ANSIColor;
 
 my $valid_colors = { blue    => 'blue',
@@ -17,33 +18,43 @@ my $valid_colors = { blue    => 'blue',
 sub react {
     my ( $self, $message, $config ) = @_;
 
+    return unless $message->{subject};
+    return if $message->{quiet};
+    return if $message->{quiet_console};
+
+    my $subject = $message->{subject};
+
+    if ( $message->{title} && $message->{title} ne $message->{subject} ) {
+        my $title   = $message->{title};
+        $subject = "$title => $subject";
+    }
+
+    if ( $message->{key} ) {
+        $subject = "[$message->{key}] $subject";
+    }
+
+    my $date = strftime( "%Y/%m/%d %H:%M:%S", localtime( $message->{lastupdate} || time ) );
+    $subject = "$date> $subject";
+
     my $color = 'white';
     if ( $message->{color} && $valid_colors->{ $message->{color} } ) {
         $color = $valid_colors->{ $message->{color} };
     }
 
-    my $subject = $message->{subject};
-    utf8::encode( $subject );
-
     if ( $message->{urgent} && $color !~ m/bold/ ) {
-        print color "bold $color";
-    } else {
-        print color $color;
+        $color = "bold $color";
     }
 
-    if ( $message->{title} ) {
-        my $title   = $message->{title};
-        utf8::encode( $title );
+    $message->{console}->{color} = $color;
+    print color $color;
 
-        print "> $title => $subject\n";
-    }
-    else {
-        print "> $subject\n";
-
-    }
+    $message->{console}->{text}  = $subject;
+    print $subject;
 
     print color 'reset';
+    print "\n";
 
+    return $message;
 }
 
 1;

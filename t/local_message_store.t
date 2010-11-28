@@ -11,7 +11,6 @@ my $logger = get_logger( 'default' );
 
 use Wubot::LocalMessageStore;
 
-
 {
     my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
@@ -103,14 +102,14 @@ use Wubot::LocalMessageStore;
 
     for my $message_number ( 1 .. 19 ) {
         $messenger->store( { %{ $message, },
-                             reactor_id => $message_number,
+                             number     => $message_number,
                              lastupdate => $timestamp,
                          }, $directory );
     }
 
     my @message_order;
     for my $message_number ( 1 .. 19 ) {
-        push @message_order, $messenger->get( $directory )->{reactor_id};
+        push @message_order, $messenger->get( $directory )->{number};
     }
 
     is_deeply( [ @message_order ],

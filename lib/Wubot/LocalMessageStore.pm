@@ -35,6 +35,11 @@ has 'id_cache' => ( is => 'ro',
                     default => sub { {} },
                 );
 
+has 'store_count' => ( is => 'ro',
+                       isa => 'Num',
+                       default => 1,
+                   );
+
 
 sub store {
     my ( $self, $message, $directory ) = @_;
@@ -49,6 +54,10 @@ sub store {
     my ($fh,$stat0)=$maildir->creat_message();
 
     die "creat_message failed" if $stat0;
+
+    # set message store count and increment counter
+    $message->{store_count} = $self->store_count;
+    $self->{store_count}++;
 
     my $message_text = YAML::Dump $message;
     utf8::encode( $message_text );
@@ -102,6 +111,8 @@ sub get {
     $content =~ s|^.*?\n(?=\-\-\-\n)||s;
 
     my $message = YAML::Load $content;
+
+    delete $message->{store_count};
 
     # delete our cached reactor id for this file to prevent a memory leak
     my $file = $maildir->{__message_fh}->{fileno $fh}->{filename};
@@ -159,7 +170,7 @@ sub sort {
             else {
                 open( my $f,"<", "$path/$file" );
                 while( my $line=<$f> ) {
-                    if ( $line =~ m/^reactor_id\:\s(\d+)/ ) {
+                    if ( $line =~ m/^store_count\:\s(\d+)/ ) {
                         $id = $1;
                         last;
                     }
@@ -172,7 +183,7 @@ sub sort {
     }
 
     return ( sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
-                        $files{$a}->{secondary} <=> $files{$b}->{secondary}
+                    $files{$a}->{secondary} <=> $files{$b}->{secondary}
                     } keys %files );
 }
 

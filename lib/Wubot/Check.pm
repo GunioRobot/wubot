@@ -19,7 +19,7 @@ has 'instance'   => ( is      => 'ro',
                       default => sub {
                           my $self = shift;
                           my $class = $self->class;
-                          eval "require $class";
+                          eval "require $class";  ## no critic
                           if ( $@ ) {
                               die "ERROR: loading class: $class => $@";
                           }

@@ -1,10 +1,7 @@
 package Wubot::LocalMessageStore;
 use Moose;
 
-# todo
-#
-# - warn if queue length above a certain size
-
+# todo - warn if queue length above a certain size
 
 use File::Sync 'fsync';
 use Log::Log4perl;
@@ -145,7 +142,7 @@ sub sort {
 
     # simple sort if there are no duplicated timestamps
     unless ( keys %dupes ) {
-        @newmessages= sort { $files{$a}->{primary} <=> $files{$b}->{primary} } keys %files;
+        return sort { $files{$a}->{primary} <=> $files{$b}->{primary} } keys %files;
     }
 
     $self->logger->debug( "slower sort due to multiple messages with duplicate timestamps" );
@@ -174,12 +171,9 @@ sub sort {
         }
     }
 
-    @newmessages= sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
-                         $files{$a}->{secondary} <=> $files{$b}->{secondary}
-                     } keys %files;
-
-
-    return @newmessages;
+    return sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
+                      $files{$a}->{secondary} <=> $files{$b}->{secondary}
+                  } keys %files;
 }
 
 

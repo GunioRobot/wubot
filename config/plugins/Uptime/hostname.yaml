@@ -1,0 +1,6 @@
+---
+enable: 1
+command: /usr/bin/uptime
+warning_load: 2.0
+critical_load: 3.0
+

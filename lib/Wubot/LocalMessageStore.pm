@@ -142,7 +142,7 @@ sub sort {
 
     # simple sort if there are no duplicated timestamps
     unless ( keys %dupes ) {
-        return sort { $files{$a}->{primary} <=> $files{$b}->{primary} } keys %files;
+        return ( sort { $files{$a}->{primary} <=> $files{$b}->{primary} } keys %files );
     }
 
     $self->logger->debug( "slower sort due to multiple messages with duplicate timestamps" );
@@ -171,9 +171,9 @@ sub sort {
         }
     }
 
-    return sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
-                      $files{$a}->{secondary} <=> $files{$b}->{secondary}
-                  } keys %files;
+    return ( sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
+                        $files{$a}->{secondary} <=> $files{$b}->{secondary}
+                    } keys %files );
 }
 
 

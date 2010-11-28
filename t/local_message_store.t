@@ -2,6 +2,7 @@
 use strict;
 
 use File::Temp qw/ tempdir /;
+use Sys::Hostname;
 use Test::More 'no_plan';
 use YAML;
 
@@ -11,6 +12,9 @@ my $logger = get_logger( 'default' );
 
 use Wubot::LocalMessageStore;
 
+my $hostname = hostname();
+$hostname =~ s|\..*$||;
+
 {
     my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
@@ -18,6 +22,7 @@ use Wubot::LocalMessageStore;
                     checksum   => 1234,
                     key        => 'testcase',
                     lastupdate => time,
+                    hostname   => $hostname,
                 };
 
     ok( my $messenger = Wubot::LocalMessageStore->new(),
@@ -51,6 +56,7 @@ use Wubot::LocalMessageStore;
     my $message = { foo        => 1,
                     checksum   => 1234,
                     key        => 'testcase',
+                    hostname   => $hostname,
                 };
 
     my $timestamp = time - 10000;
@@ -94,6 +100,7 @@ use Wubot::LocalMessageStore;
     my $message = { foo        => 1,
                     checksum   => 1234,
                     key        => 'testcase',
+                    hostname   => $hostname,
                 };
 
     my $timestamp = time - 10000;

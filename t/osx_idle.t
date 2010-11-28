@@ -7,7 +7,7 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-Log::Log4perl->easy_init($INFO);
+Log::Log4perl->easy_init($ERROR);
 my $logger = get_logger( 'default' );
 
 use Wubot::Plugin::OsxIdle;

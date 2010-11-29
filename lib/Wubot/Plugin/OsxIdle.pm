@@ -130,22 +130,22 @@ sub check {
 
      if ( $stats->{idle_state_change} ) {
          if ( $stats->{idle_state} ) {
-             $stats->{subject} = "Idle after being active for $stats->{last_active_min} minutes";
+             $stats->{subject} = "idle after being active for $stats->{last_active_min} minutes";
          }
          else {
-             $stats->{subject} =  "Active after being idle for $stats->{last_idle_min} minutes";
+             $stats->{subject} =  "active after being idle for $stats->{last_idle_min} minutes";
          }
      }
      elsif ( $stats->{idle_state} ) {
          if ( $stats->{idle_min} % 60 == 0 && $stats->{idle_min} > 0 ) {
              my $hours_idle = int( $stats->{idle_min} / 60 );
-             $stats->{subject} = "Idle for $hours_idle hour(s)";
+             $stats->{subject} = "idle for $hours_idle hour(s)";
          }
      }
      else {
          if ( $stats->{active_min} % 60 == 0 && $stats->{active_min} > 0 ) {
              my $hours_active = int( $stats->{active_min} / 60 );
-             $stats->{subject} = "Active for $hours_active hour(s)";
+             $stats->{subject} = "active for $hours_active hour(s)";
          }
      }
 

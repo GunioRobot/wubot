@@ -18,6 +18,7 @@ use Wubot::Reactor::MessagePoster;
 use Wubot::Reactor::Growl;
 use Wubot::Reactor::Console;
 #use Wubot::Reactor::Voice;
+use Wubot::Reactor::Maildir;
 
 my $config_directory = "$ENV{HOME}/wubot/config";
 unless ( -d $config_directory ) {
@@ -35,6 +36,7 @@ my $poster  = Wubot::Reactor::MessagePoster->new();
 my $growl   = Wubot::Reactor::Growl->new();
 my $console = Wubot::Reactor::Console->new();
 #my $voice   = Wubot::Reactor::Voice->new();
+my $maildir = Wubot::Reactor::Maildir->new();
 
 my $hostname = Sys::Hostname::hostname();
 $hostname =~ s|\..*$||;
@@ -63,6 +65,17 @@ sub react {
     $logger->debug( "Message received from: $message->{key}" );
 
     if ( $message->{subject} ) {
+
+        $maildir->react( $message,
+                         { path => "$ENV{HOME}/wubot/mail" },
+                     );
+
+        # remove 'key' field for messages that came from AppWubot,
+        # just adds noise since plugin was already added to those
+        # subjects.
+        if ( $message->{key} && $message->{key} =~ m|^AppWubot| ) {
+            delete $message->{key}
+        }
 
         $growl->react( $message,
                        { image_dir => "$ENV{HOME}/.icons", },

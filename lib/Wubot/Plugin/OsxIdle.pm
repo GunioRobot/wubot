@@ -36,7 +36,9 @@ sub check {
     my $stats;
     ( $stats, $cache ) = $self->calculate_idle_stats( time, $idle_sec, $config, $cache );
 
+    # add all stats to both the cache and results
     for my $stat ( keys %{ $stats } ) {
+
         if ( defined $stats->{$stat} ) {
             $results->{$stat} = $stats->{$stat};
             $cache->{$stat}   = $stats->{$stat};
@@ -64,7 +66,7 @@ sub check {
      if ( $cache->{lastupdate} ) {
          my $age = $now - $cache->{lastupdate};
          if ( $age >= $idle_threshold*60 ) {
-             $self->logger->warn( "OsxIdle: cache expired" );
+             $self->logger->debug( "OsxIdle: cache expired" );
              $stats->{cache_expired} = 1;
              delete $cache->{last_idle_state};
              delete $cache->{idle_since};
@@ -148,7 +150,7 @@ sub check {
      }
 
      if ( $stats->{subject} ) {
-         $self->logger->warn( $stats->{subject} );
+         $self->logger->debug( $stats->{subject} );
      }
 
      return ( $stats, $cache );

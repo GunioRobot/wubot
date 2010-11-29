@@ -1,9 +1,13 @@
 package Wubot::Reactor::Growl;
 use Moose;
 
-use Growl::Tiny;
 use POSIX qw(strftime);
 use YAML;
+
+my $growl_enabled = 1;
+eval "use Growl::Tiny";
+if ( $@ ) { $growl_enabled = 0 }
+
 
 my %color_priorities = ( 'red'     => 2,
                          'yellow'  => 1,
@@ -18,7 +22,9 @@ my %color_priorities = ( 'red'     => 2,
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    return if $message->{quiet} || $message->{quiet_growl};
+    return unless $growl_enabled;
+    return if $message->{quiet};
+    return if $message->{quiet_growl};
 
     my $subject = $message->{subject};
     return unless $subject;

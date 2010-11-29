@@ -1,4 +1,4 @@
-package Wubot::Plugin::MboxReader;
+package Wubot::Plugin::Mbox;
 use Moose;
 
 use Mail::MboxParser;

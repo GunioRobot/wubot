@@ -80,7 +80,7 @@ sub store {
     my $message_text = YAML::Dump $message;
     utf8::encode( $message_text );
 
-    my $time = $message->{lastupdate} || time;
+    my $time = $message->{lastupdate};
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
 
     my $subject = join( ": ", $message->{key}, $message->{subject} || $date );

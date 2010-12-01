@@ -1,7 +1,6 @@
 package Wubot::Reactor::Maildir;
 use Moose;
 
-use HTML::Strip;
 use Maildir::Lite;
 use MIME::Entity;
 use POSIX qw(strftime);
@@ -52,34 +51,45 @@ sub react {
     my $time = $message->{lastupdate} || time;
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
 
-    my $subject = $message->{subject};
-
-    my $body = $message->{body};
-
-    my $hs = HTML::Strip->new();
-    my $body_text = $hs->parse( $body );
-    $hs->eof;
-
-    $body_text = "FEED:    $key\nSUBJECT: $subject\n\n$body_text\n";
+    my $body = $message->{body_text} || $message->{body};
+    my $body_text = "FEED:    $key\nSUBJECT: $message->{subject}\n\n$body\n";
 
     my %message_data = (
         Type        => 'text/plain',
         Date        => $date,
-        From        => $message->{username} || $message->{key},
-        To          => $message->{to_user}  || 'wubot',
-        Subject     => $subject,
-        Data        => $body_text,
+        From        => $message->{username}     || $message->{key},
+        To          => $message->{to_user}      || 'wubot',
+        Subject     => $message->{subject_text} || $message->{subject},
+        Data        => $body,
     );
 
     my $msg = MIME::Entity->build( %message_data );
 
-    $msg->attach( Data => $message->{body},
-                  Type => 'text/html',
-              );
+    if ( $message->{body_text} && $message->{body} ne $message->{body_text} ) {
+
+        $msg->attach( Data => $message->{body},
+                      Type => 'text/html',
+                  );
+
+    }
 
     $msg->print($fh);
 
-    die "delivery failed!\n" if $maildir->deliver_message($fh);
+  TRY:
+    do {
+        eval {                          # try
+            $maildir->deliver_message($fh);
+            1;
+        } or do {                       # catch
+            my $error = $@;
+
+            if ( $error =~ m|already exists| ) {
+                redo TRY;
+            }
+
+            die "Delivery failed: $error";
+        };
+    };
 
     return \%message_data;
 }

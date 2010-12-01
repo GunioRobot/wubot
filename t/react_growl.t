@@ -93,14 +93,3 @@ is( $growl->react( { subject => 'image test' } )->{growl}->{image},
     "Checking for default growl image",
 );
 
-is( $growl->react( { subject => '“foo”' } )->{growl}->{subject},
-    '“foo”',
-    "Checking growl with utf text"
-);
-
-
-# todo:
-#  image
-#  urgent
-#  errmsg
-#  service

@@ -26,10 +26,7 @@ ok( my $maildir = Wubot::Reactor::Maildir->new(),
         "Delivering first test message to Maildir"
     );
 
-    #print YAML::Dump $maildir->react( $testmessage1, { path => $tempdir } ),
-
 }
-
 
 {
     my $body = <<'BODY';
@@ -57,9 +54,6 @@ BODY
     ok( $maildir->react( $testmessage1, { path => $tempdir } ),
         "Delivering first test message to Maildir"
     );
-
-    use YAML;
-    print YAML::Dump $maildir->react( $testmessage1, { path => $tempdir } ),
 
 }
 
@@ -125,12 +119,7 @@ BODY
         "Delivering first test message to Maildir"
     );
 
-    use YAML;
-    print YAML::Dump $maildir->react( $testmessage1, { path => $tempdir } ),
 
 }
-
-
-
 
 

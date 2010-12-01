@@ -26,7 +26,7 @@ sub react {
     return if $message->{quiet};
     return if $message->{quiet_growl};
 
-    my $subject = $message->{subject};
+    my $subject = $message->{subject_text} || $message->{subject};
     return unless $subject;
 
     my $color = $message->{color};

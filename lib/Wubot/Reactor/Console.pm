@@ -22,7 +22,7 @@ sub react {
     return if $message->{quiet};
     return if $message->{quiet_console};
 
-    my $subject = $message->{subject};
+    my $subject = $message->{subject_text} || $message->{subject};
 
     if ( $message->{title} && $message->{title} ne $message->{subject} ) {
         my $title   = $message->{title};

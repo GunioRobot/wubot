@@ -35,8 +35,6 @@ like( $console->react( { subject => 'foo', title => 'bar',  key => 'TestCase-tes
       "Checking subject for console notification ends in original text"
   );
 
-
-
 is( $console->react( { subject => 'orange message', color => 'yellow', urgent => 1, } )->{console}->{color},
     'bold yellow',
     "Checking that urgent flag triggers bold color"
@@ -47,7 +45,3 @@ is( $console->react( { subject => 'orange message', color => 'orange' } )->{cons
     "Checking that 'orange' color displayed as 'yellow'"
 );
 
-like( $console->react( { subject => '“foo”' } )->{console}->{text},
-    qr/“foo”$/,
-    "Checking message with utf characters"
-);

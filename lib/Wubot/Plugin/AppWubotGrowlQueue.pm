@@ -58,7 +58,7 @@ sub check {
     while ( my $notification = $self->{sth}->fetchrow_hashref() ){
 
         $count++;
-        return if $count > $default_limit;
+        last if $count > $default_limit;
 
         # set the hostname that the message came from, prevents
         # routing the message back to wubot which would cause an
@@ -77,6 +77,7 @@ sub check {
         # reason that the cache won't be written until after the
         # reaction messages are sent.
         $cache->{deleteme}->{ $notification->{id} } = 1;
+
     }
 
     return { cache => $cache, react => \@results };

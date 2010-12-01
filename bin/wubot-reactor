@@ -66,9 +66,11 @@ sub react {
 
     if ( $message->{subject} ) {
 
-        $maildir->react( $message,
-                         { path => "$ENV{HOME}/wubot/mail" },
-                     );
+        if ( $message->{body} ) {
+            $maildir->react( $message,
+                             { path => "$ENV{HOME}/wubot/mail" },
+                         );
+        }
 
         # remove 'key' field for messages that came from AppWubot,
         # just adds noise since plugin was already added to those

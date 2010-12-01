@@ -19,6 +19,7 @@ use Wubot::Reactor::Growl;
 use Wubot::Reactor::Console;
 #use Wubot::Reactor::Voice;
 use Wubot::Reactor::Maildir;
+use Wubot::Reactor::HTMLStrip;
 
 my $config_directory = "$ENV{HOME}/wubot/config";
 unless ( -d $config_directory ) {
@@ -31,12 +32,13 @@ my $message_directory = "$ENV{HOME}/wubot/reactor";
 
 my $messenger = Wubot::LocalMessageStore->new();
 
-#my $reactor = Wubot::Reactor->new();
-my $poster  = Wubot::Reactor::MessagePoster->new();
-my $growl   = Wubot::Reactor::Growl->new();
-my $console = Wubot::Reactor::Console->new();
-#my $voice   = Wubot::Reactor::Voice->new();
-my $maildir = Wubot::Reactor::Maildir->new();
+#my $reactor  = Wubot::Reactor->new();
+my $poster    = Wubot::Reactor::MessagePoster->new();
+my $growl     = Wubot::Reactor::Growl->new();
+my $console   = Wubot::Reactor::Console->new();
+#my $voice    = Wubot::Reactor::Voice->new();
+my $maildir   = Wubot::Reactor::Maildir->new();
+my $htmlstrip = Wubot::Reactor::HTMLStrip->new();
 
 my $hostname = Sys::Hostname::hostname();
 $hostname =~ s|\..*$||;
@@ -66,7 +68,16 @@ sub react {
 
     if ( $message->{subject} ) {
 
+        $htmlstrip->react( $message,
+                           { field => 'subject' }
+                       );
+
         if ( $message->{body} ) {
+
+            $htmlstrip->react( $message,
+                               { field => 'body' }
+                           );
+
             $maildir->react( $message,
                              { path => "$ENV{HOME}/wubot/mail" },
                          );

@@ -56,8 +56,6 @@ sub react {
                          color    => $color,
                      };
 
-    my $username = $message->{username} || "wubot";
-
     my $date = strftime( "%d/%H:%M", localtime( $message->{lastupdate}||time ) );
 
     my $title;
@@ -65,9 +63,11 @@ sub react {
         $title = $message->{growl_title};
     }
     else {
-        $title = "$username";
+        if ( $message->{username} ) {
+            $title = "$message->{username} ";
+        }
         if ( $message->{key} ) {
-            $title .= " [$message->{key}]";
+            $title .= "[$message->{key}]";
         }
         $title .= " $date";
     }

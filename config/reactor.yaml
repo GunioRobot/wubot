@@ -1,0 +1,70 @@
+---
+rules:
+  - name: strip HTML from subject
+    condition: contains subject
+    plugin: HTMLStrip
+    config:
+      field: subject
+      newfield: subject_text
+  - name: strip HTML from body
+    condition: contains body
+    plugin: HTMLStrip
+    config:
+      field: body
+      newfield: body_text
+  - name: remove key field for messages that came from AppWubot
+    condition: key =~ ^AppWubot
+    plugin: DeleteField
+    config:
+      field: key
+  - name: store message bodies in maildir
+    condition: contains body
+    plugin: Maildir
+    config:
+      path: /Users/wu/wubot/mail
+  - name: OSX Idle - add active_min and idle_min to rrd
+    condition: key =~ ^OsxIdle
+    plugin: RRD
+    config:
+      base_dir: /Users/wu/wubot/rrd
+      fields:
+        idle_min: GAUGE
+        active_min: GAUGE
+  - name: Work Hours - add total_idle and total_active to rrd
+    condition: key =~ ^WorkHours
+    plugin: RRD
+    config:
+      base_dir: /Users/wu/wubot/rrd
+      fields:
+        total_idle: GAUGE
+        total_active: GAUGE
+  - name: Uptime - add load to rrd
+    condition: key =~ ^Uptime
+    plugin: RRD
+    config:
+      base_dir: /Users/wu/wubot/rrd
+      fields:
+        load01: GAUGE
+        load05: GAUGE
+        load15: GAUGE
+  - name: Growl Notification
+    condition: contains subject
+    plugin: Growl
+    config:
+      image_dir: /Users/wu/.icons
+  - name: Console Notification
+    condition: contains subject
+    plugin: Console
+    config: {}
+  - name: suppress future growl notifications
+    condition: contains subject
+    plugin: AddField
+    config:
+      field: quiet_growl
+      value: 1
+  - name: suppress future voice notifications
+    condition: contains subject
+    plugin: AddField
+    config:
+      field: quiet_voice
+      value: 1

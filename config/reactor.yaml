@@ -13,7 +13,7 @@ rules:
       field: body
       newfield: body_text
   - name: remove key field for messages that came from AppWubot
-    condition: key =~ ^AppWubot
+    condition: key matches ^AppWubot
     plugin: DeleteField
     config:
       field: key
@@ -23,7 +23,7 @@ rules:
     config:
       path: /Users/wu/wubot/mail
   - name: OSX Idle - add active_min and idle_min to rrd
-    condition: key =~ ^OsxIdle
+    condition: key matches ^OsxIdle
     plugin: RRD
     config:
       base_dir: /Users/wu/wubot/rrd
@@ -31,7 +31,7 @@ rules:
         idle_min: GAUGE
         active_min: GAUGE
   - name: Work Hours - add total_idle and total_active to rrd
-    condition: key =~ ^WorkHours
+    condition: key matches ^WorkHours
     plugin: RRD
     config:
       base_dir: /Users/wu/wubot/rrd
@@ -39,7 +39,7 @@ rules:
         total_idle: GAUGE
         total_active: GAUGE
   - name: Uptime - add load to rrd
-    condition: key =~ ^Uptime
+    condition: key matches ^Uptime
     plugin: RRD
     config:
       base_dir: /Users/wu/wubot/rrd

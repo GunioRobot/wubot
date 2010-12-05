@@ -13,19 +13,19 @@ my $config_src = <<"EOF";
 ---
 rules:
   - name: key is TestCase-test1
-    condition: key = TestCase-test1
+    condition: key equals TestCase-test1
     plugin: AddField
     config:
       field: test_field_test1
       value: test_value_test1
   - name: key matches ^TestCase2
-    condition: key =~ ^TestCase2
+    condition: key matches ^TestCase2
     plugin: AddField
     config:
       field: test_field_test2
       value: test_value_test2
   - name: key matches ^TestCase
-    condition: key =~ ^TestCase
+    condition: key matches ^TestCase
     plugin: AddField
     config:
       field: test_field_test3
@@ -37,7 +37,7 @@ rules:
       field: test_field_test4
       value: test_value_test4
   - name: foo is testpass2
-    condition: foo = testpass2
+    condition: foo equals testpass2
     plugin: AddField
     config:
       field: test_field_test4

@@ -28,14 +28,14 @@ sub react {
 
     for my $rule ( @{ $self->config->{rules} } ) {
 
-        if ( $rule->{condition} =~ m|^([\w\.]+)\s+\=\s+(.*)$| ) {
+        if ( $rule->{condition} =~ m|^([\w\.]+)\s+equals\s+(.*)$| ) {
             my ( $field, $value ) = ( $1, $2 );
 
             if ( $message->{ $field } && $message->{ $field } eq $value ) {
                 $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
             }
         }
-        elsif ( $rule->{condition} =~ m|^([\w\.]+)\s+\=~\s+(.*)$| ) {
+        elsif ( $rule->{condition} =~ m|^([\w\.]+)\s+matches\s+(.*)$| ) {
             my ( $field, $value ) = ( $1, $2 );
 
             if ( $message->{ $field } && $message->{ $field } =~ m/$value/ ) {

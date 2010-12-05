@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use File::Temp qw/ tempdir /;
+use RRD::Simple;
 use Test::More 'no_plan';
 
 use Log::Log4perl qw(:easy);
@@ -99,6 +100,49 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
 
     ok( -r "$config->{base_dir}/graphs/$key/data2-daily.png",
         "Checking that png was created use key field as basename"
+    );
+
+}
+
+
+{
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $key     = "testcase-key";
+    my @fields  = qw( somename1 somename2 );
+    my $time    = time;
+
+    my $config = { base_dir  => $tempdir,
+                   fields    => { somename1 => 'GAUGE',
+                                  somename2 => 'GAUGE',
+                              },
+                   heartbeat => 1200,
+                   filename  => 'data3',
+               };
+
+    ok( $rrd->react( { 'somename1' => 100, 'somename2' => 200, key => $key, lastupdate => $time-1 }, $config ),
+        "Calling 'react' with test message"
+    );
+
+    my $filename = "$config->{base_dir}/rrd/$key/data3.rrd";
+
+    ok( -r $filename,
+        "Checking that rrd file was created using key field"
+    );
+
+    my $rrd_simple = RRD::Simple->new( file => $filename );
+
+    is( $rrd_simple->heartbeat( $filename, 'somename1' ),
+        1200,
+        "Checking that heartbeat was set on rrd file"
+    );
+
+    ok( $rrd->react( { 'somename1' => 100, 'somename2' => 200, key => $key, lastupdate => $time }, { %{ $config }, heartbeat => 300 } ),
+        "Calling 'react' with test message"
+    );
+
+    is( $rrd_simple->heartbeat( $filename, 'somename1' ),
+        300,
+        "Checking that heartbeat was reset to 300"
     );
 
 }

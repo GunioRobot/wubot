@@ -45,6 +45,7 @@ rules:
         - day
         - week
         - month
+      heartbeat: 1800
   - name: Uptime - add load to rrd
     condition: key matches ^Uptime
     plugin: RRD

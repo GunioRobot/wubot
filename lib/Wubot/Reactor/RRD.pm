@@ -51,6 +51,15 @@ sub react {
         $rrd->create( %{ $config->{fields} } );
     }
 
+    # if rrd heartbeat configured, ensure the heartbeat is set on all data sources
+    if ( $config->{heartbeat} ) {
+        for my $field ( sort keys %{ $config->{fields} } ) {
+            unless ( $config->{heartbeat} == $rrd->heartbeat( $rrd_filename, $field ) ) {
+                $rrd->heartbeat( $rrd_filename, $field, $config->{heartbeat} );
+            }
+        }
+    }
+
     $rrd->update( $rrd_filename, $time, %rrd_data );
 
     # log the value

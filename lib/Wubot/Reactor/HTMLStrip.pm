@@ -7,8 +7,8 @@ use YAML;
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    my $field = $config->{field};
-    my $newfield = join( '_', $config->{field}, 'text' );
+    my $field    = $config->{field};
+    my $newfield = $config->{newfield} || join( '_', $config->{field}, 'text' );
 
     my $value = $message->{ $field };
 

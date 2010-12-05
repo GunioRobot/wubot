@@ -79,8 +79,6 @@ sub check {
     $react->{total_idle}   = $total_idle;
     $react->{total_active} = $total_active;
 
-    $react->{subject} = "Work hours last 7 days: idle=$total_idle active=$total_active";
-
     return { react => $react };
 }
 

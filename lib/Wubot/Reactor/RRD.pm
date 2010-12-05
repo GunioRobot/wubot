@@ -82,7 +82,7 @@ sub react {
     my %graph_options = ( destination => $graph_dir,
                           basename    => $filename,
                           periods     => $period,
-                          color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
+                          color       => $config->{color} || [ 'BACK#666666', 'CANVAS#111111' ],
                       );
 
     if ( $config->{graph_options} ) {

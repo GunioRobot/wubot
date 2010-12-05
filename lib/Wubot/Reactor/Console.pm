@@ -18,9 +18,9 @@ my $valid_colors = { blue    => 'blue',
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    return unless $message->{subject};
-    return if $message->{quiet};
-    return if $message->{quiet_console};
+    return $message unless $message->{subject};
+    return $message if $message->{quiet};
+    return $message if $message->{quiet_console};
 
     my $subject = $message->{subject_text} || $message->{subject};
 

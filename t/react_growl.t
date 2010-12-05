@@ -15,17 +15,17 @@ is( $growl->react( { subject => 'foo' } )->{growl}->{results},
     "Checking that notification sent if message contains a subject"
 );
 
-is( $growl->react( { foo => 'bar' } ),
+is( $growl->react( { foo => 'bar' } )->{growl},
     undef,
     "Checking that no notification sent if message does not contain a subject"
 );
 
-is( $growl->react( { subject => 'foo', quiet => 1 } ),
+is( $growl->react( { subject => 'foo', quiet => 1 } )->{growl},
     undef,
     "Checking that growl notification skipped when 'quiet' flag set"
 );
 
-is( $growl->react( { subject => 'foo', quiet_growl => 1 } ),
+is( $growl->react( { subject => 'foo', quiet_growl => 1 } )->{growl},
     undef,
     "Checking that growl notification skipped when 'quiet_growl' flag set"
 );

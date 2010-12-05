@@ -1,6 +1,7 @@
 package Wubot::Reactor::MessagePoster;
 use Moose;
 
+use Log::Log4perl;
 use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };
 use CGI;
@@ -16,6 +17,16 @@ has 'mailbox'   => ( is      => 'ro',
                      },
                  );
 
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+
+
 sub react {
     my ( $self, $message, $config ) = @_;
 
@@ -30,8 +41,7 @@ sub react {
     my $content = $ua->request($request)->as_string();
 
     unless ( $content =~ m|\!OK\!| ) {
-        warn "MessageQueuePoster: error sending message\n";
-        return;
+        $self->logger->error( "MessageQueuePoster: error sending message" );
     }
 
     return $message;

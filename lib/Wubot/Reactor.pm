@@ -78,9 +78,16 @@ sub run_plugin {
         $self->{plugins}->{ $plugin } = $reactor_class->new();
     }
 
-    $message = $self->{plugins}->{ $plugin }->react( $message, $config );
+    my $return = $self->{plugins}->{ $plugin }->react( $message, $config );
 
-    return $message;
+    unless ( $return ) {
+        $self->logger->error( "ERROR: plugin $plugin returned no message!" );
+    }
+    unless ( ref $return eq "HASH" ) {
+        $self->logger->error( "ERROR: plugin $plugin returned something other than a message!" );
+    }
+
+    return $return;
 }
 
 1;

@@ -8,7 +8,6 @@ my $growl_enabled = 1;
 eval "use Growl::Tiny";
 if ( $@ ) { $growl_enabled = 0 }
 
-
 my %color_priorities = ( 'red'     => 2,
                          'yellow'  => 1,
                          'orange'  => 1,
@@ -22,12 +21,12 @@ my %color_priorities = ( 'red'     => 2,
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    return unless $growl_enabled;
-    return if $message->{quiet};
-    return if $message->{quiet_growl};
+    return $message unless $growl_enabled;
+    return $message if $message->{quiet};
+    return $message if $message->{quiet_growl};
 
     my $subject = $message->{subject_text} || $message->{subject};
-    return unless $subject;
+    return $message unless $subject;
 
     my $color = $message->{color};
 

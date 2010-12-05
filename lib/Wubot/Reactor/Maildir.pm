@@ -21,8 +21,6 @@ BEGIN {
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    return unless $message->{body};
-
     my $mailbox;
     if ( $message->{mailbox} ) {
         $mailbox = $message->{mailbox};
@@ -91,7 +89,7 @@ sub react {
         };
     };
 
-    return \%message_data;
+    return $message;
 }
 
 1;

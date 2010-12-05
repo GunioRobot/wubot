@@ -12,19 +12,21 @@ sub react {
 
     my $value = $message->{ $field };
 
-    return unless $value;
+    if ( $value ) {
 
-    my $hs = HTML::Strip->new();
+        my $hs = HTML::Strip->new();
 
-    $message->{$newfield} = $hs->parse( $message->{$field} );
+        $message->{$newfield} = $hs->parse( $message->{$field} );
 
-    if ( utf8::is_utf8( $message->{$newfield} ) ) {
-        utf8::encode( $message->{$newfield} );
+        if ( utf8::is_utf8( $message->{$newfield} ) ) {
+            utf8::encode( $message->{$newfield} );
+        }
+
+        $hs->eof;
+
     }
 
-    $hs->eof;
-
-    $message;
+    return $message;
 }
 
 1;

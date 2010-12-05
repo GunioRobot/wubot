@@ -10,17 +10,17 @@ ok( my $console = Wubot::Reactor::Console->new(),
     "Creating new console reactor object"
 );
 
-is( $console->react( { foo => 'bar' } ),
+is( $console->react( { foo => 'bar' } )->{console},
     undef,
     "Checking that no message sent if no subject"
 );
 
-is( $console->react( { subject => 'quiet', quiet => 1, } ),
+is( $console->react( { subject => 'quiet', quiet => 1, } )->{console},
     undef,
     "Checking that no message sent if quiet flag set"
 );
 
-is( $console->react( { subject => 'console quiet', quiet_console => 1 } ),
+is( $console->react( { subject => 'console quiet', quiet_console => 1 } )->{console},
     undef,
     "Checking that no message sent if quiet_console flag set"
 );

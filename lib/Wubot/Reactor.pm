@@ -1,25 +1,14 @@
 package Wubot::Reactor;
 use Moose;
 
+use Class::Load qw/load_class/;
 use Log::Log4perl;
+use YAML;
 
-use Wubot::LocalMessageStore;
-
-has 'directory' => ( is => 'ro',
-                     isa => 'Str',
-                     default => sub {
-                         my $dir = "$ENV{HOME}/wubot/messages";
-                         return $dir;
-                     },
-                 );
-
-has 'mailbox'   => ( is      => 'ro',
-                     isa     => 'Wubot::LocalMessageStore',
-                     lazy    => 1,
-                     default => sub {
-                         return Wubot::LocalMessageStore->new();
-                     },
-                 );
+has 'config' => ( is => 'ro',
+                  isa => 'HashRef',
+                  required => 1,
+              );
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -29,13 +18,69 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
+has 'plugins' => ( is => 'ro',
+                   isa => 'HashRef',
+                   default => sub { return {} },
+               );
+
 sub react {
     my ( $self, $message ) = @_;
 
-    return unless $message;
+    for my $rule ( @{ $self->config->{rules} } ) {
+
+        if ( $rule->{condition} =~ m|^([\w\.]+)\s+\=\s+(.*)$| ) {
+            my ( $field, $value ) = ( $1, $2 );
+
+            if ( $message->{ $field } && $message->{ $field } eq $value ) {
+                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+            }
+        }
+        elsif ( $rule->{condition} =~ m|^([\w\.]+)\s+\=~\s+(.*)$| ) {
+            my ( $field, $value ) = ( $1, $2 );
+
+            if ( $message->{ $field } && $message->{ $field } =~ m/$value/ ) {
+                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+            }
+
+        }
+        elsif ( $rule->{condition} =~ m|^contains ([\w\.]+)$| ) {
+            my $field = $1;
+
+            if ( $message->{ $field } ) {
+                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+            }
+
+        }
+    }
 
     return $message;
 }
 
+sub run_plugin {
+    my ( $self, $rule, $message, $plugin, $config ) = @_;
+
+    $self->logger->debug( "Rule matched: $rule" );
+
+    unless ( $message ) {
+        $self->logger->logconfess( "ERROR: run_plugin called without a message" );
+    }
+    unless ( $plugin ) {
+        $self->logger->logconfess( "ERROR: run_plugin called without a plugin" );
+    }
+    unless ( $config ) {
+        $self->logger->logconfess( "ERROR: run_plugin called without any config" );
+    }
+
+    unless ( $self->{plugins}->{ $plugin } ) {
+        $self->logger->info( "Creating instance of reactor plugin $plugin" );
+        my $reactor_class = join( "::", 'Wubot', 'Reactor', $plugin );
+        load_class( $reactor_class );
+        $self->{plugins}->{ $plugin } = $reactor_class->new();
+    }
+
+    $message = $self->{plugins}->{ $plugin }->react( $message, $config );
+
+    return $message;
+}
 
 1;

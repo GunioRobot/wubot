@@ -11,36 +11,101 @@ use YAML;
 use Wubot::Logger;
 my $logger = Log::Log4perl::get_logger( 'default' );
 
-use Wubot::Check;
 use Wubot::Config;
 use Wubot::Reactor;
 use Wubot::Reactor::MessagePoster;
-use Wubot::Reactor::Growl;
-use Wubot::Reactor::Console;
-#use Wubot::Reactor::Voice;
-use Wubot::Reactor::Maildir;
-use Wubot::Reactor::RRD;
-use Wubot::Reactor::HTMLStrip;
-
-my $config_directory = "$ENV{HOME}/wubot/config";
-unless ( -d $config_directory ) {
-    mkpath( $config_directory );
-}
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
-#my $config  = Wubot::Config->new( { root => $config_directory } );
-
 my $messenger = Wubot::LocalMessageStore->new();
-
-#my $reactor  = Wubot::Reactor->new();
 my $poster    = Wubot::Reactor::MessagePoster->new();
-my $growl     = Wubot::Reactor::Growl->new();
-my $console   = Wubot::Reactor::Console->new();
-#my $voice    = Wubot::Reactor::Voice->new();
-my $maildir   = Wubot::Reactor::Maildir->new();
-my $htmlstrip = Wubot::Reactor::HTMLStrip->new();
-my $rrd       = Wubot::Reactor::RRD->new();
+
+my $config_src = <<"EOF";
+---
+rules:
+  - name: strip HTML from subject
+    condition: contains subject
+    plugin: HTMLStrip
+    config:
+      field: subject
+  - name: strip HTML from body
+    condition: contains body
+    plugin: HTMLStrip
+    config:
+      field: body
+  - name: remove key field for messages that came from AppWubot
+    condition: key =~ ^AppWubot
+    plugin: DeleteField
+    config:
+      field: key
+  - name: store message bodies in maildir
+    condition: contains body
+    plugin: Maildir
+    config:
+      path: $ENV{HOME}/wubot/mail
+  - name: OSX Idle - add idle_mins to rrd
+    condition: key =~ ^OsxIdle
+    plugin: RRD
+    config:
+      base_dir: $ENV{HOME}/wubot/rrd
+      type: GAUGE
+      key: idle_min
+  - name: OSX Idle - add active_mins to rrd
+    condition: key =~ ^OsxIdle
+    plugin: RRD
+    config:
+      base_dir: $ENV{HOME}/wubot/rrd
+      type: GAUGE
+      key: active_min
+  - name: Work Hours - add total_idle to rrd
+    condition: key =~ ^WorkHours
+    plugin: RRD
+    config:
+      base_dir: $ENV{HOME}/wubot/rrd
+      type: GAUGE
+      key: total_idle
+  - name: Work Hours - add total_active to rrd
+    condition: key =~ ^WorkHours
+    plugin: RRD
+    config:
+      base_dir: $ENV{HOME}/wubot/rrd
+      type: GAUGE
+      key: total_active
+  - name: Uptime - add load01 to rrd
+    condition: key =~ ^Uptime
+    plugin: RRD
+    config:
+      base_dir: $ENV{HOME}/wubot/rrd
+      type: GAUGE
+      key: load01
+  - name: Growl Notification
+    condition: contains subject
+    plugin: Growl
+    config:
+      image_dir: $ENV{HOME}/.icons
+  - name: Console Notification
+    condition: contains subject
+    plugin: Console
+    config: {}
+  - name: suppress future growl notifications
+    condition: contains subject
+    plugin: AddField
+    config:
+      field: quiet_growl
+      value: 1
+  - name: suppress future voice notifications
+    condition: contains subject
+    plugin: AddField
+    config:
+      field: quiet_voice
+      value: 1
+
+EOF
+
+
+my $config = YAML::Load( $config_src );
+
+my $reactor = Wubot::Reactor->new( config => $config );
 
 my $hostname = Sys::Hostname::hostname();
 $hostname =~ s|\..*$||;
@@ -68,46 +133,7 @@ sub react {
 
     $logger->debug( "Message received from: $message->{key}" );
 
-    if ( $message->{subject} ) {
-
-        $htmlstrip->react( $message,
-                           { field => 'subject' }
-                       );
-
-        if ( $message->{body} ) {
-
-            $htmlstrip->react( $message,
-                               { field => 'body' }
-                           );
-
-            $maildir->react( $message,
-                             { path => "$ENV{HOME}/wubot/mail" },
-                         );
-        }
-
-        # remove 'key' field for messages that came from AppWubot,
-        # just adds noise since plugin was already added to those
-        # subjects.
-        if ( $message->{key} && $message->{key} =~ m|^AppWubot| ) {
-            delete $message->{key}
-        }
-
-        $growl->react( $message,
-                       { image_dir => "$ENV{HOME}/.icons", },
-                   );
-
-        $console->react( $message );
-
-        #$voice->react(   $message );
-
-        # navi is my laptop--if the message originates there, it will
-        # already go through growl/voice notification--no need to
-        # trigger another notification.
-        if ( $hostname eq "navi" ) {
-            $message->{quiet_growl} = 1;
-            $message->{quiet_voice} = 1;
-        }
-    }
+    $reactor->react( $message );
 
     # if the message originated on this host, and the 'no_post' option
     # is not set, then forward the message to my App::Wubot instance
@@ -118,47 +144,4 @@ sub react {
                     );
     }
 
-    if ( $message->{key} ) {
-        if ( $message->{key} =~ m|^OsxIdle| ) {
-            $rrd->react( $message,
-                         { base_dir  => "$ENV{HOME}/wubot/rrd",
-                           type      => 'GAUGE',
-                           key       => 'idle_min',
-                       }
-                     );
-
-            $rrd->react( $message,
-                         { base_dir  => "$ENV{HOME}/wubot/rrd",
-                           type      => 'GAUGE',
-                           key       => 'active_min',
-                       }
-                     );
-        }
-        elsif ( $message->{key} =~ m|^WorkHours| ) {
-
-            $rrd->react( $message,
-                         { base_dir  => "$ENV{HOME}/wubot/rrd",
-                           type      => 'GAUGE',
-                           key       => 'total_idle',
-                       }
-                     );
-
-            $rrd->react( $message,
-                         { base_dir  => "$ENV{HOME}/wubot/rrd",
-                           type      => 'GAUGE',
-                           key       => 'total_active',
-                       }
-                     );
-        }
-        elsif ( $message->{key} =~ m|^Uptime| ) {
-
-            $rrd->react( $message,
-                         { base_dir  => "$ENV{HOME}/wubot/rrd",
-                           type      => 'GAUGE',
-                           key       => 'load01',
-                       }
-                     );
-        }
-
-    }
 }

@@ -82,7 +82,7 @@ ok( -r $sqldb,
                    column2 => 'VARCHAR(16)',
                };
 
-    ok( $sql->insert( $table, { column1 => 123, column2 => "foo", column3 => "abc" }, $schema ),
+    ok( $sql->insert( $table, { column1 => 123, column2 => "foo" }, $schema ),
         "Inserting hash into non-existent table"
     );
 
@@ -91,6 +91,53 @@ ok( -r $sqldb,
         "Checking that table was created and data was inserted and retrieved"
     );
 
+}
+
+{
+    my $table = "test_table_3";
+    my $schema = { id      => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                   column1 => 'INT',
+               };
+
+    is( $sql->insert( $table, { column1 => 123 }, $schema ),
+        1,
+        "Inserting hash into table, checking returned id"
+    );
+
+    is( $sql->insert( $table, { column1 => 234 }, $schema ),
+        2,
+        "Inserting hash into table, checking returned id"
+    );
+
+    is( $sql->insert( $table, { column1 => 345 }, $schema ),
+        3,
+        "Inserting hash into table, checking returned id"
+    );
+
+    is( ( $sql->query( "SELECT * FROM $table" ) )[0]->{id},
+        1,
+        "Checking auto-incrementing id"
+    );
+
+    is( ( $sql->query( "SELECT * FROM $table" ) )[1]->{id},
+        2,
+        "Checking auto-incrementing id"
+    );
+}
+
+
+{
+    my $table = "test_table_4";
+    my $schema = { column1 => 'INT' };
+
+    ok( $sql->insert( $table, { column1 => 0 }, $schema ),
+        "Inserting hash into table with data value 0"
+    );
+
+    is( ( $sql->query( "SELECT * FROM $table" ) )[0]->{column1},
+        0,
+        "Checking that 0 was returned on query"
+    );
 }
 
 ok( $sql->disconnect(),

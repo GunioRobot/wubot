@@ -75,7 +75,7 @@ sub insert {
 
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
-    my @insert = map { $entry->{$_} ? $entry->{$_} : "" } @keys;
+    my @insert = map { defined $entry->{$_} ? $entry->{$_} : "" } @keys;
 
     $sth1->execute( @insert );
 

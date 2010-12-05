@@ -22,6 +22,18 @@ rules:
     plugin: Maildir
     config:
       path: /Users/wu/wubot/mail
+  - name: OS X Idle - store in SQLite database
+    condition: key matches ^OsxIdle
+    plugin: SQLite
+    config:
+      file: /Users/wu/wubot/sqlite/idle.sql
+      tablename: idle
+      schema:
+        id: INTEGER PRIMARY KEY AUTOINCREMENT
+        idle_min: int
+        active_min: int
+        idle_state: int
+        lastupdate: int
   - name: OSX Idle - add active_min and idle_min to rrd
     condition: key matches ^OsxIdle
     plugin: RRD
@@ -48,6 +60,16 @@ rules:
           - AREA
         right-axis: 1:0
         width: 375
+  - name: Work Hours - store in SQLite database
+    condition: key matches ^WorkHours
+    plugin: SQLite
+    config:
+      file: /Users/wu/wubot/sqlite/workhours.sql
+      tablename: workhours
+      schema:
+        id: INTEGER PRIMARY KEY AUTOINCREMENT
+        total_idle: int
+        total_active: int
   - name: Work Hours - add total_idle and total_active to rrd
     condition: key matches ^WorkHours
     plugin: RRD

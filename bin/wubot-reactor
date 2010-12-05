@@ -24,6 +24,9 @@ my $reactor_config = "$ENV{HOME}/wubot/config/reactor.yaml";
 $logger->info( "loading reactor config: $reactor_config" );
 my $config = YAML::LoadFile( $reactor_config );
 
+my $num_rules = scalar @{ $config->{rules} };
+$logger->warn( "Loaded $num_rules rules" );
+
 my $reactor = Wubot::Reactor->new( config => $config );
 
 my $hostname = Sys::Hostname::hostname();

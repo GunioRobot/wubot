@@ -66,14 +66,14 @@ sub react {
     }
 
     # graph
-    my $period = $config->{period} || "day";
+    my $period = $config->{period} || [ 'day' ];
 
     $self->logger->debug( "Regenerating rrd graph: $graph_dir" );
 
     my ( $stdout, $stderr ) = Capture::Tiny::capture {
         my %rtn = $rrd->graph( destination => $graph_dir,
                                basename    => $filename,
-                               periods     => [ $period ],
+                               periods     => $period,
                                color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
                            );
     };

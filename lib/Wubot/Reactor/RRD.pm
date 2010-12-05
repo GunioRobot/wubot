@@ -35,44 +35,48 @@ sub react {
         mkpath( $graph_dir );
     }
 
-    for my $field ( split /,/, $config->{fields} ) {
-
-        my $value = $message->{ $field };
-
-        my $rrd_filename = join( "/", $rrd_dir, "$field.rrd" );
-
-        my $rrd = RRD::Simple->new( file => $rrd_filename );
-
-        unless ( -r $rrd_filename ) {
-            $self->logger->warn( "Creating RRD filename: $rrd_filename" );
-
-            $rrd->create( $field => $config->{type} );
-        }
-
-        $rrd->update( $rrd_filename, $time, $field, $value );
-
-        # log the value
-        if ( $config->{log} ) {
-            open(my $fh, ">>", $config->{log})
-                or die "Couldn't open $config->{log} for writing: $!\n";
-            print $fh join( ", ", scalar localtime( $time ), $field, $value ), "\n";
-            close $fh or die "Error closing file: $!\n";
-        }
-
-        # graph
-        my $period = $config->{period} || "day";
-
-        $self->logger->debug( "Regenerating rrd graphs: $graph_dir" );
-
-        my ( $stdout, $stderr ) = Capture::Tiny::capture {
-            my %rtn = $rrd->graph( destination => $graph_dir,
-                                   basename    => $field,
-                                   periods     => [ $period ],
-                                   color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
-                               );
-        };
-
+    my %rrd_data;
+    for my $field ( sort keys %{ $config->{fields} } ) {
+        $rrd_data{$field} = $message->{$field};
     }
+
+    my $filename = $config->{filename} || $message->{key} || 'data';
+    my $rrd_filename = join( "/", $rrd_dir, "$filename.rrd" );
+
+    my $rrd = RRD::Simple->new( file => $rrd_filename );
+
+    unless ( -r $rrd_filename ) {
+        $self->logger->warn( "Creating RRD filename: $rrd_filename" );
+
+        $rrd->create( %{ $config->{fields} } );
+    }
+
+    $rrd->update( $rrd_filename, $time, %rrd_data );
+
+    # log the value
+    if ( $config->{log} ) {
+        open(my $fh, ">>", $config->{log})
+                or die "Couldn't open $config->{log} for writing: $!\n";
+
+        for my $field ( keys %rrd_data ) {
+            print $fh join( ", ", scalar localtime( $time ), $field, $rrd_data{$field} ), "\n";
+        }
+
+        close $fh or die "Error closing file: $!\n";
+    }
+
+    # graph
+    my $period = $config->{period} || "day";
+
+    $self->logger->debug( "Regenerating rrd graph: $graph_dir" );
+
+    my ( $stdout, $stderr ) = Capture::Tiny::capture {
+        my %rtn = $rrd->graph( destination => $graph_dir,
+                               basename    => $filename,
+                               periods     => [ $period ],
+                               color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
+                           );
+    };
 
     return $message;
 }

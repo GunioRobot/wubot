@@ -21,8 +21,8 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
     my $field   = "somename";
 
     my $config = { base_dir  => $tempdir,
-                   type      => 'GAUGE',
-                   fields    => $field,
+                   fields    => { somename => 'GAUGE' },
+                   filename  => 'data',
                };
 
     ok( $rrd->react( { $field => 100, key => $key }, $config ),
@@ -37,7 +37,7 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
         "Checking that $key subdirectory was created"
     );
 
-    ok( -r "$config->{base_dir}/rrd/$key/$field.rrd",
+    ok( -r "$config->{base_dir}/rrd/$key/data.rrd",
         "Checking that rrd file was created using key field"
     );
 
@@ -49,13 +49,13 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
         "Checking that graph subdirectory $key was created"
     );
 
-    ok( -r "$config->{base_dir}/graphs/$key/$field-daily.png",
+    ok( -r "$config->{base_dir}/graphs/$key/data-daily.png",
         "Checking that png was created use key field as basename"
     );
 
     sleep 1;
 
-    ok( $rrd->react( { $field => 200.5, key => '$key' }, $config ),
+    ok( $rrd->react( { $field => 200.5, key => $key }, $config ),
         "Calling 'react' with test message"
     );
 
@@ -67,8 +67,10 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
     my @fields  = qw( somename1 somename2 );
 
     my $config = { base_dir  => $tempdir,
-                   type      => 'GAUGE',
-                   fields    => join( ",", @fields ),
+                   fields    => { somename1 => 'GAUGE',
+                                  somename2 => 'GAUGE',
+                              },
+                   filename  => 'data2',
                };
 
     ok( $rrd->react( { 'somename1' => 100, 'somename2' => 200, key => $key }, $config ),
@@ -91,14 +93,12 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
         "Checking that graph subdirectory $key was created"
     );
 
-    for my $field ( @fields ) {
-        ok( -r "$config->{base_dir}/rrd/$key/$field.rrd",
-            "Checking that rrd file was created using key field"
-        );
+    ok( -r "$config->{base_dir}/rrd/$key/data2.rrd",
+        "Checking that rrd file was created using key field"
+    );
 
-        ok( -r "$config->{base_dir}/graphs/$key/$field-daily.png",
-            "Checking that png was created use key field as basename"
-        );
-    }
+    ok( -r "$config->{base_dir}/graphs/$key/data2-daily.png",
+        "Checking that png was created use key field as basename"
+    );
 
 }

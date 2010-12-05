@@ -46,6 +46,8 @@ rules:
         source_drawtypes:
           - AREA
           - AREA
+        right-axis: 1:0
+        width: 375
   - name: Work Hours - add total_idle and total_active to rrd
     condition: key matches ^WorkHours
     plugin: RRD
@@ -70,6 +72,8 @@ rules:
         source_drawtypes:
           - LINE
           - AREA
+        right-axis: 1:0
+        width: 375
   - name: Uptime - add load to rrd
     condition: key matches ^Uptime
     plugin: RRD
@@ -80,6 +84,7 @@ rules:
         load05: GAUGE
         load15: GAUGE
       graph_options:
+        upper_limit: 1
         lower_limit: 0
         sources:
           - load01
@@ -91,8 +96,10 @@ rules:
           - 33FF99
         source_drawtypes:
           - AREA
-          - AREA
           - LINE
+          - LINE
+        right-axis: 1:0
+        width: 375
   - name: Growl Notification
     condition: contains subject
     plugin: Growl

@@ -33,6 +33,19 @@ rules:
       period:
         - day
         - week
+      graph_options:
+        lower_limit: 0
+        upper_limit: 60
+        rigid: ""
+        sources:
+          - active_min
+          - idle_min
+        source_colors:
+          - FF9933
+          - 9933FF
+        source_drawtypes:
+          - AREA
+          - AREA
   - name: Work Hours - add total_idle and total_active to rrd
     condition: key matches ^WorkHours
     plugin: RRD
@@ -46,6 +59,17 @@ rules:
         - week
         - month
       heartbeat: 1800
+      graph_options:
+        lower_limit: 0
+        sources:
+          - total_idle
+          - total_active
+        source_colors:
+          - 9933FF
+          - FF9933
+        source_drawtypes:
+          - LINE
+          - AREA
   - name: Uptime - add load to rrd
     condition: key matches ^Uptime
     plugin: RRD
@@ -55,6 +79,20 @@ rules:
         load01: GAUGE
         load05: GAUGE
         load15: GAUGE
+      graph_options:
+        lower_limit: 0
+        sources:
+          - load01
+          - load05
+          - load15
+        source_colors:
+          - 9933FF
+          - FF9933
+          - 33FF99
+        source_drawtypes:
+          - AREA
+          - AREA
+          - LINE
   - name: Growl Notification
     condition: contains subject
     plugin: Growl

@@ -79,12 +79,20 @@ sub react {
 
     $self->logger->debug( "Regenerating rrd graph: $graph_dir" );
 
+    my %graph_options = ( destination => $graph_dir,
+                          basename    => $filename,
+                          periods     => $period,
+                          color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
+                      );
+
+    if ( $config->{graph_options} ) {
+        for my $option ( keys %{ $config->{graph_options} } ) {
+            $graph_options{ $option } = $config->{graph_options}->{ $option };
+        }
+    }
+
     my ( $stdout, $stderr ) = Capture::Tiny::capture {
-        my %rtn = $rrd->graph( destination => $graph_dir,
-                               basename    => $filename,
-                               periods     => $period,
-                               color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
-                           );
+        my %rtn = $rrd->graph( %graph_options );
     };
 
     return $message;

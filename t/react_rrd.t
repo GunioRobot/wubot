@@ -22,7 +22,7 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
 
     my $config = { base_dir  => $tempdir,
                    type      => 'GAUGE',
-                   key       => $field,
+                   fields    => $field,
                };
 
     ok( $rrd->react( { $field => 100, key => $key }, $config ),
@@ -68,7 +68,7 @@ ok( my $rrd = Wubot::Reactor::RRD->new(),
 
     my $config = { base_dir  => $tempdir,
                    type      => 'GAUGE',
-                   key       => join( ",", @fields ),
+                   fields    => join( ",", @fields ),
                };
 
     ok( $rrd->react( { 'somename1' => 100, 'somename2' => 200, key => $key }, $config ),

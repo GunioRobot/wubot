@@ -19,8 +19,8 @@ has 'logger'  => ( is => 'ro',
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    unless ( $config->{key} ) {
-        $self->logger->logdie( "RRD reaction called missing required config param: key" );
+    unless ( $config->{fields} ) {
+        $self->logger->logdie( "RRD reaction called missing required config param: fields" );
     }
 
     my $time = $message->{lastupdate} || time;
@@ -35,27 +35,27 @@ sub react {
         mkpath( $graph_dir );
     }
 
-    for my $key ( split /,/, $config->{key} ) {
+    for my $field ( split /,/, $config->{fields} ) {
 
-        my $value = $message->{ $key };
+        my $value = $message->{ $field };
 
-        my $rrd_filename = join( "/", $rrd_dir, "$key.rrd" );
+        my $rrd_filename = join( "/", $rrd_dir, "$field.rrd" );
 
         my $rrd = RRD::Simple->new( file => $rrd_filename );
 
         unless ( -r $rrd_filename ) {
             $self->logger->warn( "Creating RRD filename: $rrd_filename" );
 
-            $rrd->create( $key => $config->{type} );
+            $rrd->create( $field => $config->{type} );
         }
 
-        $rrd->update( $rrd_filename, $time, $key, $value );
+        $rrd->update( $rrd_filename, $time, $field, $value );
 
         # log the value
         if ( $config->{log} ) {
             open(my $fh, ">>", $config->{log})
                 or die "Couldn't open $config->{log} for writing: $!\n";
-            print $fh join( ", ", scalar localtime( $time ), $key, $value ), "\n";
+            print $fh join( ", ", scalar localtime( $time ), $field, $value ), "\n";
             close $fh or die "Error closing file: $!\n";
         }
 
@@ -66,7 +66,7 @@ sub react {
 
         my ( $stdout, $stderr ) = Capture::Tiny::capture {
             my %rtn = $rrd->graph( destination => $graph_dir,
-                                   basename    => $key,
+                                   basename    => $field,
                                    periods     => [ $period ],
                                    color       => $config->{color} || [ 'BACK#666666', 'CANVAS#333333' ],
                                );

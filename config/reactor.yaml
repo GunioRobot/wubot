@@ -1,6 +1,36 @@
 ---
 rules:
 
+  - name: RSS feed entries
+    condition: key matches ^RSS AND contains body
+    rules:
+      - name: slashdot image remover
+        condition: key matches slashdot
+        plugin: ImageStrip
+        config:
+          field: body
+      - name: cl-fu image remover
+        condition: key matches cl-fu
+        plugin: ImageStrip
+        config:
+          field: body
+      - name: cpan messages in 'cpan' mailbox
+        conditon: key matches cpan
+        plugin: Maildir
+        config:
+          path: /Users/wu/wubot/mail
+          mailbox: cpan
+        last_rule: 1
+      - name: sunspot
+        condition: key matches sunspot
+        rules:
+          - name: no storms
+            condition: body matches No space weather storms
+            last_rule: 1
+          - name: normal conditions
+            condition: body matches Normal.*Normal.*Normal
+            last_rule: 1
+
   - name: strip HTML from subject
     condition: contains subject
     plugin: HTMLStrip
@@ -11,19 +41,6 @@ rules:
       - name: contains subject and body
         condition: contains body
         rules:
-          - name: RSS body
-            condition: key matches ^RSS
-            rules:
-              - name: slashdot image remover
-                condition: key matches slashdot
-                plugin: ImageStrip
-                config:
-                  field: body
-              - name: cl-fu image remover
-                condition: key matches cl-fu
-                plugin: ImageStrip
-                config:
-                  field: body
           - name: strip body HTML
             plugin: HTMLStrip
             config:

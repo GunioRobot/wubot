@@ -24,22 +24,25 @@ has 'plugins' => ( is => 'ro',
                );
 
 sub react {
-    my ( $self, $message ) = @_;
+    my ( $self, $message, $rules ) = @_;
 
-    for my $rule ( @{ $self->config->{rules} } ) {
+    unless ( $rules ) { $rules = $self->config->{rules} }
 
-        if ( $self->condition( $rule->{condition}, $message ) ) {
+  RULE:
+    for my $rule ( @{ $rules } ) {
 
-            $self->logger->debug( "Rule matched: $rule->{name}" );
+        if ( $rule->{condition} ) {
+            next RULE unless $self->condition( $rule->{condition}, $message );
+        }
 
-            if ( $rule->{rules} ) {
-                for my $child_rule ( @{ $rule->{rules} } ) {
-                    $message = $self->run_plugin( $child_rule->{name}, $message, $child_rule->{plugin}, $child_rule->{config} );
-                }
-            }
-            else {
-                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
-            }
+        $self->logger->debug( "Rule matched: $rule->{name}" );
+
+        if ( $rule->{rules} ) {
+            $self->react( $message, $rule->{rules} );
+        }
+
+        if ( $rule->{plugin} ) {
+            $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
         }
     }
 

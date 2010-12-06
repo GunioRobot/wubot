@@ -55,6 +55,28 @@ rules:
         config:
           field: test_array_2
           value: test_value_2
+  - name: tree rule
+    condition: contains test_tree
+    rules:
+      - name: test_tree_always
+        plugin: AddField
+        config:
+          field: test_tree_1
+          value: test_value_1
+      - name: test_tree_foo
+        condition: contains foo
+        plugin: AddField
+        config:
+          field: test_tree_foo
+          value: test_value_1
+        rules:
+          - name: test_tree_bar
+            condition: contains bar
+            plugin: AddField
+            config:
+              field: test_tree_bar
+              value: test_value_1
+
 
 EOF
 
@@ -113,6 +135,31 @@ my $reactor = Wubot::Reactor->new( config => $config );
     is( $reactor->react( { test_array => 1 } )->{test_array_2},
         'test_value_2',
         "checking second rule in a rule array"
+    );
+
+    is( $reactor->react( { test_tree => 1 } )->{test_tree_1},
+        'test_value_1',
+        "checking rule tree rule with no condition ran"
+    );
+
+    is( $reactor->react( { test_tree => 1 } )->{test_tree_foo},
+        undef,
+        "checking rule tree rule with non-matching condition did not ran"
+    );
+
+    is( $reactor->react( { test_tree => 1, foo => 1 } )->{test_tree_foo},
+        'test_value_1',
+        "checking rule tree rule with matching condition ran"
+    );
+
+    is( $reactor->react( { test_tree => 1, foo => 1 } )->{test_tree_bar},
+        undef,
+        "checking rule tree rule with non-matching condition three deep ran"
+    );
+
+    is( $reactor->react( { test_tree => 1, foo => 1, bar => 1 } )->{test_tree_bar},
+        'test_value_1',
+        "checking rule tree rule with matching condition three deep ran"
     );
 
 }

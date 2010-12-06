@@ -36,8 +36,9 @@ sub check {
     my $res = $ua->request( $req );
 
     unless ( $res->is_success ) {
-        $self->logger->error( $self->key . ": Failure getting content: ", $res->status_line || "no error text" );
-        return { cache => $cache };
+        my $subject = "Failure getting content: " . $res->status_line || "no error text";
+        $self->logger->error( $self->key . ": $subject" );
+        return { cache => $cache, react => { subject => $subject } };
     }
 
     my $content = $res->content;
@@ -45,8 +46,9 @@ sub check {
     eval { $feed = XML::Feed->parse( \$content ) };
 
     unless ( $feed ) {
-        $self->logger->error( $self->key . ": Failure parsing XML Feed: ", XML::Feed->errstr || "no error text" );
-        return { cache => $cache };
+        my $subject = "Failure parsing XML Feed: " . XML::Feed->errstr || "no error text";
+        $self->logger->error( $self->key . ": $subject" );
+        return { cache => $cache, react => { subject => $subject } };
     }
 
     my @entries = $feed->entries;
@@ -54,7 +56,7 @@ sub check {
     my $count = scalar @entries;
     unless ( $count ) {
         $self->logger->warn( $self->key, ": No items in feed" );
-        return { cache => $cache };
+        return { cache => $cache, react => { subject => "No items in feed" } };
     }
 
     my @react;

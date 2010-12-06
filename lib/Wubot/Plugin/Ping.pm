@@ -33,11 +33,17 @@ sub check {
     }
     if ( $average ) { $average = int ( $average / $count_received * 100 ) / 100 }
 
+    my $loss = $num_packets - $count_received;
+
     my $reaction = { host    => $config->{host},
                      count   => $num_packets,
                      average => $average,
-                     loss    => $num_packets - $count_received,
+                     loss    => $loss,
                  };
+
+    if ( $loss == $num_packets ) {
+        $reaction->{subject} = "Unable to ping host: $config->{host}";
+    }
 
     return { react => $reaction };
 }

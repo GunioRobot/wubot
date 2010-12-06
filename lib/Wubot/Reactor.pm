@@ -31,7 +31,15 @@ sub react {
         if ( $self->condition( $rule->{condition}, $message ) ) {
 
             $self->logger->debug( "Rule matched: $rule->{name}" );
-            $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+
+            if ( $rule->{rules} ) {
+                for my $child_rule ( @{ $rule->{rules} } ) {
+                    $message = $self->run_plugin( $child_rule->{name}, $message, $child_rule->{plugin}, $child_rule->{config} );
+                }
+            }
+            else {
+                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+            }
         }
     }
 

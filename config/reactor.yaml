@@ -39,82 +39,82 @@ rules:
         right-axis: 1:0
         width: 375
 
-  - name: OS X Idle - store in SQLite database
+  - name: OS X Idle
     condition: key matches ^OsxIdle
-    plugin: SQLite
-    config:
-      file: /Users/wu/wubot/sqlite/idle.sql
-      tablename: idle
-      schema:
-        id: INTEGER PRIMARY KEY AUTOINCREMENT
-        idle_min: int
-        active_min: int
-        idle_state: int
-        lastupdate: int
+    rules:
+      - name: store in SQLite database
+        plugin: SQLite
+        config:
+          file: /Users/wu/wubot/sqlite/idle.sql
+          tablename: idle
+          schema:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            idle_min: int
+            active_min: int
+            idle_state: int
+            lastupdate: int
+      - name: add active_min and idle_min to rrd
+        plugin: RRD
+        config:
+          base_dir: /Users/wu/wubot/rrd
+          fields:
+            idle_min: GAUGE
+            active_min: GAUGE
+          period:
+            - day
+            - week
+          graph_options:
+            lower_limit: 0
+            upper_limit: 60
+            rigid: ""
+            sources:
+              - active_min
+              - idle_min
+            source_colors:
+              - FF9933
+              - 9933FF
+            source_drawtypes:
+              - AREA
+              - AREA
+            right-axis: 1:0
+            width: 375
 
-  - name: OS X Idle - add active_min and idle_min to rrd
-    condition: key matches ^OsxIdle
-    plugin: RRD
-    config:
-      base_dir: /Users/wu/wubot/rrd
-      fields:
-        idle_min: GAUGE
-        active_min: GAUGE
-      period:
-        - day
-        - week
-      graph_options:
-        lower_limit: 0
-        upper_limit: 60
-        rigid: ""
-        sources:
-          - active_min
-          - idle_min
-        source_colors:
-          - FF9933
-          - 9933FF
-        source_drawtypes:
-          - AREA
-          - AREA
-        right-axis: 1:0
-        width: 375
-
-  - name: Work Hours - store in SQLite database
+  - name: Work Hours
     condition: key matches ^WorkHours
-    plugin: SQLite
-    config:
-      file: /Users/wu/wubot/sqlite/workhours.sql
-      tablename: workhours
-      schema:
-        id: INTEGER PRIMARY KEY AUTOINCREMENT
-        total_idle: int
-        total_active: int
-
-  - name: Work Hours - add total_idle and total_active to rrd
-    condition: key matches ^WorkHours
-    plugin: RRD
-    config:
-      base_dir: /Users/wu/wubot/rrd
-      fields:
-        total_idle: GAUGE
-        total_active: GAUGE
-      period:
-        - day
-        - week
-        - month
-      heartbeat: 1800
-      graph_options:
-        sources:
-          - total_idle
-          - total_active
-        source_colors:
-          - 9933FF
-          - FF9933
-        source_drawtypes:
-          - LINE
-          - AREA
-        right-axis: 1:0
-        width: 375
+    rules:
+      - name: store in SQLite
+        plugin: SQLite
+        config:
+          file: /Users/wu/wubot/sqlite/workhours.sql
+          tablename: workhours
+          schema:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            total_idle: int
+            total_active: int
+      - name: store in RRD
+        plugin: RRD
+        config:
+          base_dir: /Users/wu/wubot/rrd
+          fields:
+            total_idle: GAUGE
+            total_active: GAUGE
+          period:
+            - day
+            - week
+            - month
+          heartbeat: 1800
+          graph_options:
+            sources:
+              - total_idle
+              - total_active
+            source_colors:
+              - 9933FF
+              - FF9933
+            source_drawtypes:
+              - LINE
+              - AREA
+            right-axis: 1:0
+            width: 375
 
   - name: Uptime - add load to rrd
     condition: key matches ^Uptime
@@ -143,34 +143,33 @@ rules:
         right-axis: 1:0
         width: 375
 
-  - name: Growl Notification
+  - name: notifications
     condition: contains subject
-    plugin: Growl
-    config:
-      image_dir: /Users/wu/.icons
+    rules:
+      - name: growl
+        plugin: Growl
+        config:
+          image_dir: /Users/wu/.icons
+      - name: console
+        plugin: Console
+        config: {}
 
-  - name: Console Notification
-    condition: contains subject
-    plugin: Console
-    config: {}
-
-  - name: suppress future growl notifications
-    condition: contains subject
-    plugin: AddField
-    config:
-      field: quiet_growl
-      value: 1
-
-  - name: suppress future voice notifications
-    condition: contains subject
-    plugin: AddField
-    config:
-      field: quiet_voice
-      value: 1
-
-  - name: forward to old wubot
+  - name: forwarding to old wubot
     condition: hostname equals navi AND no_post is false
-    plugin: MessagePoster
-    config:
-      url: http://wubot/cgi-bin/wubot-message.cgi
+    rules:
+      - name: suppress future growl notifications
+        plugin: AddField
+        config:
+          field: quiet_growl
+          value: 1
+      - name: suppress future voice notifications
+        plugin: AddField
+        config:
+          field: quiet_voice
+          value: 1
+      - name: post message
+        plugin: MessagePoster
+        config:
+          url: http://wubot/cgi-bin/wubot-message.cgi
+
 

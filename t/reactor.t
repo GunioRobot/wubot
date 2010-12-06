@@ -5,7 +5,7 @@ use Test::More 'no_plan';
 use YAML;
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($INFO);
+Log::Log4perl->easy_init($DEBUG);
 
 use Wubot::Reactor;
 
@@ -42,6 +42,19 @@ rules:
     config:
       field: test_field_test4
       value: test_value_test5
+  - name: array rule
+    condition: contains test_array
+    rules:
+      - name: test_array_1
+        plugin: AddField
+        config:
+          field: test_array_1
+          value: test_value_1
+      - name: test_array_1
+        plugin: AddField
+        config:
+          field: test_array_2
+          value: test_value_2
 
 EOF
 
@@ -87,10 +100,19 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "checking test message field with test key matching field_has rule"
     );
 
-
     is( $reactor->react( { foo => 'testpass2' } )->{test_field_test4},
         'test_value_test5',
         "checking later rule overwrote value set in earlier rule"
+    );
+
+    is( $reactor->react( { test_array => 1 } )->{test_array_1},
+        'test_value_1',
+        "checking first rule in a rule array"
+    );
+
+    is( $reactor->react( { test_array => 1 } )->{test_array_2},
+        'test_value_2',
+        "checking second rule in a rule array"
     );
 
 }

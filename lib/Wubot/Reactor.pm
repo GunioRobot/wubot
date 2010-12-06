@@ -84,6 +84,13 @@ sub condition {
         }
         return;
     }
+    elsif ( $condition =~ m|^([\w\.]+) is false$| ) {
+        my $field = $1;
+
+        return 1 unless $message->{$field};
+        return 1 if $message->{ $field } eq "false";
+        return;
+    }
 
     $self->logger->error( "Condition could not be parsed: $condition" );
     return;

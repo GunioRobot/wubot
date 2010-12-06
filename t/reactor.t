@@ -145,8 +145,36 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "Checking 'foo is true' when foo = blank"
     );
 
+    ok( $reactor->condition( "foo is true", { foo => "true" } ),
+        "Checking 'foo is true' when foo = true"
+    );
+
     ok( ! $reactor->condition( "foo is true", { foo => "false" } ),
         "Checking 'foo is true' when foo = false"
+    );
+
+    ok( ! $reactor->condition( "foo is false", { foo => 'test1' } ),
+        "Checking 'foo is false' when foo = test1"
+    );
+
+    ok( $reactor->condition( "foo is false", { foo => undef } ),
+        "Checking 'foo is false' when foo = undef"
+    );
+
+    ok( $reactor->condition( "foo is false", { foo => 0 } ),
+        "Checking 'foo is false' when foo = 0"
+    );
+
+    ok( $reactor->condition( "foo is false", { foo => "" } ),
+        "Checking 'foo is false' when foo = blank"
+    );
+
+    ok( $reactor->condition( "foo is false", { foo => "false" } ),
+        "Checking 'foo is false' when foo = false"
+    );
+
+    ok( ! $reactor->condition( "foo is false", { foo => "true" } ),
+        "Checking 'foo is false' when foo = true"
     );
 
     ok( $reactor->condition( "foo is true AND bar is true", { foo => "abc", bar => "def" } ),

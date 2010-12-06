@@ -1,30 +1,25 @@
 ---
 rules:
+
   - name: strip HTML from subject
     condition: contains subject
     plugin: HTMLStrip
     config:
       field: subject
       newfield: subject_text
-
-  - name: contains body
-    condition: contains body
     rules:
-      - name: strip body HTML
-        plugin: HTMLStrip
-        config:
-          field: body
-          newfield: body_text
-      - name: store message in maildir
-        plugin: Maildir
-        config:
-          path: /Users/wu/wubot/mail
-
-  - name: remove key field for messages that came from AppWubot
-    condition: key matches ^AppWubot
-    plugin: DeleteField
-    config:
-      field: key
+      - name: contains body
+        condition: contains body
+        rules:
+          - name: strip body HTML
+            plugin: HTMLStrip
+            config:
+              field: body
+              newfield: body_text
+          - name: store message in maildir
+            plugin: Maildir
+            config:
+              path: /Users/wu/wubot/mail
 
   - name: Ping Time RRD
     condition: key matches ^Ping
@@ -146,6 +141,11 @@ rules:
   - name: notifications
     condition: contains subject
     rules:
+      - name: remove key field for messages that came from AppWubot
+        condition: key matches ^AppWubot
+        plugin: DeleteField
+        config:
+          field: key
       - name: growl
         plugin: Growl
         config:

@@ -24,8 +24,9 @@ has 'plugins' => ( is => 'ro',
                );
 
 sub react {
-    my ( $self, $message, $rules ) = @_;
+    my ( $self, $message, $rules, $depth ) = @_;
 
+    $depth = $depth || 0;
     unless ( $rules ) { $rules = $self->config->{rules} }
 
   RULE:
@@ -35,10 +36,10 @@ sub react {
             next RULE unless $self->condition( $rule->{condition}, $message );
         }
 
-        $self->logger->debug( "Rule matched: $rule->{name}" );
+        $self->logger->debug( " " x $depth, "- rule matched: $rule->{name}" );
 
         if ( $rule->{rules} ) {
-            $self->react( $message, $rule->{rules} );
+            $self->react( $message, $rule->{rules}, $depth+1 );
         }
 
         if ( $rule->{plugin} ) {

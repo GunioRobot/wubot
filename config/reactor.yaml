@@ -7,24 +7,24 @@ rules:
       field: subject
       newfield: subject_text
 
-  - name: strip HTML from body
+  - name: contains body
     condition: contains body
-    plugin: HTMLStrip
-    config:
-      field: body
-      newfield: body_text
+    rules:
+      - name: strip body HTML
+        plugin: HTMLStrip
+        config:
+          field: body
+          newfield: body_text
+      - name: store message in maildir
+        plugin: Maildir
+        config:
+          path: /Users/wu/wubot/mail
 
   - name: remove key field for messages that came from AppWubot
     condition: key matches ^AppWubot
     plugin: DeleteField
     config:
       field: key
-
-  - name: store message bodies in maildir
-    condition: contains body
-    plugin: Maildir
-    config:
-      path: /Users/wu/wubot/mail
 
   - name: Ping Time RRD
     condition: key matches ^Ping

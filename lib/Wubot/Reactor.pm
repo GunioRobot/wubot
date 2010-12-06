@@ -28,38 +28,69 @@ sub react {
 
     for my $rule ( @{ $self->config->{rules} } ) {
 
-        if ( $rule->{condition} =~ m|^([\w\.]+)\s+equals\s+(.*)$| ) {
-            my ( $field, $value ) = ( $1, $2 );
+        if ( $self->condition( $rule->{condition}, $message ) ) {
 
-            if ( $message->{ $field } && $message->{ $field } eq $value ) {
-                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
-            }
-        }
-        elsif ( $rule->{condition} =~ m|^([\w\.]+)\s+matches\s+(.*)$| ) {
-            my ( $field, $value ) = ( $1, $2 );
-
-            if ( $message->{ $field } && $message->{ $field } =~ m/$value/ ) {
-                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
-            }
-
-        }
-        elsif ( $rule->{condition} =~ m|^contains ([\w\.]+)$| ) {
-            my $field = $1;
-
-            if ( $message->{ $field } ) {
-                $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
-            }
-
+            $self->logger->debug( "Rule matched: $rule->{name}" );
+            $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
         }
     }
 
     return $message;
 }
 
+sub condition {
+    my ( $self, $condition, $message ) = @_;
+
+    if ( $condition =~ m|^(.*)\s+AND\s+(.*)$| ) {
+        my ( $first, $last ) = ( $1, $2 );
+
+        return 1 if $self->condition( $first, $message ) && $self->condition( $last, $message );
+        return;
+    }
+    elsif ( $condition =~ m|^(.*)\s+OR\s+(.*)$| ) {
+        my ( $first, $last ) = ( $1, $2 );
+
+        return 1 if $self->condition( $first, $message ) || $self->condition( $last, $message );
+        return;
+    }
+    elsif ( $condition =~ m|^NOT\s+(.*)$| ) {
+        return if $self->condition( $1, $message );
+        return 1;
+    }
+    elsif ( $condition =~ m|^([\w\.]+)\s+equals\s+(.*)$| ) {
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } eq $value;
+        return;
+    }
+    elsif ( $condition =~ m|^([\w\.]+)\s+matches\s+(.*)$| ) {
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/;
+        return;
+    }
+    elsif ( $condition =~ m|^contains ([\w\.]+)$| ) {
+        my $field = $1;
+
+        return 1 if exists $message->{ $field };
+        return;
+    }
+    elsif ( $condition =~ m|^([\w\.]+) is true$| ) {
+        my $field = $1;
+
+        if ( $message->{ $field } ) {
+            return if $message->{ $field } eq "false";
+            return 1;
+        }
+        return;
+    }
+
+    $self->logger->error( "Condition could not be parsed: $condition" );
+    return;
+}
+
 sub run_plugin {
     my ( $self, $rule, $message, $plugin, $config ) = @_;
-
-    $self->logger->debug( "Rule matched: $rule" );
 
     unless ( $message ) {
         $self->logger->logconfess( "ERROR: run_plugin called without a message" );

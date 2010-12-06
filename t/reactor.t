@@ -76,7 +76,22 @@ rules:
             config:
               field: test_tree_bar
               value: test_value_1
-
+  - name: key is TestCase-test6 with 'last_rule' set
+    condition: key equals TestCase-test6
+    plugin: AddField
+    config:
+      field: test_field_test6
+      value: test_value_test6
+    last_rule: 1
+  - name: key is TestCase-test6, should not run due to 'last_rule'
+    condition: key equals TestCase-test6
+    plugin: AddField
+    config:
+      field: test_field_test6
+      value: test_value_test7
+  - name: key is TestCase-test8
+    condition: key equals TestCase-test8
+    last_rule: 1
 
 EOF
 
@@ -162,6 +177,25 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "checking rule tree rule with matching condition three deep ran"
     );
 
+    is( $reactor->react( { key => 'TestCase-test6' } )->{test_field_test6},
+        'test_value_test6',
+        "checking 'last_rule' prevents further rules from processing"
+    );
+
+    is( $reactor->react( { key => 'TestCase-test6' } )->{no_more_rules},
+        1,
+        "checking 'last_rule' set 'no_more_rules' field"
+    );
+
+    is( $reactor->react( { key => 'TestCase-test7' } )->{no_more_rules},
+        undef,
+        "Check that 'no_more_rules' field not set by default"
+    );
+
+    is( $reactor->react( { key => 'TestCase-test8' } )->{no_more_rules},
+        1,
+        "checking 'last_rule' set 'no_more_rules' field"
+    );
 }
 
 # condition()

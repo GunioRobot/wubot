@@ -26,11 +26,15 @@ has 'plugins' => ( is => 'ro',
 sub react {
     my ( $self, $message, $rules, $depth ) = @_;
 
+    return $message if $message->{no_more_rules};
+
     $depth = $depth || 0;
     unless ( $rules ) { $rules = $self->config->{rules} }
 
   RULE:
     for my $rule ( @{ $rules } ) {
+
+        return $message if $message->{no_more_rules};
 
         if ( $rule->{condition} ) {
             next RULE unless $self->condition( $rule->{condition}, $message );
@@ -44,6 +48,10 @@ sub react {
 
         if ( $rule->{plugin} ) {
             $message = $self->run_plugin( $rule->{name}, $message, $rule->{plugin}, $rule->{config} );
+        }
+
+        if ( $rule->{last_rule} ) {
+            $message->{no_more_rules} = 1;
         }
     }
 

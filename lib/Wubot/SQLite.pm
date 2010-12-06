@@ -3,6 +3,7 @@ use Moose;
 
 use DBI;
 use DBD::SQLite;
+use SQL::Abstract;
 
 has 'file' => ( is       => 'ro',
                 isa      => 'Str',
@@ -17,6 +18,14 @@ has 'dbh'  => ( is       => 'rw',
                     return $self->connect();
                 },
             );
+
+has 'sql_abstract' => ( is => 'ro',
+                        isa => "SQL::Abstract",
+                        lazy => 1,
+                        default => sub {
+                            return SQL::Abstract->new;
+                        },
+                    );
 
 sub create_table {
     my ( $self, $table, $schema_h ) = @_;
@@ -71,13 +80,16 @@ sub insert {
         die "ERROR: no schema specified to insert command!";
     }
 
-    my ( $command, @keys ) = $self->get_insert_command( $table, $schema_h );
+    my $insert;
+    for my $field ( keys %{ $schema_h } ) {
+        $insert->{ $field } = $entry->{ $field };
+    }
+
+    my( $command, @bind ) = $self->sql_abstract->insert( $table, $insert );
 
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
-    my @insert = map { defined $entry->{$_} ? $entry->{$_} : "" } @keys;
-
-    $sth1->execute( @insert );
+    $sth1->execute( @bind );
 
     return $self->dbh->last_insert_id( "", "", $table, "");
 }
@@ -122,26 +134,6 @@ sub delete {
     $delete .= join( " AND ", @conditions );
 
     $self->dbh->do( $delete );
-}
-
-
-sub get_insert_command {
-    my ( $self, $table, $schema_h ) = @_;
-
-    # temporary schema hash, remove the id
-    my $insert_schema_h = { %{ $schema_h } };
-    delete $insert_schema_h->{id};
-
-    # create the insert statement
-    my @keys = sort keys %{ $insert_schema_h };
-    my $insert = join( ",", @keys );
-
-    my $values = "?," x $#keys . "?";
-    my $command = qq{ INSERT INTO $table ( $insert )
-                       VALUES ($values)
-     };
-
-    return $command, @keys;
 }
 
 

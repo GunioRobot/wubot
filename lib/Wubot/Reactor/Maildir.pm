@@ -25,6 +25,9 @@ sub react {
     if ( $message->{mailbox} ) {
         $mailbox = $message->{mailbox};
     }
+    elsif ( $config->{mailbox} ) {
+        $mailbox = $config->{mailbox};
+    }
     else {
         $mailbox = lc( $message->{plugin} );
         $mailbox =~ s|^.*\:||;

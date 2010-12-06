@@ -52,7 +52,7 @@ rules:
         idle_state: int
         lastupdate: int
 
-  - name: OSX Idle - add active_min and idle_min to rrd
+  - name: OS X Idle - add active_min and idle_min to rrd
     condition: key matches ^OsxIdle
     plugin: RRD
     config:
@@ -104,7 +104,6 @@ rules:
         - month
       heartbeat: 1800
       graph_options:
-        lower_limit: 0
         sources:
           - total_idle
           - total_active

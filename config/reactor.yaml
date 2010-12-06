@@ -167,3 +167,10 @@ rules:
     config:
       field: quiet_voice
       value: 1
+
+  - name: forward to old wubot
+    condition: hostname equals navi AND NOT no_post is true
+    plugin: MessagePoster
+    config:
+      url: http://wubot/cgi-bin/wubot-message.cgi
+

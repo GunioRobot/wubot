@@ -54,16 +54,5 @@ sub react {
     my ( $message ) = @_;
 
     $logger->debug( "Message received from: $message->{key}" );
-
     $reactor->react( $message );
-
-    # if the message originated on this host, and the 'no_post' option
-    # is not set, then forward the message to my App::Wubot instance
-    if ( $message->{hostname} eq $hostname && ! $message->{no_post} ) {
-
-        $poster->react( $message,
-                        { url => 'http://wubot/cgi-bin/wubot-message.cgi', },
-                    );
-    }
-
 }

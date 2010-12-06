@@ -8,9 +8,22 @@ rules:
       field: subject
       newfield: subject_text
     rules:
-      - name: contains body
+      - name: contains subject and body
         condition: contains body
         rules:
+          - name: RSS body
+            condition: key matches ^RSS
+            rules:
+              - name: slashdot image remover
+                condition: key matches slashdot
+                plugin: ImageStrip
+                config:
+                  field: body
+              - name: cl-fu image remover
+                condition: key matches cl-fu
+                plugin: ImageStrip
+                config:
+                  field: body
           - name: strip body HTML
             plugin: HTMLStrip
             config:

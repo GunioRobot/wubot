@@ -114,15 +114,17 @@ rules:
           tablename: workhours
           schema:
             id: INTEGER PRIMARY KEY AUTOINCREMENT
-            total_idle: int
-            total_active: int
+            idle_hours: int
+            active_hours: int
+            total_hours: int
       - name: store in RRD
         plugin: RRD
         config:
           base_dir: /Users/wu/wubot/rrd
           fields:
-            total_idle: GAUGE
-            total_active: GAUGE
+            idle_hours: GAUGE
+            active_hours: GAUGE
+            total_hours: GAUGE
           period:
             - day
             - week
@@ -130,14 +132,17 @@ rules:
           heartbeat: 1800
           graph_options:
             sources:
-              - total_idle
-              - total_active
+              - idle_hours
+              - active_hours
+              - total_hours
             source_colors:
               - 9933FF
               - FF9933
+              - 3399FF
             source_drawtypes:
               - LINE
               - AREA
+              - LINE
             right-axis: 1:0
             width: 375
 

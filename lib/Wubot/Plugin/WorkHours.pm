@@ -7,7 +7,7 @@ use POSIX qw(strftime);
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 
-my $seven_days = 60 * 60 * 24 * 8;
+my $seven_days = 60 * 60 * 24 * 7;
 
 sub check {
     my ( $self, $inputs ) = @_;
@@ -34,7 +34,7 @@ sub check {
     my $start_time = $now - $seven_days;
 
     unless ( $self->{sth} ) {
-        $self->{sth} = $self->{dbh}->prepare( "SELECT * FROM $config->{tablename} WHERE timestamp > $start_time ORDER BY id" );
+        $self->{sth} = $self->{dbh}->prepare( "SELECT * FROM $config->{tablename} WHERE timestamp > $start_time ORDER BY timestamp" );
 
         if ( !defined $self->{sth} ) {
             die "Cannot prepare statement: $DBI::errstr\n";
@@ -43,43 +43,68 @@ sub check {
 
     $self->{sth}->execute;
 
-    my $data;
+    my @rows;
 
     while ( my $row = $self->{sth}->fetchrow_hashref() ) {
 
+        push @rows, $row;
+
+    }
+
+    return { react => $self->calculate_stats( \@rows ) };
+}
+
+sub calculate_stats {
+    my ( $self, $rows ) = @_;
+
+    my $data;
+
+    my $last_timestamp = 0;
+
+    for my $row ( @{ $rows } ) {
+
         my $day = strftime( "%Y-%m-%d", localtime( $row->{timestamp} ) );
 
-        $data->{$day}->{total}++;
+        my $seconds_diff = $row->{timestamp} - $last_timestamp;
+
+        my $counter = 1;
+        if ( $seconds_diff > 60 && $seconds_diff < 600 ) {
+            $counter = $seconds_diff / 60;
+        }
+
+        $data->{total}->{total_min} += $counter;
+        $data->{$day}->{total_min}  += $counter;
 
         if ( $row->{idle_min} > 9 ) {
-            $data->{$day}->{idle_min}++;
+            $data->{total}->{idle_min} += $counter;
+            $data->{$day}->{idle_min}  += $counter;
         }
         else {
-            $data->{$day}->{active_min}++;
+            $data->{total}->{active_min} += $counter;
+            $data->{$day}->{active_min}  += $counter;
         }
+
+        $last_timestamp = $row->{timestamp};
     }
-
-    my $react;
-
-    my $total_idle;
-    my $total_active;
 
     for my $day ( keys %{ $data } ) {
-        if ( $data->{$day}->{idle_min} ) {
-            $react->{$day}->{idle_hrs} = int( $data->{$day}->{idle_min} / 60 * 10 ) / 10;
-            $total_idle += $react->{$day}->{idle_hrs};
-        }
 
-        if ( $data->{$day}->{active_min} ) {
-            $react->{$day}->{active_hrs} = int( $data->{$day}->{active_min} / 60 * 10 ) / 10;
-            $total_active += $react->{$day}->{active_hrs};
-        }
+        $data->{$day}->{idle_hours}   = int( ( $data->{$day}->{idle_min}   || 0 ) / 60 * 10 ) / 10;
+        delete $data->{$day}->{idle_min};
+
+        $data->{$day}->{active_hours} = int( ( $data->{$day}->{active_min} || 0 ) / 60 * 10 ) / 10;
+        delete $data->{$day}->{active_min};
+
+        $data->{$day}->{total_hours}  = int( ( $data->{$day}->{total_min}  || 0 ) / 60 * 10 ) / 10;
+        delete $data->{$day}->{total_min};
     }
 
-    $react->{total_idle}   = $total_idle;
-    $react->{total_active} = $total_active;
+    for my $key ( keys %{ $data->{total} } ) {
+        $data->{$key} = $data->{total}->{$key};
+    }
+    delete $data->{total};
 
-    return { react => $react };
+    return $data;
 }
 
 1;

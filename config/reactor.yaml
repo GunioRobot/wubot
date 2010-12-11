@@ -55,7 +55,7 @@ rules:
         config:
           field: body
       - name: cpan messages in 'cpan' mailbox
-        conditon: key matches cpan
+        condition: key matches cpan
         plugin: Maildir
         config:
           path: /Users/wu/wubot/mail

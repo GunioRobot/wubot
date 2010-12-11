@@ -10,8 +10,6 @@ rules:
         config:
           field: username
           value: wubot
-      - name: dump
-        plugin: Dumper
       - name: colorize
         plugin: AddField
         config:
@@ -80,6 +78,8 @@ rules:
       field: subject
       newfield: subject_text
     rules:
+      - name: dump subjects
+        plugin: Dumper
       - name: contains subject and body
         condition: contains body
         rules:
@@ -166,7 +166,6 @@ rules:
       - name: store in RRD
         plugin: RRD
         config:
-          debug: 1
           base_dir: /Users/wu/wubot/rrd
           fields:
             idle_hours: GAUGE
@@ -225,9 +224,25 @@ rules:
         config:
           field: key
       - name: growl
-        plugin: Growl
-        config:
-          image_dir: /Users/wu/.icons
+        rules:
+          - name: growl color
+            plugin: HashLookup
+            config:
+              source_field: color
+              target_field: priority
+              lookup:
+                red: 2
+                yellow: 1
+                orange: 1
+                green: -1
+                grey: 0
+                magenta: -2
+                blue: -2
+                cyan: -2
+          - name: growl notify
+            plugin: Growl
+            config:
+              image_dir: /Users/wu/.icons
       - name: console
         plugin: Console
         config: {}

@@ -8,16 +8,6 @@ my $growl_enabled = 1;
 eval "use Growl::Tiny";
 if ( $@ ) { $growl_enabled = 0 }
 
-my %color_priorities = ( 'red'     => 2,
-                         'yellow'  => 1,
-                         'orange'  => 1,
-                         'green'   => -1,
-                         'grey'    => 0,
-                         'magenta' => -2,
-                         'blue'    => -2,
-                         'cyan'    => -2,
-                     );
-
 sub react {
     my ( $self, $message, $config ) = @_;
 
@@ -28,31 +18,14 @@ sub react {
     my $subject = $message->{subject_text} || $message->{subject};
     return $message unless $subject;
 
-    my $color = $message->{color};
-
     my $sticky = $message->{sticky} ? 1 : 0;
 
-    if ( $message->{urgent} ) {
-        $sticky = 1;
-        $color = 'red';
-    }
-
-    my $priority = 0;
-    if ( $color ) {
-        $priority = $color_priorities{ $color };
-    }
-    elsif ( $message->{priority} ) {
-        $priority = $message->{priority};
-    }
-    elsif ( $message->{errmsg} ) {
-        $priority = $color_priorities{red};
-    }
+    my $priority = $message->{priority};
 
     my $notification = { sticky   => $sticky,
                          priority => $priority,
                          subject  => $subject,
                          host     => 'localhost',
-                         color    => $color,
                      };
 
     my $date = strftime( "%d/%H:%M", localtime( $message->{lastupdate}||time ) );

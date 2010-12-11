@@ -125,9 +125,6 @@ sub run_plugin {
     unless ( $plugin ) {
         $self->logger->logconfess( "ERROR: run_plugin called without a plugin" );
     }
-    unless ( $config ) {
-        $self->logger->logconfess( "ERROR: run_plugin called without any config" );
-    }
 
     unless ( $self->{plugins}->{ $plugin } ) {
         $self->logger->info( "Creating instance of reactor plugin $plugin" );

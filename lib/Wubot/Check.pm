@@ -26,6 +26,7 @@ has 'instance'   => ( is      => 'ro',
                           return $class->new( key        => $self->key,
                                               class      => $self->class,
                                               cache_file => $self->cache_file,
+                                              reactor    => $self->reactor,
                                           );
                       },
                   );
@@ -77,11 +78,6 @@ sub init {
 
     if ( $self->instance->can( 'validate_config' ) ) {
         $self->instance->validate_config( $config );
-    }
-
-    # set up the reactor on the instance
-    if ( $self->instance->can( 'reactor' ) ) {
-        $self->instance->reactor( $self->reactor );
     }
 
     return unless $self->instance->can( 'init' );

@@ -52,7 +52,7 @@ sub react {
     my $time = $message->{lastupdate} || time;
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
 
-    my $body = $message->{body_text} || $message->{body};
+    my $body = $message->{body_text} || $message->{body} || "";
     my $body_text = "FEED:    $key\nSUBJECT: $message->{subject}\n\n$body\n";
 
     my %message_data = (

@@ -58,11 +58,30 @@ has 'reactor_queue_dir' => ( is => 'ro',
                              },
                          );
 
+has 'reactor'   => ( is => 'ro',
+                     isa => 'CodeRef',
+                     lazy => 1,
+                     default => sub {
+                         my ( $self ) = @_;
+
+                         return sub {
+                             my ( $message ) = @_;
+
+                             $self->enqueue_results( $message );
+                         };
+                     },
+                 );
+
 sub init {
     my ( $self, $config ) = @_;
 
     if ( $self->instance->can( 'validate_config' ) ) {
         $self->instance->validate_config( $config );
+    }
+
+    # set up the reactor on the instance
+    if ( $self->instance->can( 'reactor' ) ) {
+        $self->instance->reactor( $self->reactor );
     }
 
     return unless $self->instance->can( 'init' );
@@ -72,7 +91,7 @@ sub init {
     my $results = $self->instance->init( { config => $config, cache => $cache } );
 
     if ( $results->{react} ) {
-        $self->enqueue_results( $results->{react} );
+        $self->reactor->( $results->{react} );
     }
 
     if ( $results->{cache} ) {
@@ -92,7 +111,7 @@ sub check {
     my $results = $self->instance->check( { config => $config, cache => $cache } );
 
     if ( $results->{react} ) {
-        $self->enqueue_results( $results->{react} );
+        $self->reactor->( $results->{react} );
     }
 
     if ( $results->{cache} ) {

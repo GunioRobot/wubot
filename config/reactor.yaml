@@ -1,6 +1,42 @@
 ---
 rules:
 
+  - name: IRC
+    condition: key matches ^IRC
+    rules:
+      - name: dump
+        plugin: Dumper
+      - name: colorize
+        plugin: AddField
+        config:
+          field: color
+          value: cyan
+      - name: private color
+        condition: type equals private
+        plugin: AddField
+        config:
+          field: color
+          value: yellow
+        rules:
+          - name: private sticky
+            plugin: AddField
+            config:
+              field: sticky
+              value: 1
+      - name: public to me
+        condition: type equals public AND text matches wu
+        plugin: AddField
+        config:
+          field: color
+          value: yellow
+        rules:
+          - name: private sticky
+            plugin: AddField
+            config:
+              field: sticky
+              value: 1
+        
+
   - name: RSS feed entries
     condition: key matches ^RSS AND contains body
     rules:
@@ -58,6 +94,10 @@ rules:
       base_dir: /Users/wu/wubot/rrd
       fields:
         average: GAUGE
+      period:
+        - day
+        - week
+        - month
       graph_options:
         lower_limit: 0
         upper_limit: 1
@@ -116,15 +156,15 @@ rules:
             id: INTEGER PRIMARY KEY AUTOINCREMENT
             idle_hours: int
             active_hours: int
-            total_hours: int
+            lastupdate: int
       - name: store in RRD
         plugin: RRD
         config:
+          debug: 1
           base_dir: /Users/wu/wubot/rrd
           fields:
             idle_hours: GAUGE
             active_hours: GAUGE
-            total_hours: GAUGE
           period:
             - day
             - week
@@ -132,15 +172,12 @@ rules:
           heartbeat: 1800
           graph_options:
             sources:
-              - idle_hours
               - active_hours
-              - total_hours
+              - idle_hours
             source_colors:
-              - 9933FF
               - FF9933
-              - 3399FF
+              - 9933FF
             source_drawtypes:
-              - LINE
               - AREA
               - LINE
             right-axis: 1:0

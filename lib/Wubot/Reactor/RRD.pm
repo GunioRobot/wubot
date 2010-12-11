@@ -60,6 +60,10 @@ sub react {
         }
     }
 
+    if ( $config->{debug} ) {
+        print YAML::Dump { key => $message->{key}, rrd => \%rrd_data };
+    }
+
     $rrd->update( $rrd_filename, $time, %rrd_data );
 
     # log the value

@@ -96,7 +96,11 @@ sub check {
                     );
 
     $self->con->reg_cb( part          => sub { my ( $foo, $nick, $channel, $is_myself, $message ) = @_;
-                                               $self->reactor->( { subject  => "part: $nick: $channel => $message",
+
+                                               my $subject = "part: $nick: $channel";
+                                               if ( $message ) { $subject .= ": $message"; }
+
+                                               $self->reactor->( { subject  => $subject,
                                                                    username => $nick,
                                                                    channel  => $channel,
                                                                    type     => 'part',
@@ -105,7 +109,11 @@ sub check {
                     );
 
     $self->con->reg_cb( quit          => sub { my ( $foo, $nick, $message ) = @_;
-                                               $self->reactor->( { subject  => "quit: $nick: $message",
+
+                                               my $subject = "quit: $nick";
+                                               if ( $message ) { $subject .= ": $message"; }
+
+                                               $self->reactor->( { subject  => $subject,
                                                                    username => $nick,
                                                                    type     => 'quit',
                                                                } );
@@ -142,7 +150,7 @@ sub check {
 
     $self->initialized( 1 );
 
-    return { react => { subject => "$key: Initialized connection $config->{server}:$config->{port} => $config->{nick}" } };
+    return { react => { subject => "Initialized connection $config->{server}:$config->{port} => $config->{nick}" } };
 }
 
 sub close {

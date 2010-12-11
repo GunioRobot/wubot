@@ -4,6 +4,12 @@ rules:
   - name: IRC
     condition: key matches ^IRC
     rules:
+      - name: wubot default username
+        condition: username is false
+        plugin: AddField
+        config:
+          field: username
+          value: wubot
       - name: dump
         plugin: Dumper
       - name: colorize

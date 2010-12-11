@@ -14,27 +14,22 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
-has 'file'    => ( is => 'rw',
-                   isa => 'Str',
-               );
-
 has 'sqlite'  => ( is => 'ro',
-                   isa => 'Wubot::SQLite',
-                   lazy => 1,
-                   default => sub {
-                       my ( $self ) = @_;
-                       return Wubot::SQLite->new( { file => $self->file } );
-                   },
+                   isa => 'HashRef',
+                   default => sub { {} },
                );
 
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    if ( $config->{file} ) {
-        $self->file( $config->{file} );
+    my $sqlite;
+
+    # if we don't have a sqlite object for this file, create one now
+    unless ( $self->sqlite->{ $config->{file} } ) {
+        $self->sqlite->{ $config->{file} } = Wubot::SQLite->new( { file => $config->{file} } );
     }
 
-    $self->sqlite->insert( $config->{tablename}, $message, $config->{schema} );
+    $self->sqlite->{ $config->{file} }->insert( $config->{tablename}, $message, $config->{schema} );
 
     return $message;
 }

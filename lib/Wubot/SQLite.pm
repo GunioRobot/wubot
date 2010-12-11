@@ -5,24 +5,24 @@ use DBI;
 use DBD::SQLite;
 use SQL::Abstract;
 
-has 'file' => ( is       => 'ro',
-                isa      => 'Str',
-                required => 1,
-            );
+has 'file'         => ( is       => 'ro',
+                        isa      => 'Str',
+                        required => 1,
+                    );
 
-has 'dbh'  => ( is       => 'rw',
-                isa      => 'DBI::db',
-                lazy     => 1,
-                default  => sub {
-                    my ( $self ) = @_;
-                    return $self->connect();
-                },
-            );
+has 'dbh'          => ( is       => 'rw',
+                        isa      => 'DBI::db',
+                        lazy     => 1,
+                        default  => sub {
+                            my ( $self ) = @_;
+                            return $self->connect();
+                        },
+                    );
 
-has 'sql_abstract' => ( is => 'ro',
-                        isa => "SQL::Abstract",
-                        lazy => 1,
-                        default => sub {
+has 'sql_abstract' => ( is       => 'ro',
+                        isa      => "SQL::Abstract",
+                        lazy     => 1,
+                        default  => sub {
                             return SQL::Abstract->new;
                         },
                     );
@@ -186,7 +186,6 @@ sub add_column {
     my $command = "ALTER TABLE $table ADD COLUMN $column $type";
     $self->dbh->do( $command );
 }
-
 
 sub connect {
     my ( $self ) = @_;

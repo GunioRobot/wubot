@@ -78,8 +78,6 @@ rules:
       field: subject
       newfield: subject_text
     rules:
-      - name: dump subjects
-        plugin: Dumper
       - name: contains subject and body
         condition: contains body
         rules:
@@ -225,27 +223,45 @@ rules:
           field: key
       - name: growl
         rules:
+          - name: growl nagios problems
+            condition: subject matches service problem
+            plugin: AddField
+            config:
+              field: color
+              value: yellow
+          - name: growl nagios recovery
+            condition: subject matches recovery
+            plugin: AddField
+            config:
+              field: color
+              value: yellow
           - name: growl color
             plugin: HashLookup
             config:
               source_field: color
-              target_field: priority
+              target_field: growl_priority
               lookup:
                 red: 2
                 yellow: 1
                 orange: 1
-                green: -1
                 grey: 0
+                green: -1
                 magenta: -2
                 blue: -2
                 cyan: -2
+          - name: suppress uninteresting
+            condition: subject matches \[Nagios\].*(CCBS|DCBS)
+            plugin: AddField
+            config:
+              field: quiet
+              value: 1
+            last_rule: 1
           - name: growl notify
             plugin: Growl
             config:
               image_dir: /Users/wu/.icons
       - name: console
         plugin: Console
-        config: {}
 
   - name: forwarding to old wubot
     condition: hostname equals navi AND no_post is false

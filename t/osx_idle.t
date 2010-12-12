@@ -204,7 +204,7 @@ my $cache_file = "$tempdir/storage.yaml";
     );
 
     like( ( $idle->calculate_idle_stats( $now, 0, {}, $cache ) )[0]->{subject},
-          qr/active after being idle for 15 minutes/,
+          qr/active after being idle for 15m/,
           "Checking for 'active after being idle' message"
       );
 
@@ -242,7 +242,7 @@ my $cache_file = "$tempdir/storage.yaml";
     );
 
     like( ( $idle->calculate_idle_stats( $now, 60*15, {}, $cache ) )[0]->{subject},
-          qr/idle after being active for 15 minutes/,
+          qr/idle after being active for 15m/,
           "Checking for 'idle after being active' message"
       );
 

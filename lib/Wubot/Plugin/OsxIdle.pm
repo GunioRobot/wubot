@@ -1,6 +1,16 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
+use Wubot::TimeLength;
+
+has 'timelength' => ( is => 'ro',
+                      isa => 'Wubot::TimeLength',
+                      lazy => 1,
+                      default => sub {
+                          return Wubot::TimeLength->new();
+                      },
+                  );
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 
@@ -132,22 +142,24 @@ sub check {
 
      if ( $stats->{idle_state_change} ) {
          if ( $stats->{idle_state} ) {
-             $stats->{subject} = "idle after being active for $stats->{last_active_min} minutes";
+             my $length = $self->timelength->get_human_readable( $stats->{last_active_min} . "m" );
+             $stats->{subject} = "idle after being active for $length";
          }
          else {
-             $stats->{subject} =  "active after being idle for $stats->{last_idle_min} minutes";
+             my $length = $self->timelength->get_human_readable( $stats->{last_idle_min} . "m" );
+             $stats->{subject} =  "active after being idle for $length";
          }
      }
      elsif ( $stats->{idle_state} ) {
          if ( $stats->{idle_min} % 60 == 0 && $stats->{idle_min} > 0 ) {
-             my $hours_idle = int( $stats->{idle_min} / 60 );
-             $stats->{subject} = "idle for $hours_idle hour(s)";
+             my $length = $self->timelength->get_human_readable( $stats->{idle_min} . "m" );
+             $stats->{subject} = "idle for $length";
          }
      }
      else {
          if ( $stats->{active_min} % 60 == 0 && $stats->{active_min} > 0 ) {
-             my $hours_active = int( $stats->{active_min} / 60 );
-             $stats->{subject} = "active for $hours_active hour(s)";
+             my $length = $self->timelength->get_human_readable( $stats->{active_min} . "m" );
+             $stats->{subject} = "active for $length";
          }
      }
 

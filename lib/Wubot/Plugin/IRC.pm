@@ -59,7 +59,7 @@ sub check {
                                                my $user = $ircmsg->{prefix};
                                                $user =~ s|\!.*||;
 
-                                               $self->reactor->( { subject  => "public: $channel: $text",
+                                               $self->reactor->( { subject  => "$user: $channel: $text",
                                                                    text     => $text,
                                                                    channel  => $channel,
                                                                    message  => $text,
@@ -76,7 +76,7 @@ sub check {
                                                my $user = $ircmsg->{prefix};
                                                $user =~ s|\!.*||;
 
-                                               $self->reactor->( { subject  => "private: $nick: $text",
+                                               $self->reactor->( { subject  => "$user: private: $text",
                                                                    text     => $text,
                                                                    message  => $text,
                                                                    username => $user,

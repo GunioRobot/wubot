@@ -20,7 +20,7 @@ sub react {
 
     my $sticky = $message->{sticky} ? 1 : 0;
 
-    my $priority = $message->{priority};
+    my $priority = $message->{growl_priority} || $message->{priority};
 
     my $notification = { sticky   => $sticky,
                          priority => $priority,

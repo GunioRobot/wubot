@@ -11,10 +11,6 @@ Log::Log4perl->easy_init($ERROR);
 my $logger = get_logger( 'default' );
 
 use Wubot::Plugin::OsxIdle;
-use Wubot::Reactor;
-
-my $reactor = Wubot::Reactor->new();
-
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
@@ -23,7 +19,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $check = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                    cache_file => $cache_file,
-                                                   reactor    => $reactor,
                                                    key        => 'OsxIdle-testcase',
                                                } ),
         "Creating a new OSX Idle check instance"
@@ -56,7 +51,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
-                                                  reactor    => $reactor,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
         "Creating a new OSX Idle check instance"
@@ -85,7 +79,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
-                                                  reactor    => $reactor,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
         "Creating a new OSX Idle check instance"
@@ -188,7 +181,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
-                                                  reactor    => $reactor,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
         "Creating a new OSX Idle check instance"
@@ -212,9 +204,14 @@ my $cache_file = "$tempdir/storage.yaml";
     );
 
     like( ( $idle->calculate_idle_stats( $now, 0, {}, $cache ) )[0]->{subject},
-          qr/Active after being idle for 15 minutes/,
+          qr/active after being idle for 15 minutes/,
           "Checking for 'active after being idle' message"
       );
+
+    is( ( $idle->calculate_idle_stats( $now, 0, {}, $cache ) )[0]->{subject},
+        undef,
+        "Checking that no duplicate 'iddle after being active' message is sent"
+    );
 }
 
 
@@ -222,7 +219,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
-                                                  reactor    => $reactor,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
         "Creating a new OSX Idle check instance"
@@ -246,8 +242,12 @@ my $cache_file = "$tempdir/storage.yaml";
     );
 
     like( ( $idle->calculate_idle_stats( $now, 60*15, {}, $cache ) )[0]->{subject},
-          qr/Idle after being active for 15 minutes/,
+          qr/idle after being active for 15 minutes/,
           "Checking for 'idle after being active' message"
       );
 
+    is( ( $idle->calculate_idle_stats( $now, 60*15, {}, $cache ) )[0]->{subject},
+        undef,
+        "Checking that no duplicate 'iddle after being active' message is sent"
+    );
 }

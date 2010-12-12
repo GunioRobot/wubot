@@ -6,6 +6,8 @@ with 'Wubot::Plugin::Roles::Plugin';
 
 my $command = "ioreg -c IOHIDSystem";
 
+my $last_notification;
+
 sub check {
     my ( $self, $inputs ) = @_;
 
@@ -152,6 +154,11 @@ sub check {
      if ( $stats->{subject} ) {
          $self->logger->debug( $stats->{subject} );
      }
+
+     if ( $stats->{subject} && $last_notification && $stats->{subject} eq $last_notification ) {
+         delete $stats->{subject};
+     }
+     $last_notification = $stats->{subject};
 
      return ( $stats, $cache );
  }

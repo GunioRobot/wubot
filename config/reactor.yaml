@@ -44,6 +44,11 @@ rules:
   - name: RSS feed entries
     condition: key matches ^RSS AND contains body
     rules:
+      - name: rss color
+        plugin: AddField
+        config:
+          field: color
+          value: magenta
       - name: slashdot image remover
         condition: key matches slashdot
         plugin: ImageStrip
@@ -223,6 +228,12 @@ rules:
           field: key
       - name: growl
         rules:
+          - name: panoptes color
+            condition: username matches panoptes
+            plugin: AddField
+            config:
+              field: color
+              value: white
           - name: growl nagios problems
             condition: subject matches service problem
             plugin: AddField
@@ -245,6 +256,7 @@ rules:
                 yellow: 1
                 orange: 1
                 grey: 0
+                bold black: 0
                 green: -1
                 magenta: -2
                 blue: -2

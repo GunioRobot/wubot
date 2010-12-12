@@ -1,4 +1,4 @@
-package Wubot::Reactor::AddField;
+package Wubot::Reactor::SetField;
 use Moose;
 
 sub react {

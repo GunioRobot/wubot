@@ -6,36 +6,36 @@ rules:
     rules:
       - name: wubot default username
         condition: username is false
-        plugin: AddField
+        plugin: SetField
         config:
           field: username
           value: wubot
       - name: colorize
-        plugin: AddField
+        plugin: SetField
         config:
           field: color
           value: cyan
       - name: private color
         condition: type equals private
-        plugin: AddField
+        plugin: SetField
         config:
           field: color
           value: yellow
         rules:
           - name: private sticky
-            plugin: AddField
+            plugin: SetField
             config:
               field: sticky
               value: 1
       - name: public to me
         condition: type equals public AND text matches wu
-        plugin: AddField
+        plugin: SetField
         config:
           field: color
           value: yellow
         rules:
           - name: private sticky
-            plugin: AddField
+            plugin: SetField
             config:
               field: sticky
               value: 1
@@ -45,7 +45,7 @@ rules:
     condition: key matches ^RSS AND contains body
     rules:
       - name: rss color
-        plugin: AddField
+        plugin: SetField
         config:
           field: color
           value: magenta
@@ -230,19 +230,19 @@ rules:
         rules:
           - name: panoptes color
             condition: username matches panoptes
-            plugin: AddField
+            plugin: SetField
             config:
               field: color
               value: white
           - name: growl nagios problems
             condition: subject matches service problem
-            plugin: AddField
+            plugin: SetField
             config:
               field: color
               value: yellow
           - name: growl nagios recovery
             condition: subject matches recovery
-            plugin: AddField
+            plugin: SetField
             config:
               field: color
               value: yellow
@@ -263,7 +263,7 @@ rules:
                 cyan: -2
           - name: suppress uninteresting
             condition: subject matches \[Nagios\].*(CCBS|DCBS)
-            plugin: AddField
+            plugin: SetField
             config:
               field: quiet
               value: 1
@@ -279,12 +279,12 @@ rules:
     condition: hostname equals navi AND no_post is false
     rules:
       - name: suppress future growl notifications
-        plugin: AddField
+        plugin: SetField
         config:
           field: quiet_growl
           value: 1
       - name: suppress future voice notifications
-        plugin: AddField
+        plugin: SetField
         config:
           field: quiet_voice
           value: 1

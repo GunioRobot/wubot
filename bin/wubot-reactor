@@ -35,12 +35,23 @@ $hostname =~ s|\..*$||;
 $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
 
+my $lastupdate = time;
+
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
 
+                                 my $now = time;
                                  while ( my $message = $messenger->get( $message_directory ) ) {
                                      react( $message );
+                                     $lastupdate = $now;
+                                 }
+
+                                 if ( $now - $lastupdate > 300 ) {
+                                     react( { subject    => 'reactor has not received a message in more than 5 minutes',
+                                              key        => 'wubot-reactor',
+                                              lastupdate => $now,
+                                          } );
                                  }
                              },
                          );

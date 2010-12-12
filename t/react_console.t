@@ -45,3 +45,8 @@ is( $console->react( { subject => 'orange message', color => 'orange' } )->{cons
     "Checking that 'orange' color displayed as 'yellow'"
 );
 
+is( $console->react( { subject => 'black message', color => 'black' } )->{console}->{color},
+    'bold black',
+    "Checking that 'bold black' color displayed properly"
+);
+

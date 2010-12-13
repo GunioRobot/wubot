@@ -11,9 +11,6 @@ Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
 
 use Wubot::Check;
-use Wubot::Reactor;
-
-my $reactor = Wubot::Reactor->new();
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
@@ -21,7 +18,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
                                          cache_file => $cache_file,
-                                         reactor    => $reactor,
                                          key        => 'TestCase-testcase',
                                      } ),
         "Creating a new check instance"
@@ -54,7 +50,6 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
                                          cache_file => $cache_file,
-                                         reactor    => $reactor,
                                          key        => 'TestCase-testcase',
                                      } ),
         "Creating a new check instance"

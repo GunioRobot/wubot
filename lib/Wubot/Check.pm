@@ -4,6 +4,8 @@ use Moose;
 use Log::Log4perl;
 use YAML;
 
+use Wubot::LocalMessageStore;
+
 has 'key'      => ( is => 'ro',
                     isa => 'Str',
                     required => 1,

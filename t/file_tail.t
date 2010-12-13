@@ -7,7 +7,7 @@ use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
-Log::Log4perl->easy_init($ERROR);
+Log::Log4perl->easy_init($WARN);
 
 use Wubot::Plugin::FileTail;
 
@@ -31,48 +31,118 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
            );
 }
 
-
 $| = 1;
 
 {
+    my $path = "$tempdir/file1.log";
+
+    system( "echo line0 >> $path" );
+    system( "echo line0 >> $path" );
+
     ok( my $tail = Wubot::Plugin::FileTail->new( $init ),
         "Creating new file tail object"
     );
 
-    my $path = "$tempdir/file1.log";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    select $fh;
-    $|=1;
-    select STDOUT;
-    $| = 1;
-
-    print $fh "line1\n";
-    print $fh "line2\n";
-
     ok( ! $tail->check( { config => { path => $path } } ),
-        "Calling reaction on file that exists but is empty"
+        "Calling reaction on file that exists but has had no writes since open"
     );
 
-    print $fh "line3\n";
-    print $fh "line4\n";
-    close $fh or die "Error closing file: $!\n";
+    system( "echo line1 >> $path" );
+    system( "echo line2 >> $path" );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
-        "Checking that check returns failure on first read attempt"
+    my $results1 = $tail->check( { config => { path => $path } } );
+
+    is( $results1->{react}->[0]->{subject},
+        'line1',
+        "Calling reaction read 'line1'"
     );
 
-    is( $tail->check( { config => { path => $path } } )->{react}->[0]->{subject},
+    is( $results1->{react}->[1]->{subject},
+        'line2',
+        "Calling reaction read 'line2'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after all lines read"
+    );
+
+    system( "echo line3 >> $path" );
+    system( "echo line4 >> $path" );
+
+    my $results1 = $tail->check( { config => { path => $path } } );
+
+    is( $results1->{react}->[0]->{subject},
         'line3',
         "Calling reaction read 'line3'"
     );
 
-    is( $tail->check( { config => { path => $path } } )->{react}->[0]->{subject},
+    is( $results1->{react}->[1]->{subject},
         'line4',
         "Calling reaction read 'line4'"
     );
 
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after all lines read"
+    );
+
+    system( "echo line5 > $path" );
+    system( "echo line6 >> $path" );
+
+    my $results1 = $tail->check( { config => { path => $path } } );
+
+    is( $results1->{react}->[0]->{subject},
+        'line5',
+        "Calling reaction read 'line5'"
+    );
+
+    is( $results1->{react}->[1]->{subject},
+        'line6',
+        "Calling reaction read 'line6'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after no more writes"
+    );
+
+    sleep 1;
+    unlink( $path );
+    system( "echo line6 >> $path" );
+    system( "echo line7 >> $path" );
+
+    my $results1 = $tail->check( { config => { path => $path } } );
+
+    is( $results1->{react}->[0]->{subject},
+        'line6',
+        "Calling reaction read 'line6'"
+    );
+
+    is( $results1->{react}->[1]->{subject},
+        'line7',
+        "Calling reaction read 'line7'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after no more writes"
+    );
+
+    sleep 1; # mv file and re-create
+    system( "mv $path $path.old" );
+    system( "echo line8 > $path" );
+    system( "echo line9 >> $path" );
+
+    my $results1 = $tail->check( { config => { path => $path } } );
+
+    is( $results1->{react}->[0]->{subject},
+        'line8',
+        "Calling reaction read 'line8'"
+    );
+
+    is( $results1->{react}->[1]->{subject},
+        'line9',
+        "Calling reaction read 'line9'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after no more writes"
+    );
 }
-
-

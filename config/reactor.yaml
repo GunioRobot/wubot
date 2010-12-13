@@ -39,7 +39,6 @@ rules:
             config:
               field: sticky
               value: 1
-        
 
   - name: RSS feed entries
     condition: key matches ^RSS AND contains body
@@ -49,23 +48,17 @@ rules:
         config:
           field: color
           value: magenta
-      - name: slashdot image remover
-        condition: key matches slashdot
+      - name: body image remover
+        condition: key matches slashdot|cl-fu
         plugin: ImageStrip
         config:
           field: body
-      - name: cl-fu image remover
-        condition: key matches cl-fu
-        plugin: ImageStrip
+      - name: use tag for mailbox
+        condition: contains tags
+        plugin: CopyField
         config:
-          field: body
-      - name: cpan messages in 'cpan' mailbox
-        condition: key matches cpan
-        plugin: Maildir
-        config:
-          path: /Users/wu/wubot/mail
-          mailbox: cpan
-        last_rule: 1
+          source_field: tags
+          target_field: mailbox
       - name: sunspot
         condition: key matches sunspot
         rules:
@@ -228,12 +221,16 @@ rules:
           field: key
       - name: growl
         rules:
-          - name: panoptes color
+          - name: panoptes
             condition: username matches panoptes
             plugin: SetField
             config:
               field: color
               value: white
+            rules:
+              - name: ignore
+                condition: subject matches System Load \[warning\]|vasd\: daemon\.notice
+                last_rule: 1
           - name: growl nagios problems
             condition: subject matches service problem
             plugin: SetField

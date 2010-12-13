@@ -50,18 +50,12 @@ sub check {
 
     my @react = $self->get_react( @lines );
 
-    if ( scalar @react ) {
-        # we got some data, update the 'lastread' time
-        $self->lastread( time );
-    }
-    else {
-        # no lines read, check that the file wasn't zero'd out,
-        # renamed, etc.
+    unless ( scalar @react ) {
 
+        # no lines read, check if file was truncated/renamed
         my $cur_pos = sysseek( $fh, 0, SEEK_CUR);
         my $end_pos = sysseek( $fh, 0, SEEK_END);
 
-        # file was trucated
         if ( $end_pos < $cur_pos || ( $self->lastread && $mtime > $self->lastread ) ) {
 
             $self->tail_fh( $self->get_fh( undef ) );
@@ -70,10 +64,6 @@ sub check {
             ( $eof, @lines ) = nonblockGetLines( $fh );
 
             @react = $self->get_react( @lines );
-            if ( scalar @react ) {
-                # we got some data, update the 'lastread' time
-                $self->lastread( time );
-            }
         }
         else {
             # file was not truncated, seek back to same spot
@@ -94,15 +84,17 @@ sub get_react {
     my ( $self, @lines ) = @_;
 
     my @react;
-
   LINE:
     for my $line ( @lines ) {
-
         chomp $line;
-
         next LINE unless $line;
 
         push @react, { subject => $line };
+    }
+
+    if ( scalar @react ) {
+        # we got some data, update the 'lastread' time
+        $self->lastread( time );
     }
 
     return @react;

@@ -15,6 +15,9 @@ sub check {
     # just setting the cache params in the config
     for my $key ( keys %{ $config } ) {
 
+        # don't handle the 'tags' config, that is done in the check() layer
+        next if $key eq "tags";
+
         $cache->{$key}   = $config->{$key};
 
         push @react, { $key => $config->{$key} };

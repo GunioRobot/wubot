@@ -48,14 +48,18 @@ my $cache_file = "$tempdir/storage.yaml";
 }
 
 {
+    my @react;
+    my $reactor = sub { push @react, $_[0] };
+
     ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
                                          cache_file => $cache_file,
+                                         reactor    => $reactor,
                                          key        => 'TestCase-testcase',
                                      } ),
         "Creating a new check instance"
     );
 
-    ok( my $results = $check->check( { param2 => 'value2', param3 => 'value3' } ),
+    ok( my $results = $check->check( { param2 => 'value2', param3 => 'value3', tags => 'testcase' } ),
         "Calling check() method and passing new config"
     );
 
@@ -101,6 +105,10 @@ my $cache_file = "$tempdir/storage.yaml";
          'Checking that param3 exists in cache file'
      );
 
+    is_deeply( \@react,
+               [ { param2 => 'value2', tags => 'testcase' }, { param3 => 'value3', tags => 'testcase' } ],
+               "Checking reactor messages"
+           );
 
 }
 

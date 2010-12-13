@@ -89,7 +89,7 @@ sub init {
     my $results = $self->instance->init( { config => $config, cache => $cache } );
 
     if ( $results->{react} ) {
-        $self->reactor->( $results->{react} );
+        $self->react_results( $results->{react}, $config );
     }
 
     if ( $results->{cache} ) {
@@ -109,7 +109,7 @@ sub check {
     my $results = $self->instance->check( { config => $config, cache => $cache } );
 
     if ( $results->{react} ) {
-        $self->reactor->( $results->{react} );
+        $self->react_results( $results->{react}, $config );
     }
 
     if ( $results->{cache} ) {
@@ -121,29 +121,37 @@ sub check {
     return $results;
 }
 
+sub react_results {
+    my ( $self, $react, $config ) = @_;
+
+    if ( ref $react eq "ARRAY" ) {
+        for my $results_h ( @{ $react } ) {
+            $self->react_results( $results_h, $config );
+        }
+        return;
+    }
+
+    # push any configured 'tags' along with the message
+    if ( $config->{tags} ) {
+        $react->{tags} = $config->{tags};
+    }
+
+    $self->reactor->( $react );
+}
+
 sub enqueue_results {
     my ( $self, $results ) = @_;
 
     return unless $results;
 
-    my @results;
-    if ( ref $results eq "ARRAY" ) {
-        @results = @{ $results };
-    }
-    else {
-        push @results, $results;
-    }
+    # use our class name for the 'plugin' field
+    $results->{plugin}     = $self->{class};
 
-    for my $result ( @results ) {
+    # use our instance key name for the 'key' field
+    $results->{key}        = $self->key;
 
-        # use our class name for the 'plugin' field
-        $result->{plugin}     = $self->{class};
+    $self->reactor_queue->store( $results, $self->reactor_queue_dir );
 
-        # use our instance key name for the 'key' field
-        $result->{key}        = $self->key;
-
-        $self->reactor_queue->store( $result, $self->reactor_queue_dir );
-    }
 }
 
 1;

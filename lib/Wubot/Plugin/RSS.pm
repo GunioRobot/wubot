@@ -99,10 +99,6 @@ sub check {
                         body       => $body,
                     };
 
-        if ( $config->{tag} ) {
-            $article->{tag} = $config->{tag};
-        }
-
         push @react, $article;
     }
 

@@ -1,0 +1,24 @@
+#!/perl
+use strict;
+
+use Log::Log4perl qw(:easy);
+use YAML;
+
+Log::Log4perl->easy_init($INFO);
+my $logger = get_logger( 'default' );
+
+use Wubot::Plugin::WorkHours;
+
+my $period = shift @ARGV;
+
+my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::WorkHours',
+                                             cache_file => '/dev/null',
+                                             key        => 'WorkHours-testcase',
+                                         } );
+
+my $config = { tablename  => 'idle',
+               dbfile     => "$ENV{HOME}/wubot/sqlite/idle.sql",
+               period     => $period,
+           };
+
+print YAML::Dump $check->check( { config => $config } );

@@ -14,10 +14,10 @@ sub get_seconds {
 
     for my $part ( split /\s/, $time ) {
 
-        if ( $part =~ m|^([\d\.]+)(\w)$| && $constants->{$2} ) {
+        if ( $part =~ m|^(\-?[\d\.]+)(\w)$| && $constants->{$2} ) {
             $seconds += $1 * $constants->{$2};
         }
-        elsif ( $part =~ m|^(\d+)$| ) {
+        elsif ( $part =~ m|^(\-?\d+)$| ) {
             $seconds += $1;
         }
         elsif ( $part =~ m|^(\w)$| && $constants->{$1} ) {
@@ -39,6 +39,12 @@ sub get_human_readable {
 
     return '0s' unless $seconds;
 
+    my $sign = "";
+    if ( $seconds < 0 ) {
+        $sign = "-";
+        $seconds = -1 * $seconds;
+    }
+
     my $string = "";
 
   TIME:
@@ -58,7 +64,7 @@ sub get_human_readable {
         last TIME unless $seconds;
     }
 
-    return $string;
+    return "$sign$string";
 }
 
 sub get_hours {

@@ -62,6 +62,11 @@ ok( my $timelength = Wubot::TimeLength->new(),
         "Human-readable time for 0s"
     );
 
+    is( $timelength->get_human_readable( -60 ),
+        "-1m",
+        "Human-readable time for -1m"
+    );
+
 }
 
 # hours
@@ -117,4 +122,13 @@ ok( my $timelength = Wubot::TimeLength->new(),
                "Checking that 1x throws 'unable to parse time' exception"
            );
 
+    is( $timelength->get_seconds( -60 ),
+        -60,
+        "seconds: -60 seconds"
+    );
+
+    is( $timelength->get_seconds( '-1m' ),
+        -60,
+        "seconds: -1m"
+    );
 }

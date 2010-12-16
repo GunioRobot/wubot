@@ -3,6 +3,7 @@ use Moose;
 
 use DBI;
 use DBD::SQLite;
+use Log::Log4perl;
 use SQL::Abstract;
 
 has 'file'         => ( is       => 'ro',
@@ -27,15 +28,25 @@ has 'sql_abstract' => ( is       => 'ro',
                         },
                     );
 
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+
+
 sub create_table {
     my ( $self, $table, $schema_h ) = @_;
 
     unless ( $table ) {
-        die "Error: table not specified";
+        $self->logger->logcroak( "Error: table not specified" );
     }
 
     unless ( $schema_h ) {
-        die( "Error: schema not specified" );
+        $self->logger->logcroak( "Error: schema not specified" );
     }
 
     my $command = "CREATE TABLE $table (\n";
@@ -71,13 +82,13 @@ sub insert {
     my ( $self, $table, $entry, $schema_h ) = @_;
 
     unless ( $entry && ref $entry eq "HASH" ) {
-        die "ERROR: insert: entry undef or not a hashref";
+        $self->logger->logcroak( "ERROR: insert: entry undef or not a hashref" );
     }
     unless ( $table && $table =~ m|^\w+$| ) {
-        die "ERROR: insert: table name does not look valid"
+        $self->logger->logcroak( "ERROR: insert: table name does not look valid" );
     }
     unless ( $schema_h && ref $schema_h eq "HASH" ) {
-        die "ERROR: no schema specified to insert command!";
+        $self->logger->logcroak( "ERROR: no schema specified to insert command!" );
     }
 
     my $insert;
@@ -94,11 +105,49 @@ sub insert {
     return $self->dbh->last_insert_id( "", "", $table, "");
 }
 
+sub select {
+    my ( $self, $options ) = @_;
+
+    my $tablename = $options->{tablename};
+    unless ( $tablename ) {
+        $self->logger->logcroak( "ERROR: select called but no tablename provided" ) 
+    }
+    my $fields    = $options->{fields}     || '*';
+    my $where     = $options->{where};
+    my $order     = $options->{order};
+    my $limit     = $options->{limit};
+
+    my $callback  = $options->{callback};
+    unless ( $callback ) {
+        $self->logger->logcroak( "ERROR: select called with no callback" );
+    }
+
+    my( $statement, @bind ) = $self->sql_abstract->select( $tablename, $fields, $where, $order );
+
+    if ( $limit ) { $statement .= " LIMIT $limit" }
+
+    my $sth = $self->dbh->prepare($statement) or confess "Can't prepare $statement\n";
+
+    my $rv;
+    eval {
+        $rv = $sth->execute(@bind);
+        1;
+    } or do {
+        $self->logger->logcroak( "can't execute the query: $statement: $@" );
+    };
+
+    while ( my $entry = $sth->fetchrow_hashref ) {
+        $callback->( $entry );
+    }
+
+    return 1;
+}
+
 sub query {
     my ( $self, $statement, $callback ) = @_;
 
-    my $sth = $self->dbh->prepare($statement) or die "Can't prepare $statement\n";
-    my $rv  = $sth->execute or die "can't execute the query: $statement\n";
+    my $sth = $self->dbh->prepare($statement) or $self->logger->logcroak( "Can't prepare $statement" );
+    my $rv  = $sth->execute or $self->logger->logcroak( "can't execute the query: $statement" );
 
     my @return;
 
@@ -118,10 +167,10 @@ sub delete {
     my ( $self, $table, $conditions ) = @_;
 
     unless ( $table && $table =~ m|^\w+$| ) {
-        die "ERROR: delete: invalid table name";
+        $self->logger->logcroak( "ERROR: delete: invalid table name" );
     }
     unless ( $conditions && ref $conditions eq "HASH" ) {
-        die "ERROR: delete: conditions is not a hash ref"
+        $self->logger->logcroak( "ERROR: delete: conditions is not a hash ref" );
     }
 
     my $delete = "DELETE FROM $table WHERE ";
@@ -152,25 +201,25 @@ sub get_prepared {
 
             # if the table doesn't already exist, create it
             if ( $error =~ m/no such table/ ) {
-                print "Creating missing table: $table\n";
+                $self->logger->warn( "Creating missing table: $table" );
                 $self->create_table( $table, $schema );
                 $self->{tables}->{$table} = 1;
                 next RETRY;
             } elsif ( $error =~ m/(?:has no column named|no such column\:) (\S+)/ ) {
                 my $column = $1;
 
-                unless ( $column ) { die "ERROR: failed to capture a column name!" }
+                unless ( $column ) { $self->logger->logcroak( "ERROR: failed to capture a column name!"  ) }
 
-                print "Adding missing column: $column\n";
+                $self->logger->warn( "Adding missing column: $column" );
 
                 if ( $schema->{$column} ) {
                     $self->add_column( $table, $column, $schema->{$column} );
                     next RETRY;
                 } else {
-                    die "Missing column not defined in schema: $column";
+                    $self->logger->logcroak( "Missing column not defined in schema: $column" );
                 }
             } else {
-                die "Unhandled error: $error";
+                $self->logger->logcroak( "Unhandled error: $error" );
             }
 
         };
@@ -178,7 +227,7 @@ sub get_prepared {
         return $sth1;
     };
 
-    die "ERROR: unable to prepare statement, exceeded maximum retry limit";
+    $self->logger->logcroak( "ERROR: unable to prepare statement, exceeded maximum retry limit" );
 }
 
 sub add_column {
@@ -191,7 +240,7 @@ sub connect {
     my ( $self ) = @_;
 
     my $datafile = $self->file;
-    print "Opening sqlite file: $datafile\n";
+    $self->logger->warn( "Opening sqlite file: $datafile" );
 
     my $dbh = DBI->connect(
         "dbi:SQLite:$datafile", "", "",
@@ -199,7 +248,7 @@ sub connect {
             AutoCommit => 1,
             RaiseError => 1,
         }
-    ) or die "Unable to create database handle: $!";
+    ) or $self->logger->logcroak( "Unable to create database handle: $!" );
 
     return $dbh;
 }

@@ -2,12 +2,14 @@
 use strict;
 
 use File::Temp qw/ tempdir /;
+use Log::Log4perl qw(:easy);
 use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
 use Wubot::SQLite;
 
+Log::Log4perl->easy_init($ERROR);
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
@@ -138,6 +140,82 @@ ok( -r $sqldb,
         0,
         "Checking that 0 was returned on query"
     );
+}
+
+{
+    my $table = "test_table_5";
+    my $schema = { column1 => 'INT', column2 => 'TEXT', column3 => 'INT', column4 => 'INT', column5 => 'INT' };
+
+    my $data1 = { column1 => 1, column2 => 'foo foo foo', column3 => 3, column4 => 1, column5 => 0 };
+    ok( $sql->insert( $table, $data1, $schema ),
+        "Inserting test data 1 into table"
+    );
+
+    my $data2 = { column1 => 2, column2 => 'bar bar', column3 => 2, column4 => 1, column5  => 1 };
+    ok( $sql->insert( $table, $data2, $schema ),
+        "Inserting test data 2 into table"
+    );
+
+    my $data3 = { column1 => 3, column2 => 'baz', column3 => 1, column4 => 0, column5 => 1 };
+    ok( $sql->insert( $table, $data3, $schema ),
+        "Inserting test data into table"
+    );
+
+    {
+        my @rows;
+        ok( $sql->select( { tablename  => $table,
+                            callback   => sub { push @rows, $_[0] },
+                        } ),
+            "Selecting all rows in table"
+        );
+        is_deeply( \@rows,
+                   [ $data1, $data2, $data3 ],
+                   "Selecting all rows"
+               );
+    }
+    {
+        my @rows;
+        ok( $sql->select( { tablename => $table,
+                            order     => 'column3',
+                            callback  => sub { push @rows, $_[0] },
+                        } ),
+            "Selecting all rows in table ordered by column3"
+        );
+        is_deeply( \@rows,
+                   [ $data3, $data2, $data1 ],
+                   "Selecting all rows"
+               );
+    }
+    {
+        my @rows;
+        ok( $sql->select( { tablename => $table,
+                            order     => 'column3',
+                            limit     => 1,
+                            callback  => sub { push @rows, $_[0] },
+                        } ),
+            "Selecting all rows in table ordered by column3 with limit 1"
+        );
+        is_deeply( \@rows,
+                   [ $data3 ],
+                   "Selecting matching rows"
+               );
+    }
+    {
+        my @rows;
+        ok( $sql->select( { tablename => $table,
+                            order     => 'column3',
+                            where     => { column4 => 1,
+                                           column5 => 1,
+                                       },
+                            callback  => sub { push @rows, $_[0] },
+                        } ),
+            "Selecting all rows in table with conditions column4 = 1 and column5 = 1"
+        );
+        is_deeply( \@rows,
+                   [ $data2 ],
+                   "Selecting matching rows"
+               );
+    }
 }
 
 ok( $sql->disconnect(),

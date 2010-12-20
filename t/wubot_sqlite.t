@@ -218,6 +218,74 @@ ok( -r $sqldb,
     }
 }
 
+
+{
+    my $table = "test_table_6";
+    my $schema = { column1 => 'INT', column2 => 'INT', column3 => 'INT' };
+
+    my $data1 = { column1 => 0, column2 => 1, column3 => 2 };
+    ok( $sql->insert( $table, $data1, $schema ),
+        "Inserting data1 hash into table"
+    );
+
+    my $data2 = { column1 => 4, column2 => 5, column3 => 6 };
+    ok( $sql->insert( $table, $data2, $schema ),
+        "Inserting data2 hash into table"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking inserted data"
+           );
+
+    ok( $sql->update( $table, { column1 => 7 }, { column1 => 0 } ),
+        "Calling update() to set column1 to 7 where column1 was 0"
+    );
+
+    $data1->{column1} = 7;
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking row was updated"
+           );
+}
+
+
+{
+    my $table = "test_table_7";
+    my $schema = { column1 => 'INT', column2 => 'INT', column3 => 'INT' };
+
+    my $data1 = { column1 => 0, column2 => 1, column3 => 2 };
+    ok( $sql->insert( $table, $data1, $schema ),
+        "Inserting data1 hash into table"
+    );
+
+    my $data2 = { column1 => 4, column2 => 5, column3 => 6 };
+    ok( $sql->insert( $table, $data2, $schema ),
+        "Inserting data2 hash into table"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking inserted data before calling update()"
+           );
+
+    $schema->{column4} = 'INT';
+
+    ok( $sql->update( $table, { column4 => 7 }, { column1 => 0 }, $schema ),
+        "Calling update() with updated schema containing column4"
+    );
+
+    $data1->{column4} = 7;
+    $data2->{column4} = undef;
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking row was updated with column4 data"
+           );
+}
+
+
 ok( $sql->disconnect(),
     "Closing SQLite file"
 );

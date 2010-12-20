@@ -105,6 +105,18 @@ sub insert {
     return $self->dbh->last_insert_id( "", "", $table, "");
 }
 
+sub update {
+    my ( $self, $table, $update, $where, $schema_h ) = @_;
+
+    my( $command, @bind ) = $self->sql_abstract->update( $table, $update, $where );
+
+    my $sth1 = $self->get_prepared( $table, $schema_h, $command );
+
+    $sth1->execute( @bind );
+
+    return 1;
+}
+
 sub select {
     my ( $self, $options ) = @_;
 

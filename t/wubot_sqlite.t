@@ -284,6 +284,36 @@ ok( -r $sqldb,
                "Checking row was updated with column4 data"
            );
 }
+{
+    my $table = "test_table_8";
+    my $schema = { column1 => 'INT', column2 => 'INT', column3 => 'INT' };
+
+    my $data1 = { column1 => 0, column2 => 1, column3 => 2 };
+    ok( $sql->insert_or_update( $table, $data1, { column1 => 3 }, $schema ),
+        "Inserting data2 hash into table with insert_or_update and no pre-existing row"
+    );
+
+    my $data2 = { column1 => 4, column2 => 5, column3 => 6 };
+    ok( $sql->insert_or_update( $table, $data2, { column1 => 7 }, $schema ),
+        "Inserting data2 hash into table with insert_or_update and no pre-existing row"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking inserted data before calling update()"
+           );
+
+    ok( $sql->insert_or_update( $table, { column1 => 7 }, { column1 => 0 }, $schema ),
+        "Calling insert_or_update with row that already exists"
+    );
+
+    $data1->{column1} = 7;
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking existing row was updated with insert_or_update"
+           );
+}
 
 
 ok( $sql->disconnect(),

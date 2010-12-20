@@ -117,6 +117,25 @@ sub update {
     return 1;
 }
 
+sub insert_or_update {
+    my ( $self, $table, $update, $where, $schema_h ) = @_;
+
+    my $count;
+    # wrap select() in an eval, this could fail, e.g. if the table does not already exist
+    eval {
+        $self->select( { tablename => $table, where => $where, callback => sub { $count++ } } );
+    };
+
+    if ( $count ) {
+        $self->update( $table, $update, $where, $schema_h );
+    }
+    else {
+        $self->insert( $table, $update, $schema_h );
+    }
+
+    return 1;
+}
+
 sub select {
     my ( $self, $options ) = @_;
 

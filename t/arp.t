@@ -7,7 +7,7 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-Log::Log4perl->easy_init($ERROR);
+Log::Log4perl->easy_init($WARN);
 my $logger = get_logger( 'default' );
 
 use Wubot::Plugin::Arp;
@@ -30,13 +30,31 @@ my $cache_file = "$tempdir/storage.yaml";
 
     for my $react ( @{ $results->{react} } ) {
         ok( $react->{ip},
-            "Checking that entry in arp table has an ip address"
+            "Checking that entry in arp table has an ip address: $react->{ip}"
         );
+
         ok( $react->{mac},
-            "Checking that entry in arp table has a mac address"
+            "Checking that entry in arp table has a mac address: $react->{mac}"
         );
+
         ok( $react->{name},
-            "Checking that entry in arp table has a name"
+            "Checking that entry in arp table has a name: $react->{name}"
+        );
+    }
+
+    my $test_macs = { 'a0:b1:c2:d3:e4:f5' => 'a0:b1:c2:d3:e4:f5',
+                      '00:14:7b:49:b9:00' => '00:14:7b:49:b9:00',
+                      '0:14:7b:49:b9:00'  => '00:14:7b:49:b9:00',
+                      '00:14:7b:49:b9:0'  => '00:14:7b:49:b9:00',
+                      '00:14:b:49:b9:00'  => '00:14:0b:49:b9:00',
+                  };
+
+    for my $mac ( keys %{ $test_macs } ) {
+        my $expected = $test_macs->{$mac};
+
+        is( $check->standardize_mac( $mac ),
+            $expected,
+            "Checking standardized mac $mac is $expected"
         );
     }
 

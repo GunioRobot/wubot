@@ -21,16 +21,26 @@ sub check {
 
         my ( $name, $ip, $mac ) = ( $1, $2, $3 );
 
+        $mac = $self->standardize_mac( $mac );
+
         $self->logger->debug( "LINE: $line" );
         $self->logger->debug( "\tname:$name ip:$ip mac:$mac" );
 
         next LINE if $cache->{ $mac }->{ $ip }->{ $name };
         $cache->{ $mac }->{ $ip }->{ $name } = 1;
 
-        push @react, { name => $1, ip => $2, mac => $3 };
+        push @react, { name => $name, ip => $ip, mac => $mac };
     }
 
     return { cache => $cache, react => \@react };
+}
+
+sub standardize_mac {
+    my ( $self, $mac ) = @_;
+
+    # add leading 0 to single-digit fields in mac address
+    return join( ":", map { length "$_" == 1 ? "0$_" : $_ } split( /:/, $mac ) );
+
 }
 
 1;

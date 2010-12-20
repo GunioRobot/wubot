@@ -1,8 +1,17 @@
 package Wubot::Reactor::Console;
 use Moose;
 
+use Log::Log4perl;
 use POSIX qw(strftime);
 use Term::ANSIColor;
+
+has 'logger'  => ( is       => 'ro',
+                   isa      => 'Log::Log4perl::Logger',
+                   lazy     => 1,
+                   default  => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
 
 my $valid_colors = { blue    => 'blue',
                      cyan    => 'cyan',
@@ -45,6 +54,8 @@ sub react {
     if ( $message->{urgent} && $color !~ m/bold/ ) {
         $color = "bold $color";
     }
+
+    $self->logger->debug( "Console: $color: $subject" );
 
     $message->{console}->{color} = $color;
     print color $color;

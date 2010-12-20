@@ -37,29 +37,25 @@ is( $growl->react( { subject => 'foo', priority => 10 } )->{growl}->{priority},
     "Checking that growl_priority set to message priority"
 );
 
-is( $growl->react( { subject => 'red', color => 'red' } )->{growl}->{priority},
+is( $growl->react( { subject => 'priority 2', priority => '2' } )->{growl}->{priority},
     2,
-    "Checking that growl_priority set to '2' if message color is red"
+    "Checking that growl_priority set to '2'"
 );
-
-is( $growl->react( { subject => 'yellow', color => 'yellow' } )->{growl}->{priority},
+is( $growl->react( { subject => 'priority 1', priority => '1' } )->{growl}->{priority},
     1,
-    "Checking that growl_priority set to '1' if message color is yellow"
+    "Checking that growl_priority set to '1'"
 );
-
-is( $growl->react( { subject => 'grey', color => 'grey' } )->{growl}->{priority},
+is( $growl->react( { subject => 'priority 0', priority => '0' } )->{growl}->{priority},
     0,
-    "Checking that growl_priority set to '0' if message color is grey"
+    "Checking that growl_priority set to '0'"
 );
-
-is( $growl->react( { subject => 'green', color => 'green' } )->{growl}->{priority},
+is( $growl->react( { subject => 'priority -1', priority => '-1' } )->{growl}->{priority},
     -1,
-    "Checking that growl_priority set to '-1' if message color is green"
+    "Checking that growl_priority set to '-1'"
 );
-
-is( $growl->react( { subject => 'blue', color => 'blue' } )->{growl}->{priority},
+is( $growl->react( { subject => 'priority -2', priority => '-2' } )->{growl}->{priority},
     -2,
-    "Checking that growl_priority set to '-2' if message color is blue"
+    "Checking that growl_priority set to '-2'"
 );
 
 is( $growl->react( { subject => 'non-sticky' } )->{growl}->{sticky},
@@ -72,24 +68,11 @@ is( $growl->react( { subject => 'sticky', sticky => 1 } )->{growl}->{sticky},
     "Checking that 'sticky' enabed when message 'sticky' flag set"
 );
 
-{
-    ok( my $results = $growl->react( { subject => 'sticky red for urgent', urgent => 1 } ),
-        "sending urgent notification"
-    );
-
-    is( $results->{growl}->{sticky},
-        1,
-        "Checking that 'sticky' enabed when message 'urgent' flag set"
-    );
-
-    is( $results->{growl}->{color},
-        'red',
-        "Checking that 'color' set to 'red' when message 'urgent' flag set"
+my $test_icon = "$ENV{HOME}/.icons/wubot.png";
+if ( -r $test_icon ) {
+    is( $growl->react( { subject => 'image test' } )->{growl}->{image},
+        "$test_icon",
+        "Checking for default growl image",
     );
 }
-
-is( $growl->react( { subject => 'image test' } )->{growl}->{image},
-    "$ENV{HOME}/.icons/wubot.png",
-    "Checking for default growl image",
-);
 

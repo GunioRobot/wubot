@@ -25,7 +25,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 1 .. 60*24 ) {
-        push @rows, { timestamp => $now - 60*60*24 + $minute*60,
+        push @rows, { lastupdate => $now - 60*60*24 + $minute*60,
                       idle_min  => 0,
                   };
     }
@@ -55,7 +55,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 1 .. 60*24 ) {
-        push @rows, { timestamp => $now - 60*60*24 + $minute*60,
+        push @rows, { lastupdate => $now - 60*60*24 + $minute*60,
                       idle_min  => 10,
                   };
     }
@@ -86,7 +86,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
 
     my $idle_min = 0;
     for my $minute ( 1 .. 60 ) {
-        push @rows, { timestamp => $now - 60*60 + $minute*60,
+        push @rows, { lastupdate => $now - 60*60 + $minute*60,
                       idle_min  => $idle_min,
                   };
 
@@ -123,7 +123,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 0 .. 30 ) {
-        push @rows, { timestamp => $now - 60*60 + ( $minute * 60 * 2 ),
+        push @rows, { lastupdate => $now - 60*60 + ( $minute * 60 * 2 ),
                       idle_min   => 0,
                   };
     }
@@ -154,7 +154,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 0 .. 60 ) {
-        push @rows, { timestamp => $now - 60*60 + ( $minute * 60 * 3 ),
+        push @rows, { lastupdate => $now - 60*60 + ( $minute * 60 * 3 ),
                       idle_min   => 0,
                   };
     }
@@ -184,7 +184,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 0 .. 60 ) {
-        push @rows, { timestamp => $now - 60*60 + ( $minute * 60 * 10 ),
+        push @rows, { lastupdate => $now - 60*60 + ( $minute * 60 * 10 ),
                       idle_min   => 0,
                   };
     }
@@ -215,7 +215,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
     my $now = time;
 
     for my $minute ( 0 .. 40 ) {
-        push @rows, { timestamp => $now - 60*60 + ( $minute * 60 * 1.5 ),
+        push @rows, { lastupdate => $now - 60*60 + ( $minute * 60 * 1.5 ),
                       idle_min   => 0,
                   };
     }

@@ -68,7 +68,8 @@ sub create_machine {
     my $results2 = $machine->sub(
         get_message => q{
             my $path = $_[0];
-            return $main::messenger->get( $path );
+            my $message = $main::messenger->get( $path );
+            return $message;
         },
     );
     die $results2->errmsg unless $results2->ok;

@@ -100,8 +100,15 @@ sub get {
 
     my $message = YAML::Load $entry->{data};
 
-    $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
+    # if called in array context, return the message and a callback
+    # method to delete the item from the queue AFTER it has been
+    # processed.
+    if ( wantarray ) {
+        my $callback = sub { $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } ) };
+        return ( $message, $callback );
+    }
 
+    $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
     return $message;
 }
 

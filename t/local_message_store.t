@@ -42,10 +42,10 @@ $hostname =~ s|\..*$||;
                "Checking that retrieved message matches sent message"
            );
 
-    is_deeply( [ $messenger->get( $directory ) ],
-               [],
-               "Checking that no messages left in queue"
-           );
+    is( scalar $messenger->get( $directory ),
+        undef,
+        "Checking that no messages left in queue"
+    );
 
 }
 
@@ -77,7 +77,7 @@ $hostname =~ s|\..*$||;
 
     for my $message_number ( 1 .. 9 ) {
 
-        is_deeply( [ $messenger->get( $directory ) ],
+        is_deeply( [ scalar $messenger->get( $directory ) ],
                    [ { %{ $message },
                      number     => $message_number,
                      lastupdate => $timestamp+$message_number*100,
@@ -86,10 +86,10 @@ $hostname =~ s|\..*$||;
                );
     }
 
-    is_deeply( [ $messenger->get( $directory ) ],
-               [],
-               "Checking that no messages left in queue"
-           );
+    is( scalar $messenger->get( $directory ),
+        undef,
+        "Checking that no messages left in queue"
+    );
 
 }
 
@@ -116,7 +116,7 @@ $hostname =~ s|\..*$||;
 
     my @message_order;
     for my $message_number ( 1 .. 19 ) {
-        push @message_order, $messenger->get( $directory )->{number};
+        push @message_order, scalar $messenger->get( $directory )->{number};
     }
 
     is_deeply( [ @message_order ],
@@ -132,9 +132,61 @@ $hostname =~ s|\..*$||;
 
     my $messenger = Wubot::LocalMessageStore->new();
 
-    is_deeply( [ $messenger->get( $directory ) ],
-               [ ],
-               "Calling get() when 'new' sub-directory does not exist"
-           );
+    is( scalar $messenger->get( $directory ),
+        undef,
+        "Calling get() when 'new' sub-directory does not exist"
+    );
+
 }
 
+# callback to delete message
+{
+    my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $message = { foo        => 1,
+                    checksum   => 1234,
+                    key        => 'testcase',
+                    lastupdate => time,
+                    hostname   => $hostname,
+                };
+
+    ok( my $messenger = Wubot::LocalMessageStore->new(),
+        "Creating a new messenger"
+    );
+
+    ok( $messenger->store( { %{ $message } }, $directory ),
+        "Storing message"
+    );
+
+    {
+        ok( my ( $got_message, $callback ) = $messenger->get( $directory ),
+            "Retrieving only message in queue with a callback to delete the message"
+        );
+
+        is_deeply( $got_message,
+                   $message,
+                   "Checking that retrieved message matches sent message"
+               );
+    }
+
+    {
+        ok( my ( $got_message, $callback ) = $messenger->get( $directory ),
+            "Retrieving message from queue with having used callback to delete message"
+        );
+
+        is_deeply( $got_message,
+                   $message,
+                   "Checking that retrieved message matches sent message"
+               );
+
+        ok( $callback->(),
+            "Calling callback to delete message from the queue"
+        );
+    }
+
+    is( scalar $messenger->get( $directory ),
+        undef,
+        "Checking that no messages left in queue"
+    );
+
+}

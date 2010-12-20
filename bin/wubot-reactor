@@ -42,8 +42,14 @@ my $timer = AnyEvent->timer( after    => 1,
                              cb       => sub {
 
                                  my $now = time;
-                                 while ( my $message = $messenger->get( $message_directory ) ) {
+                                 while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
+
+                                     # send message through the reactor
                                      react( $message );
+
+                                     # delete the message now that it has been processed
+                                     $callback->();
+
                                      $lastupdate = $now;
                                  }
 

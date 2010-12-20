@@ -145,10 +145,14 @@ sub enqueue_results {
     return unless $results;
 
     # use our class name for the 'plugin' field
-    $results->{plugin}     = $self->{class};
+    unless ( $results->{plugin} ) {
+        $results->{plugin}     = $self->{class};
+    }
 
     # use our instance key name for the 'key' field
-    $results->{key}        = $self->key;
+    unless ( $results->{key} ) {
+        $results->{key}        = $self->key;
+    }
 
     $self->reactor_queue->store( $results, $self->reactor_queue_dir );
 

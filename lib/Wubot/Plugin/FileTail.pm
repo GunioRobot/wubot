@@ -1,7 +1,7 @@
 package Wubot::Plugin::FileTail;
 use Moose;
 
-use Fcntl qw( SEEK_END SEEK_CUR SEEK_SET O_NONBLOCK O_RDWR );
+use Fcntl qw( SEEK_END SEEK_CUR SEEK_SET O_NONBLOCK O_RDONLY );
 use Log::Log4perl;
 
 has 'path'      => ( is      => 'rw',
@@ -10,9 +10,9 @@ has 'path'      => ( is      => 'rw',
 
 has 'tail_fh'   => ( is      => 'rw',
                      lazy    => 1,
-                     default => sub { my ( $self ) = @_;
-                                      return $self->get_fh( 1 );
-                                  },
+                     default => sub {
+                         return $_[0]->get_fh( 1 );
+                     },
                  );
 
 has 'lastread'  => ( is      => 'rw',
@@ -22,8 +22,24 @@ has 'lastread'  => ( is      => 'rw',
 has 'logger'    => ( is      => 'ro',
                      isa     => 'Log::Log4perl::Logger',
                      lazy    => 1,
-                     default => sub { return Log::Log4perl::get_logger( __PACKAGE__ );
-                                  },
+                     default => sub {
+                         return Log::Log4perl::get_logger( __PACKAGE__ );
+                     },
+                 );
+
+has 'refresh'   => ( is      => 'ro',
+                     isa     => 'Num',
+                     default => sub {
+                         # default behavior is to recheck if file was
+                         # renamed or truncated every time we go to
+                         # check and don't find any new lines.
+                         return 1;
+                     }
+                 );
+
+has 'count'     => ( is      => 'rw',
+                     isa     => 'Num',
+                     default => 0,
                  );
 
 my %nonblockGetLines_last;
@@ -34,43 +50,54 @@ with 'Wubot::Plugin::Roles::Plugin';
 sub check {
     my ( $self, $inputs ) = @_;
 
+    $self->count( $self->count + 1 );
+
     my $config = $inputs->{config};
 
     my $path = $config->{path};
     $self->path( $path );
 
     unless ( -r $path ) {
-        $self->logger->logdie( "ERROR: FileTail - path not readable: $path" );
+        return { react => [ { subject => "path not readable: $path" } ] };
     }
 
     my $fh = $self->tail_fh;
 
-    my $mtime = ( stat $self->path )[9];
+    my $mtime = ( stat $path )[9];
     my ( $eof, @lines ) = nonblockGetLines( $fh );
 
     my @react = $self->get_react( @lines );
 
-    unless ( scalar @react ) {
+    my $refresh = $config->{refresh} || $self->refresh;
 
-        # no lines read, check if file was truncated/renamed
-        my $cur_pos = sysseek( $fh, 0, SEEK_CUR);
-        my $end_pos = sysseek( $fh, 0, SEEK_END);
+    if ( $self->count % $refresh == 0 ) {
 
-        if ( $end_pos < $cur_pos || ( $self->lastread && $mtime > $self->lastread ) ) {
+        unless ( scalar @react ) {
 
-            $self->tail_fh( $self->get_fh( undef ) );
-            $fh = $self->tail_fh;
+            # no lines read, check if file was truncated/renamed
+            my $cur_pos = sysseek( $fh, 0, SEEK_CUR);
+            my $end_pos = sysseek( $fh, 0, SEEK_END);
 
-            ( $eof, @lines ) = nonblockGetLines( $fh );
+            my $was_truncated = $end_pos < $cur_pos ? 1 : 0;
+            my $was_renamed   = $self->lastread && $mtime > $self->lastread ? 1 : 0;
 
-            @react = $self->get_react( @lines );
+            if (  $was_truncated || $was_renamed ) {
+
+                if    ( $was_truncated ) { push @react, { subject => "file was truncated: $path" } }
+                elsif ( $was_renamed   ) { push @react, { subject => "file was renamed: $path"   } };
+
+                $self->tail_fh( $self->get_fh( undef ) );
+                $fh = $self->tail_fh;
+
+                ( $eof, @lines ) = nonblockGetLines( $fh );
+
+                push @react, $self->get_react( @lines );
+
+            } else {
+                # file was not truncated, seek back to same spot
+                sysseek( $fh, $cur_pos, SEEK_SET);
+            }
         }
-        else {
-            # file was not truncated, seek back to same spot
-            sysseek( $fh, $cur_pos, SEEK_SET);
-        }
-
-
     }
 
     if ( scalar @react ) {
@@ -106,13 +133,13 @@ sub get_fh {
     my $path = $self->path;
 
     if ( $seek_end ) {
-        $self->logger->warn( "opening path: $path" );
+        $self->logger->debug( "opening path: $path" );
     }
     else {
-        $self->logger->warn( "re-opening path: $path" );
+        $self->logger->debug( "re-opening path: $path" );
     }
 
-    sysopen( my $fh, $path, O_NONBLOCK|O_RDWR )
+    sysopen( my $fh, $path, O_NONBLOCK|O_RDONLY )
         or die "can't open $path: $!";
 
     if ( $seek_end ) {

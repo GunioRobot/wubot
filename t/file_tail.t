@@ -25,10 +25,12 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     my $path = "$tempdir/file0.log";
 
-    throws_ok( sub { $tail->check( { config => { path => $path } } ) },
-               qr/path not readable/,
-               "Calling reaction on a file that does not exist"
-           );
+    my $results = $tail->check( { config => { path => $path } } );
+
+    is( $results->{react}->[0]->{subject},
+        "path not readable: $path",
+        "Checking for 'path not readable' reaction when calling check() on file that does not exist"
+    );
 }
 
 $| = 1;
@@ -91,11 +93,16 @@ $| = 1;
     my $results1 = $tail->check( { config => { path => $path } } );
 
     is( $results1->{react}->[0]->{subject},
+        "file was truncated: $path",
+        "Checking for 'file was truncated' message"
+    );
+
+    is( $results1->{react}->[1]->{subject},
         'line5',
         "Calling reaction read 'line5'"
     );
 
-    is( $results1->{react}->[1]->{subject},
+    is( $results1->{react}->[2]->{subject},
         'line6',
         "Calling reaction read 'line6'"
     );
@@ -106,19 +113,24 @@ $| = 1;
 
     sleep 1;
     unlink( $path );
-    system( "echo line6 >> $path" );
     system( "echo line7 >> $path" );
+    system( "echo line8 >> $path" );
 
     my $results1 = $tail->check( { config => { path => $path } } );
 
     is( $results1->{react}->[0]->{subject},
-        'line6',
-        "Calling reaction read 'line6'"
+        "file was renamed: $path",
+        "Checking for 'file was renamed' reaction"
     );
 
     is( $results1->{react}->[1]->{subject},
         'line7',
         "Calling reaction read 'line7'"
+    );
+
+    is( $results1->{react}->[2]->{subject},
+        'line8',
+        "Calling reaction read 'line8'"
     );
 
     ok( ! $tail->check( { config => { path => $path } } ),
@@ -127,19 +139,76 @@ $| = 1;
 
     sleep 1; # mv file and re-create
     system( "mv $path $path.old" );
-    system( "echo line8 > $path" );
-    system( "echo line9 >> $path" );
+    system( "echo line9 > $path" );
+    system( "echo line10 >> $path" );
 
     my $results1 = $tail->check( { config => { path => $path } } );
 
     is( $results1->{react}->[0]->{subject},
-        'line8',
-        "Calling reaction read 'line8'"
+        "file was renamed: $path",
+        "Checking for 'file was renamed' reaction"
     );
 
     is( $results1->{react}->[1]->{subject},
         'line9',
         "Calling reaction read 'line9'"
+    );
+
+    is( $results1->{react}->[2]->{subject},
+        'line10',
+        "Calling reaction read 'line10'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after no more writes"
+    );
+
+    sleep 1;
+    system( "echo line10 > $path" );
+    system( "echo line11 >> $path" );
+
+    my $results2 = $tail->check( { config => { path => $path } } );
+
+    is( $results2->{react}->[0]->{subject},
+        "file was renamed: $path",
+        "checking for 'file was renamed' after truncating file to the same length"
+    );
+
+    is( $results2->{react}->[1]->{subject},
+        'line10',
+        "Calling reaction read 'line10'"
+    );
+
+    is( $results2->{react}->[2]->{subject},
+        'line11',
+        "Calling reaction read 'line11'"
+    );
+
+    ok( ! $tail->check( { config => { path => $path } } ),
+        "Calling reaction after no more writes"
+    );
+
+    # refresh interval
+    sleep 1;
+    system( "echo line12 > $path" );
+
+    # setting count back to 0
+    $tail->count( 0 );
+
+    ok( ! $tail->check( { config => { path => $path, refresh => 2 } } ),
+        "Calling check after truncate with refresh set to 2 and count set to 1 returns no data"
+    );
+
+    my $results2 = $tail->check( { config => { path => $path, refresh => 2 } } );
+
+    is( $results2->{react}->[0]->{subject},
+        "file was truncated: $path",
+        "checking for 'file was renamed' after truncating file to the same length"
+    );
+
+    is( $results2->{react}->[1]->{subject},
+        'line12',
+        "Calling reaction read 'line12'"
     );
 
     ok( ! $tail->check( { config => { path => $path } } ),

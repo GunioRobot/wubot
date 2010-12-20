@@ -315,6 +315,62 @@ ok( -r $sqldb,
            );
 }
 
+{
+    my $table = "test_table_9";
+    my $schema = { column1     => 'INT',
+                   column2     => 'INT',
+                   column3     => 'INT',
+                   constraints => [ 'UNIQUE( column1, column2 )' ],
+               };
+
+    my $data1 = { column1 => 1, column2 => 2, column3 => 3 };
+    ok( $sql->insert( $table, $data1, $schema ),
+        "Inserting first new hash into table"
+    );
+
+    my $data2 = { column1 => 4, column2 => 5, column3 => 6 };
+    ok( $sql->insert( $table, $data2, $schema ),
+        "Inserting second new hash into table"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking inserted data"
+           );
+
+    {
+        ok( ! $sql->insert( $table, $data1, $schema ),
+            "Inserting duplicate data into column violates unique constraint"
+        );
+    }
+
+    {
+        my $data3 = { column1 => 1, column2 => 2, column3 => 7 };
+        ok( ! $sql->insert( $table, $data3, $schema ),
+            "Inserting data into column that violates unique constraint on column1 and column2"
+        );
+    }
+
+    {
+        ok( ! $sql->update( $table, $data2, $data1, $schema ),
+            "Updating data2 to match data1 violates unique constraint on column1 and column2"
+        );
+    }
+
+    {
+        ok( ! $sql->insert_or_update( $table, $data2, $data1, $schema ),
+            "insert_or_update data2 to match data1 violates unique constraint on column1 and column2"
+        );
+    }
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ $data1, $data2 ],
+               "Checking inserted data"
+           );
+
+}
+
+
 
 ok( $sql->disconnect(),
     "Closing SQLite file"

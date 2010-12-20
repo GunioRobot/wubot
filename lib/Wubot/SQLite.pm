@@ -53,8 +53,15 @@ sub create_table {
 
     my @lines;
     for my $key ( keys %{ $schema_h } ) {
+        next if $key eq "constraints";
         my $type = $schema_h->{$key};
         push @lines, "\t$key $type";
+    }
+
+    if ( $schema_h->{constraints} ) {
+        for my $constraint ( @{ $schema_h->{constraints} } ) {
+            push @lines, "\t$constraint";
+        }
     }
     $command .= join ",\n", @lines;
 
@@ -93,6 +100,7 @@ sub insert {
 
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
+        next if $field eq "constraints";
         $insert->{ $field } = $entry->{ $field };
     }
 
@@ -100,7 +108,12 @@ sub insert {
 
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
-    $sth1->execute( @bind );
+    eval {                          # try
+        $sth1->execute( @bind );
+        1;
+    } or do {                       # catch
+        return;
+    };
 
     return $self->dbh->last_insert_id( "", "", $table, "");
 }
@@ -112,7 +125,12 @@ sub update {
 
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
-    $sth1->execute( @bind );
+    eval {                          # try
+        $sth1->execute( @bind );
+        1;
+    } or do {                       # catch
+        return;
+    };
 
     return 1;
 }
@@ -127,11 +145,10 @@ sub insert_or_update {
     };
 
     if ( $count ) {
-        $self->update( $table, $update, $where, $schema_h );
+        return $self->update( $table, $update, $where, $schema_h );
     }
-    else {
-        $self->insert( $table, $update, $schema_h );
-    }
+
+    return $self->insert( $table, $update, $schema_h );
 
     return 1;
 }

@@ -4,24 +4,11 @@ use Moose;
 # todo - warn if queue length above a certain size
 
 use Digest::MD5 qw( md5_hex );
-use File::Sync 'fsync';
+use Wubot::SQLite;
 use Log::Log4perl;
-use Maildir::Lite;
-use MIME::Entity;
-use MIME::Parser;
 use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML;
-
-BEGIN {
-    # temporarily disable warnings for redefine while we monkey-patch Maildir::Lite
-    no warnings 'redefine';
-
-    # Maildir::Lite has a bug where it does not properly handle hostnames with dashes
-    *Maildir::Lite::hostname = sub { my $hostname = Sys::Hostname::hostname(); $hostname =~ s|\-||g; return $hostname };
-
-    use warnings 'redefine';
-}
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -41,25 +28,22 @@ has 'hostname' => ( is => 'ro',
                     },
                 );
 
-has 'id_cache' => ( is => 'ro',
-                    isa => 'HashRef',
-                    default => sub { {} },
-                );
+has 'sqlite'  => ( is => 'ro',
+                   isa => 'HashRef',
+                   default => sub { {} },
+               );
 
-has 'store_count' => ( is => 'ro',
-                       isa => 'Num',
-                       default => 1,
-                   );
 
 
 sub store {
     my ( $self, $message, $directory ) = @_;
 
-    my $maildir = Maildir::Lite->new( dir => $directory );
+    my $dbfile = "$directory/queue.sqlite";
 
-    my ($fh,$stat0)=$maildir->creat_message();
-
-    die "creat_message failed" if $stat0;
+    # if we don't have a sqlite object for this file, create one now
+    unless ( $self->sqlite->{ $dbfile } ) {
+        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+    }
 
     unless ( $message->{checksum} ) {
         $message->{checksum}   = $self->checksum( $message );
@@ -73,10 +57,6 @@ sub store {
         $message->{hostname}  = $self->hostname;
     }
 
-    # set message store count and increment counter
-    $self->{store_count}++;
-    $message->{store_count} = $self->store_count;
-
     my $message_text = YAML::Dump $message;
     utf8::encode( $message_text );
 
@@ -85,22 +65,19 @@ sub store {
 
     my $subject = join( ": ", $message->{key}, $message->{subject} || $date );
 
-    my $msg = MIME::Entity->build(
-        Type        => 'text/plain',
-        Date        => $date,
-        From        => $message->{username} || 'wubot',
-        To          => $message->{to_user}  || 'wubot',
-        Subject     => $subject,
-        Data        => $message_text,
-    );
-
-    $msg->print($fh);
-
-    my $filename = $maildir->{__message_fh}->{fileno $fh}->{filename};
-
-    die "delivery failed!\n" if $maildir->deliver_message($fh);
-
-    utime $time, $time, "$directory/new/$filename";
+    $self->sqlite->{ $dbfile }->insert( 'message_queue',
+                                        { date     => $date,
+                                          subject  => $subject,
+                                          data     => $message_text,
+                                          hostname => $message->{hostname},
+                                      },
+                                        { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                                          date     => 'varchar(32)',
+                                          subject  => 'varchar(256)',
+                                          data     => 'text',
+                                          hostname => 'varchar(32)',
+                                      }
+                                    );
 
     return 1;
 }
@@ -108,100 +85,24 @@ sub store {
 sub get {
     my ( $self, $directory ) = @_;
 
-    return unless -d "$directory/new";
+    my $dbfile = "$directory/queue.sqlite";
 
-    my $maildir = Maildir::Lite->new( dir => $directory );
+    return unless -r $dbfile;
 
-    #$maildir->sort('asc');
-    $maildir->sort( sub { $self->sort( @_ ) } ); # sort based on user defined function
+    # if we don't have a sqlite object for this file, create one now
+    unless ( $self->sqlite->{ $dbfile } ) {
+        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+    }
 
-    $maildir->force_readdir();
+    my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT * FROM message_queue ORDER BY id LIMIT 1" );
 
-    my $parser = new MIME::Parser;
-    $parser->output_under("/tmp");
+    return unless $entry;
 
-    my ($fh, $status) = $maildir->get_next_message( 'new' );
-    return if $status;
+    my $message = YAML::Load $entry->{data};
 
-    my $content = do { local $/; <$fh> };
-
-    $content =~ s|^.*?\n(?=\-\-\-\n)||s;
-
-    my $message = YAML::Load $content;
-
-    delete $message->{store_count};
-
-    # delete our cached reactor id for this file to prevent a memory leak
-    my $file = $maildir->{__message_fh}->{fileno $fh}->{filename};
-    delete $self->id_cache->{ $file };
-
-    if ( $maildir->act( $fh, 'S' ) ) { warn( "act failed!\n" ); }
+    $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
 
     return $message;
-}
-
-
-sub sort {
-    my ( $self, $path, @messages)=@_;
-
-    my %files;
-    my @newmessages;
-    my %seen;
-
-    foreach my $file (@messages) {
-
-        my $mtime = (stat( "$path/$file" ))[9];
-
-        unless ( $mtime ) {
-            die "ERROR: can't stat file: $path/$file";
-        }
-
-        $files{$file}->{primary} = $mtime;
-
-        $seen{$mtime}->{$file} = 1;
-    }
-
-    my %dupes;
-    for my $mtime ( keys %seen ) {
-        if ( scalar keys %{ $seen{$mtime} } > 1 ) {
-            $dupes{$mtime} = 1;
-        }
-    }
-
-    # simple sort if there are no duplicated timestamps
-    unless ( keys %dupes ) {
-        return ( sort { $files{$a}->{primary} <=> $files{$b}->{primary} } keys %files );
-    }
-
-    $self->logger->debug( "slower sort due to multiple messages with duplicate timestamps" );
-
-    for my $mtime ( keys %dupes ) {
-
-        for my $file ( keys %{ $seen{$mtime} } ) {
-
-            my $id;
-
-            if ( $self->id_cache->{ $file } ) {
-                $id = $self->id_cache->{ $file };
-            }
-            else {
-                open( my $f,"<", "$path/$file" );
-                while( my $line=<$f> ) {
-                    if ( $line =~ m/^store_count\:\s(\d+)/ ) {
-                        $id = $1;
-                        last;
-                    }
-                }
-                close( $f );
-            }
-
-            $files{ $file }->{secondary} = $id;
-        }
-    }
-
-    return ( sort { $files{$a}->{primary}   <=> $files{$b}->{primary}   ||
-                    $files{$a}->{secondary} <=> $files{$b}->{secondary}
-                    } keys %files );
 }
 
 sub checksum {

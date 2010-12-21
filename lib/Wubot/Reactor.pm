@@ -28,7 +28,7 @@ sub react {
 
     return $message if $message->{no_more_rules};
 
-    $depth = $depth || 0;
+    $depth = $depth || 1;
     unless ( $rules ) { $rules = $self->config->{rules} }
 
   RULE:

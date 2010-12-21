@@ -1,6 +1,7 @@
 package Wubot::Check;
 use Moose;
 
+use Benchmark;
 use Log::Log4perl;
 use YAML;
 
@@ -106,7 +107,35 @@ sub check {
 
     $self->logger->debug( "calling check for instance: ", $self->key );
 
-    my $results = $self->instance->check( { config => $config, cache => $cache } );
+    my $start = new Benchmark;
+
+    my $timeout = 30;
+
+    my $results;
+    eval {
+        # set the alarm
+        local $SIG{ALRM} = sub { die "alarm\n" };
+        alarm $timeout;
+
+        $results = $self->instance->check( { config => $config, cache => $cache } );
+
+        # cancel the alarm
+        alarm 0;
+    };
+
+    my $end = new Benchmark;
+    my $diff = timediff( $end, $start );
+    $self->logger->debug( $self->key, ":", timestr( $diff, 'all' ) );
+
+    if ( my $error = $@ ) {
+        if ( $error eq "alarm\n" ) {
+            $self->logger->error( "Timed out after $timeout seconds for check: ", $self->key );
+        }
+        else {
+            $self->logger->error( "Check died: $error" );
+        }
+        return;
+    }
 
     if ( $results->{react} ) {
         $self->react_results( $results->{react}, $config );

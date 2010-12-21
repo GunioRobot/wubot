@@ -9,8 +9,6 @@ sub react {
 
     $message->{ $config->{target_field} } = $message->{ $config->{source_field } };
 
-    print YAML::Dump $message;
-
     return $message;
 }
 

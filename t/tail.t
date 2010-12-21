@@ -215,9 +215,38 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     }
 
-    # refresh interval
     sleep 1;
     system( "echo line14 > $path" );
+    system( "echo line15 >> $path" );
+    system( "echo line16 >> $path" );
+
+    {
+        is( $tail->get_lines(),
+            1,
+            "Got only 1 new lines from file"
+        );
+
+        is( scalar @warn,
+            0,
+            "known bug - file truncated, then more lines written than last read"
+        );
+
+        is_deeply( \@lines,
+                   [ 'line16' ],
+                   "Got only one more line from file after truncating and writing to longer length"
+               );
+        undef @lines;
+
+        is( $tail->get_lines(),
+            0,
+            "Got 0 new lines"
+        );
+
+    }
+
+    # refresh interval
+    sleep 1;
+    system( "echo line15 > $path" );
 
     {
         # setting count back to 0
@@ -241,8 +270,8 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
         undef @warn;
 
         is_deeply( \@lines,
-                   [ 'line14' ],
-                   "Getting 1 more lines after refresh"
+                   [ 'line15' ],
+                   "Getting 2 more lines after refresh"
                );
         undef @lines;
 

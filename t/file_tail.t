@@ -25,6 +25,10 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     my $path = "$tempdir/file0.log";
 
+    ok( $tail->init( { config => { path => $path } } ),
+        "Initializing tail plugin"
+    );
+
     my $results = $tail->check( { config => { path => $path } } );
 
     is( $results->{react}->[0]->{subject},
@@ -43,6 +47,10 @@ $| = 1;
 
     ok( my $tail = Wubot::Plugin::FileTail->new( $init ),
         "Creating new file tail object"
+    );
+
+    ok( $tail->init( { config => { path => $path } } ),
+        "Initializing tail plugin"
     );
 
     ok( ! $tail->check( { config => { path => $path } } ),
@@ -139,7 +147,7 @@ $| = 1;
 
     sleep 1; # mv file and re-create
     system( "mv $path $path.old" );
-    system( "echo line9 > $path" );
+    system( "echo line09 > $path" );
     system( "echo line10 >> $path" );
 
     my $results1 = $tail->check( { config => { path => $path } } );
@@ -150,7 +158,7 @@ $| = 1;
     );
 
     is( $results1->{react}->[1]->{subject},
-        'line9',
+        'line09',
         "Calling reaction read 'line9'"
     );
 
@@ -188,30 +196,4 @@ $| = 1;
         "Calling reaction after no more writes"
     );
 
-    # refresh interval
-    sleep 1;
-    system( "echo line12 > $path" );
-
-    # setting count back to 0
-    $tail->count( 0 );
-
-    ok( ! $tail->check( { config => { path => $path, refresh => 2 } } ),
-        "Calling check after truncate with refresh set to 2 and count set to 1 returns no data"
-    );
-
-    my $results2 = $tail->check( { config => { path => $path, refresh => 2 } } );
-
-    is( $results2->{react}->[0]->{subject},
-        "file was truncated: $path",
-        "checking for 'file was renamed' after truncating file to the same length"
-    );
-
-    is( $results2->{react}->[1]->{subject},
-        'line12',
-        "Calling reaction read 'line12'"
-    );
-
-    ok( ! $tail->check( { config => { path => $path } } ),
-        "Calling reaction after no more writes"
-    );
 }

@@ -8,14 +8,12 @@ has 'path'      => ( is       => 'rw',
                      required => 1,
                  );
 
-has 'callback'  => ( is       => 'ro',
+has 'callback'  => ( is       => 'rw',
                      isa      => 'CodeRef',
-                     required => 1,
                  );
 
-has 'reset_callback' => ( is => 'ro',
+has 'reset_callback' => ( is => 'rw',
                           isa => 'CodeRef',
-                          default => sub { return },
                       );
 
 has 'tail_fh'   => ( is      => 'rw',
@@ -57,7 +55,7 @@ sub get_lines {
     my $path = $self->path;
 
     unless ( -r $path ) {
-        #return { react => [ { subject => "path not readable: $path" } ] };
+        $self->reset_callback->( "path not readable: $path" );
         return;
     }
 
@@ -78,7 +76,7 @@ sub get_lines {
     my $was_truncated = $end_pos < $cur_pos ? 1 : 0;
     my $was_renamed   = $self->lastread && $mtime > $self->lastread ? 1 : 0;
 
-    if (  $was_truncated || $was_renamed ) {
+    if ( $was_truncated || $was_renamed ) {
 
         if ( $was_truncated ) {
             $self->reset_callback->( "file was truncated: $path" );
@@ -92,11 +90,9 @@ sub get_lines {
 
         return $self->_get_lines_nonblock( $fh );
     }
-    else {
 
-        # file was not truncated, seek back to same spot
-        sysseek( $fh, $cur_pos, SEEK_SET);
-    }
+    # file was not truncated, seek back to same spot
+    sysseek( $fh, $cur_pos, SEEK_SET);
 
     return 0;
 }
@@ -132,7 +128,7 @@ sub _get_lines_nonblock {
   my $buf = '';
   my $n = sysread($fh,$buf,1024*1024);
 
-  # If we're done, make sure to send the last unfinished line
+  # No new lines found
   return unless $n;
 
   $self->lastread( time );

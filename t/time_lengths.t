@@ -132,3 +132,17 @@ ok( my $timelength = Wubot::TimeLength->new(),
         "seconds: -1m"
     );
 }
+
+# rounding
+{
+    is( $timelength->get_human_readable( 60*60*24*1.5+70 ),
+        "1d12h",
+        "Human-readable time for 1.5 days, 1 minute, and 10 seconds rounds to nearest hour"
+    );
+
+    is( $timelength->get_human_readable( 60*60*12+70 ),
+        "12h1m",
+        "Human-readable time for 12 hours 1 minute and 10 seconds rounds to nearest minute"
+    );
+}
+

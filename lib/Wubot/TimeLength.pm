@@ -36,6 +36,7 @@ sub get_human_readable {
     my ( $self, $time ) = @_;
 
     my $seconds = $self->get_seconds( $time );
+    my $orig_seconds = $seconds;
 
     return '0s' unless $seconds;
 
@@ -49,6 +50,13 @@ sub get_human_readable {
 
   TIME:
     for my $time ( qw( d h m s ) ) {
+
+        if ( $time eq "s" ) {
+            next TIME if $orig_seconds > $constants->{h};
+        }
+        elsif ( $time eq "m" ) {
+            next TIME if $orig_seconds > $constants->{d};
+        }
 
         my $num_seconds = $constants->{ $time };
 

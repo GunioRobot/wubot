@@ -29,7 +29,11 @@ sub check {
         next LINE if $cache->{ $mac }->{ $ip }->{ $name };
         $cache->{ $mac }->{ $ip }->{ $name } = 1;
 
-        push @react, { name => $name, ip => $ip, mac => $mac };
+        push @react, { name    => $name,
+                       ip      => $ip,
+                       mac     => $mac,
+                       subject => "New arp table entry: $ip ($name) = $mac",
+                   };
     }
 
     return { cache => $cache, react => \@react };

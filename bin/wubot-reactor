@@ -36,13 +36,17 @@ $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
 
 my $lastupdate = time;
+my $maxcount   = 50;
 
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
 
+                                 my $count = 0;
+
                                  my $now = time;
                                  while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
+                                     $count++;
 
                                      # send message through the reactor
                                      react( $message );
@@ -51,10 +55,11 @@ my $timer = AnyEvent->timer( after    => 1,
                                      $callback->();
 
                                      $lastupdate = $now;
+                                     return if $count >= $maxcount;
                                  }
 
-                                 if ( $now - $lastupdate > 300 ) {
-                                     react( { subject    => 'reactor has not received a message in more than 5 minutes',
+                                 if ( $now - $lastupdate > 120 ) {
+                                     react( { subject    => 'reactor has not received a message in more than 2 minutes',
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );

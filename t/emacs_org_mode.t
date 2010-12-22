@@ -101,7 +101,7 @@ my $cache_file = "$tempdir/storage.yaml";
             "checking that file6 was parsed"
         );
 
-        is( $results->{react}->[6]->{task_name},
+        is( $results->{react}->[6]->{title},
             "task 1",
             "Checking that task1 was parsed from file6"
         );
@@ -121,12 +121,12 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking that task1 file is file6"
         );
 
-        is( $results->{react}->[6]->{id},
+        is( $results->{react}->[6]->{taskid},
             "file6.task 1",
             "Checking id for task1 in file6"
         );
 
-        is( $results->{react}->[7]->{task_name},
+        is( $results->{react}->[7]->{title},
             "task 2",
             "Checking that task2 was parsed from file6"
         );
@@ -151,12 +151,12 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking that task2 is scheduled for 2010-12-24 Fri"
         );
 
-        is( $results->{react}->[7]->{id},
+        is( $results->{react}->[7]->{taskid},
             "file6.task 2",
             "Checking id for task2 in file6"
         );
 
-        is( $results->{react}->[8]->{task_name},
+        is( $results->{react}->[8]->{title},
             "task 3",
             "Checking that task3 was parsed from file6"
         );
@@ -176,7 +176,7 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking that task3 file is file6"
         );
 
-        is( $results->{react}->[8]->{id},
+        is( $results->{react}->[8]->{taskid},
             "file6.task 3",
             "Checking id for task3 in file6"
         );

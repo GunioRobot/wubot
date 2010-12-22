@@ -9,7 +9,7 @@
   - [ ] b
   - [X] c
 
-* TODO task 3
+** TODO task 3
   DEADLINE: <2010-12-21 Tue 12:30>
 
   - [X] x

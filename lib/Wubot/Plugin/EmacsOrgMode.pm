@@ -88,6 +88,7 @@ sub check {
                 $block =~ s|^\w+\s+||;
 
                 my $task;
+                $task->{type} = 'task';
 
                 my $priorities = { C => -1, B => 1, A => 2 };
                 if ( $block =~ s|^\[\#(\w)\]\s|| ) {
@@ -102,9 +103,9 @@ sub check {
                 $task->{file} = $filename;
 
                 $block =~ s|^(.*)||;
-                $task->{task_name} = $1;
+                $task->{title} = $1;
 
-                $task->{id} = join( ".", $task->{file}, $task->{task_name} );
+                $task->{taskid} = join( ".", $task->{file}, $task->{title} );
 
                 if ( $block =~ s|^\s+DEADLINE\:\s\<(.*)\>||m ) {
                     $task->{deadline_text} = $1;
@@ -116,7 +117,7 @@ sub check {
                 }
 
                 $block =~ s|^\s+\n||s;
-                $task->{text} = $block;
+                $task->{body} = $block;
 
                 push @tasks, $task;
             }
@@ -124,6 +125,7 @@ sub check {
         }
 
         push @react, { name      => $filename,
+                       type      => 'org',
                        timestamp => $updated,
                        subject   => "org file updated: $entry",
                        body      => $content,

@@ -282,3 +282,70 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     }
 }
+
+
+{
+    my $path = "$tempdir/file2.log";
+
+    system( "touch $path" );
+
+    my $position;
+
+    {
+        my @lines;
+
+        ok( my $tail = Wubot::Tail->new( { path           => $path,
+                                           callback       => sub { push @lines, @_ },
+                                           reset_callback => sub { return },
+                                       } ),
+            "Creating new file tail object"
+        );
+
+        is( $tail->get_lines(),
+            0,
+            "Calling get_lines() on file that exists but has had no writes since open"
+        );
+
+        system( "echo line1 >> $path" );
+        system( "echo line2 >> $path" );
+
+        is( $tail->get_lines(),
+            2,
+            "Got 2 new lines from file"
+        );
+        is_deeply( \@lines,
+                   [ 'line1', 'line2' ],
+                   "Checking lines read from file"
+               );
+
+        $position = $tail->position;
+
+        undef $tail;
+    }
+
+    system( "echo line3 >> $path" );
+    system( "echo line4 >> $path" );
+
+    {
+        my @lines;
+
+        ok( my $tail = Wubot::Tail->new( { path           => $path,
+                                           callback       => sub { push @lines, @_ },
+                                           reset_callback => sub { return },
+                                           position       => $position,
+                                       } ),
+            "Creating new file tail object"
+        );
+
+        is( $tail->get_lines(),
+            2,
+            "Calling get_lines() on file that was updated before second Wubot::Tail object was created"
+        );
+
+        is_deeply( \@lines,
+                   [ 'line3', 'line4' ],
+                   "Checking lines read from file"
+               );
+    }
+
+}

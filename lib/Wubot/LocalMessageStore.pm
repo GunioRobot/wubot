@@ -70,12 +70,14 @@ sub store {
                                           subject  => $subject,
                                           data     => $message_text,
                                           hostname => $message->{hostname},
+                                          seen     => undef,
                                       },
                                         { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                                          date     => 'varchar(32)',
-                                          subject  => 'varchar(256)',
-                                          data     => 'text',
-                                          hostname => 'varchar(32)',
+                                          date     => 'VARCHAR(32)',
+                                          subject  => 'VARCHAR(256)',
+                                          data     => 'TEXT',
+                                          hostname => 'VARCHAR(32)',
+                                          seen     => 'INTEGER',
                                       }
                                     );
 
@@ -94,7 +96,7 @@ sub get {
         $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
     }
 
-    my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT * FROM message_queue ORDER BY id LIMIT 1" );
+    my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT * FROM message_queue WHERE seen IS NULL ORDER BY id LIMIT 1" );
 
     return unless $entry;
 
@@ -104,7 +106,7 @@ sub get {
     # method to delete the item from the queue AFTER it has been
     # processed.
     if ( wantarray ) {
-        my $callback = sub { $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } ) };
+        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => 1 }, { id => $entry->{id} } ) };
         return ( $message, $callback );
     }
 

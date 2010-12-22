@@ -54,6 +54,10 @@ sub init {
 
     $self->tail->reset_callback( sub { print YAML::Dump @_ } );
 
+    if ( $inputs->{cache}->{position} ) {
+        $self->tail->position( $inputs->{cache}->{position} );
+    }
+
     return;
 }
 
@@ -63,10 +67,13 @@ sub check {
     $self->tail->get_lines();
 
     if ( $self->{react} ) {
-        return { react => { %{ $self->{react} } }, cache => { %{ $self->{react} } } };
+        return { react => { %{ $self->{react} } },
+                 cache => { %{ $self->{react} }, position => $self->tail->position },
+             };
     }
 
-    return;
+    $inputs->{cache}->{position} = $self->tail->position;
+    return { cache => $inputs->{cache} };
 }
 
 1;

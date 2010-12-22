@@ -41,6 +41,10 @@ sub init {
     $self->tail->callback(       $callback );
     $self->tail->reset_callback( $callback );
 
+    if ( $inputs->{cache}->{position} ) {
+        $self->tail->position( $inputs->{cache}->{position} );
+    }
+
     return;
 }
 
@@ -49,13 +53,15 @@ sub check {
 
     $self->tail->get_lines();
 
+    $inputs->{cache}->{position} = $self->tail->position;
+
     if ( $self->{react} ) {
-        my $return = { react => \@{ $self->{react} } };
+        my $return = { react => \@{ $self->{react} }, cache => $inputs->{cache} };
         undef $self->{react};
         return $return;
     }
 
-    return;
+    return { cache => $inputs->{cache} };
 }
 
 1;

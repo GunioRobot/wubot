@@ -25,7 +25,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     my $path = "$tempdir/file0.log";
 
-    ok( $tail->init( { config => { path => $path } } ),
+    ok( ! $tail->init( { config => { path => $path } } ),
         "Initializing tail plugin"
     );
 
@@ -49,11 +49,11 @@ $| = 1;
         "Creating new file tail object"
     );
 
-    ok( $tail->init( { config => { path => $path } } ),
+    ok( ! $tail->init( { config => { path => $path } } ),
         "Initializing tail plugin"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( $tail->check( { config => { path => $path } } ),
         "Calling reaction on file that exists but has had no writes since open"
     );
 
@@ -72,7 +72,7 @@ $| = 1;
         "Calling reaction read 'line2'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{react},
         "Calling reaction after all lines read"
     );
 
@@ -91,7 +91,7 @@ $| = 1;
         "Calling reaction read 'line4'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{react},
         "Calling reaction after all lines read"
     );
 
@@ -115,7 +115,7 @@ $| = 1;
         "Calling reaction read 'line6'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{react},
         "Calling reaction after no more writes"
     );
 
@@ -141,7 +141,7 @@ $| = 1;
         "Calling reaction read 'line8'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{results},
         "Calling reaction after no more writes"
     );
 
@@ -167,7 +167,7 @@ $| = 1;
         "Calling reaction read 'line10'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{react},
         "Calling reaction after no more writes"
     );
 
@@ -192,7 +192,7 @@ $| = 1;
         "Calling reaction read 'line11'"
     );
 
-    ok( ! $tail->check( { config => { path => $path } } ),
+    ok( ! $tail->check( { config => { path => $path } } )->{react},
         "Calling reaction after no more writes"
     );
 

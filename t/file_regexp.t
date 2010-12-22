@@ -56,4 +56,23 @@ $| = 1;
         1,
         "Checking that one lines matched 'test1' regexp"
     );
+
+    is( $results->{cache}->{position},
+        24,
+        "Checking that current file position is 24"
+    );
+
+    is( $tail->check()->{cache}->{position},
+        24,
+        "Checking that position stays at 24 after no new lines read"
+    );
+
+    system( "echo test3 match >> $path" );
+    system( "echo test4 match >> $path" );
+
+    is( $tail->check()->{cache}->{position},
+        48,
+        "Checking that position advanced to 48 after adding two more lines"
+    );
+
 }

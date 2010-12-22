@@ -16,20 +16,6 @@ $| = 1;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-# {
-#     my $path = "$tempdir/file0.log";
-
-#     ok( my $tail = Wubot::Tail->new( path => $path ),
-#         "Creating new file tail object"
-#     );
-
-#     is( $tail->get_lines( { config => { path => $path } } ),
-#         undef,
-#         "Checking for 'path not readable' reaction when calling get_lines() on file that does not exist"
-#     );
-# }
-
-
 {
     my $path = "$tempdir/file1.log";
 
@@ -348,4 +334,39 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
                );
     }
 
+}
+
+
+
+{
+    my $path = "$tempdir/file3.log";
+
+    system( "echo line1 >> $path" );
+    system( "echo line2 >> $path" );
+
+    my @lines;
+    my @warn;
+
+    ok( my $tail = Wubot::Tail->new( { path           => $path,
+                                       callback       => sub { push @lines, @_ },
+                                       reset_callback => sub { push @warn,  @_ },
+                                       position       => 1024,
+                                   } ),
+        "Creating new file tail object"
+    );
+
+    is( $tail->get_lines(),
+        2,
+        "Calling get_lines() on file where last position is greater than current end of file",
+    );
+
+    is_deeply( \@lines,
+               [ 'line1', 'line2' ],
+               "Checking lines read from file"
+           );
+
+    like( $warn[0],
+          qr/file was truncated: $path/,
+          "Checking for 'file was truncated' warning"
+      );
 }

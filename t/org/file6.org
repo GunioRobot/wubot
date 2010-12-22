@@ -1,0 +1,18 @@
+* TODO [#B] task 1
+
+  - [ ] one
+
+* DONE [#C] task 2
+  SCHEDULED: <2010-12-24 Fri>
+
+  - [ ] a
+  - [ ] b
+  - [X] c
+
+* TODO task 3
+  DEADLINE: <2010-12-21 Tue 12:30>
+
+  - [X] x
+  - [ ] y
+  - [ ] z
+

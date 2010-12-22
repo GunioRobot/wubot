@@ -13,18 +13,8 @@ my $logger = get_logger( 'default' );
 use Wubot::Plugin::EmacsOrgMode;
 use Wubot::Reactor;
 
-my $reactor = Wubot::Reactor->new();
-
-
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
-
-create_file1( $tempdir );
-create_file2( $tempdir );
-create_file3( $tempdir );
-create_file4( $tempdir );
-create_file5( $tempdir );
-
 
 {
 
@@ -32,13 +22,12 @@ create_file5( $tempdir );
     ok( my $check = Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
                                                         class      => 'Wubot::Plugin::EmacsOrgMode',
                                                         cache_file => $cache_file,
-                                                        reactor    => $reactor,
                                                     } ),
         "Creating a new Emacs Org Mode check instance"
     );
 
     {
-        ok( my $results = $check->check( { config => { directory => $tempdir } } ),
+        ok( my $results = $check->check( { config => { directory => 't/org' } } ),
             "Calling check() method again, no changes"
         );
 
@@ -107,7 +96,97 @@ create_file5( $tempdir );
             "Checking that page with meta color defined gets meta color"
         );
 
-        ok( my $results2 = $check->check( { config => { directory => $tempdir },
+        is( $results->{react}->[5]->{name},
+            "file6",
+            "checking that file6 was parsed"
+        );
+
+        is( $results->{react}->[6]->{task_name},
+            "task 1",
+            "Checking that task1 was parsed from file6"
+        );
+
+        is( $results->{react}->[6]->{priority},
+            "1",
+            "Checking that task1 priority is 'b' or '1'"
+        );
+
+        is( $results->{react}->[6]->{status},
+            "todo",
+            "Checking that task1 status is 'todo'"
+        );
+
+        is( $results->{react}->[6]->{file},
+            "file6",
+            "Checking that task1 file is file6"
+        );
+
+        is( $results->{react}->[6]->{id},
+            "file6.task 1",
+            "Checking id for task1 in file6"
+        );
+
+        is( $results->{react}->[7]->{task_name},
+            "task 2",
+            "Checking that task2 was parsed from file6"
+        );
+
+        is( $results->{react}->[7]->{status},
+            "done",
+            "Checking that task2 status is 'todo'"
+        );
+
+        is( $results->{react}->[7]->{priority},
+            "-1",
+            "Checking that task1 priority is 'c' or '-1'"
+        );
+
+        is( $results->{react}->[7]->{file},
+            "file6",
+            "Checking that task2 file is file6"
+        );
+
+        is( $results->{react}->[7]->{scheduled_text},
+            "2010-12-24 Fri",
+            "Checking that task2 is scheduled for 2010-12-24 Fri"
+        );
+
+        is( $results->{react}->[7]->{id},
+            "file6.task 2",
+            "Checking id for task2 in file6"
+        );
+
+        is( $results->{react}->[8]->{task_name},
+            "task 3",
+            "Checking that task3 was parsed from file6"
+        );
+
+        is( $results->{react}->[8]->{status},
+            "todo",
+            "Checking that task3 status is 'todo'"
+        );
+
+        is( $results->{react}->[8]->{priority},
+            "0",
+            "Checking that task1 priority is default, 0"
+        );
+
+        is( $results->{react}->[8]->{file},
+            "file6",
+            "Checking that task3 file is file6"
+        );
+
+        is( $results->{react}->[8]->{id},
+            "file6.task 3",
+            "Checking id for task3 in file6"
+        );
+
+        is( $results->{react}->[8]->{deadline_text},
+            "2010-12-21 Tue 12:30",
+            "Checking task3 deadline is 2010-12-21 Tue 12:30"
+        );
+
+        ok( my $results2 = $check->check( { config => { directory => 't/org' },
                                             cache  => $results->{cache}         } ),
             "Calling check() method with lastupdate set to now"
         );
@@ -117,127 +196,5 @@ create_file5( $tempdir );
                    "Checking that results were blank on the second scan"
                );
     }
-}
-
-
-
-sub create_file1 {
-    my ( $directory ) = @_;
-
-    my $path = "$directory/file1.org";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    print $fh <<"END_FILE1";
-
-* Test Case 1
-
-  - a 1
-    - a 1.2
-    - a 1.3
-  - b 1
-  - c 1
-  - color: yellow
-    - not in meta block
-
-END_FILE1
-
-    close $fh or die "Error closing file: $!\n";
-}
-
-sub create_file2 {
-    my ( $directory ) = @_;
-
-    my $path = "$directory/file2.org";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    print $fh <<"END_FILE1";
-
-* Some Tasks
-
-  - [ ] x task
-    - [ ] x.1 subtask
-    - [ ] x.2 subtask
-
-  - [X] y task
-    - [X] y.1 subtask done
-
-
-END_FILE1
-
-    close $fh or die "Error closing file: $!\n";
-}
-
-sub create_file3 {
-    my ( $directory ) = @_;
-
-    my $path = "$directory/file3.org";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    print $fh <<"END_FILE1";
-
-* Some Tasks
-
-  - [X] x task
-    - [X] x.1 subtask
-    - [X] x.2 subtask
-
-  - [X] y task
-    - [X] y.1 subtask done
-
-
-END_FILE1
-
-    close $fh or die "Error closing file: $!\n";
-}
-
-sub create_file4 {
-    my ( $directory ) = @_;
-
-    my $path = "$directory/file4.org";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    print $fh <<"END_FILE1";
-
-* Meta
-
-  - color: asdf
-    - in meta block
-
-  - due: 2020/01/02 1pm
-
-
-END_FILE1
-
-    close $fh or die "Error closing file: $!\n";
-}
-
-
-sub create_file5 {
-    my ( $directory ) = @_;
-
-    my $path = "$directory/file5.org";
-
-    open(my $fh, ">", $path)
-        or die "Couldn't open $path for writing: $!\n";
-    print $fh <<"END_FILE1";
-
-* Foo
-
-  - x
-  - y
-  - z
-
-* Meta
-
-  - color: qwer
-
-
-END_FILE1
-
-    close $fh or die "Error closing file: $!\n";
 }
 

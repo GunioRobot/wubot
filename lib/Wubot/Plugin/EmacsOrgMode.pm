@@ -1,6 +1,7 @@
 package Wubot::Plugin::EmacsOrgMode;
 use Moose;
 
+use Date::Manip;
 use File::chdir;
 
 with 'Wubot::Plugin::Roles::Cache';
@@ -41,8 +42,8 @@ sub check {
 
         close $fh or die "Error closing file: $!\n";
 
-        my $name = $entry;
-        $name =~ s|.org$||;
+        my $filename = $entry;
+        $filename =~ s|.org$||;
 
         # the task is 'done' until any incomplete tasks are found
         my $done = 1;
@@ -66,9 +67,11 @@ sub check {
             }
         }
 
+        my @tasks;
+
         for my $block ( split /\n\*+\s/, $content ) {
 
-            $block =~ s|^\s+\*\s+||mg;
+            $block =~ s|^\s*\*\s+||mg;
 
             $block =~ m|^(\w+)|;
             my $name = $1;
@@ -80,15 +83,57 @@ sub check {
                     $color = "$1";
                 }
             }
+            elsif ( $name eq "TODO" || $name eq "DONE" ) {
+
+                $block =~ s|^\w+\s+||;
+
+                my $task;
+
+                my $priorities = { C => -1, B => 1, A => 2 };
+                if ( $block =~ s|^\[\#(\w)\]\s|| ) {
+                    $task->{priority} = $priorities->{ $1 };
+                }
+                else {
+                    $task->{priority} = 0
+                }
+
+                $task->{status} = lc( $name );
+
+                $task->{file} = $filename;
+
+                $block =~ s|^(.*)||;
+                $task->{task_name} = $1;
+
+                $task->{id} = join( ".", $task->{file}, $task->{task_name} );
+
+                if ( $block =~ s|^\s+DEADLINE\:\s\<(.*)\>||m ) {
+                    $task->{deadline_text} = $1;
+                    $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" );
+                }
+                if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*)\>||m ) {
+                    $task->{scheduled_text} = $1;
+                    $task->{scheduled}      = UnixDate( ParseDate( $1 ), "%s" );
+                }
+
+                $block =~ s|^\s+\n||s;
+                $task->{text} = $block;
+
+                push @tasks, $task;
+            }
+
         }
 
-        push @react, { name      => $name,
+        push @react, { name      => $filename,
                        timestamp => $updated,
                        subject   => "org file updated: $entry",
                        body      => $content,
                        done      => $done,
                        color     => $color,
                    };
+
+        if ( scalar @tasks ) {
+            push @react, @tasks;
+        }
 
         # attempt to commit file to git if it isn't already
         local $CWD = $config->{directory};

@@ -30,6 +30,7 @@ sub check {
     if ( $cache->{next_utime} && $cache->{next_utime} > $now ) {
 
         $message = $inputs->{cache};
+        delete $message->{lastupdate};
 
         $message->{cache_remaining} = $cache->{next_utime} - $now;
 

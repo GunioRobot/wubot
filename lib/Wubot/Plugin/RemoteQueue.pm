@@ -17,6 +17,11 @@ has 'machine'   => ( is      => 'rw',
                      isa     => 'GRID::Machine',
                  );
 
+has 'reactor'  => ( is => 'ro',
+                    isa => 'CodeRef',
+                    required => 1,
+                );
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 
@@ -25,21 +30,21 @@ sub check {
 
     my $config = $inputs->{config};
 
-    my @react;
-
     unless ( $self->machine ) {
-        push @react, { subject => "GRID::Machine connecting to $config->{host}" };
         $self->machine( $self->create_machine( $config ) );
+        $self->reactor->( { subject => "GRID::Machine connecting to $config->{host}" } );
+        return;
     }
 
-    my $results = $self->machine->get_message( $config->{path} );
+  MESSAGE:
+    for my $message ( 1 .. 10 ) {
+        my $results = $self->machine->get_message( $config->{path} );
 
-    if ( $results->{results} ) {
-        push @react, @{ $results->{results} };
-    }
+        next MESSAGE unless $results->{results}->[0];
 
-    if ( scalar @react ) {
-        return { react => \@react };
+        $self->reactor->( $results->{results}->[0] );
+
+        $self->machine->processed_message();
     }
 
     return;
@@ -55,24 +60,38 @@ sub create_machine {
     $machine->modput( "Wubot::SQLite" );
     $machine->modput( "Wubot::LocalMessageStore" );
 
-    my $results1 = $machine->sub(
-        init        => q{
-            use Log::Log4perl qw(:easy);
-            Log::Log4perl->easy_init($INFO);
-            use Wubot::LocalMessageStore;
-            $main::messenger = Wubot::LocalMessageStore->new();
-         }
-    );
-    die $results1->errmsg unless $results1->ok;
+    {
+        my $results = $machine->sub(
+            init        => q{
+                use Log::Log4perl qw(:easy);
+                Log::Log4perl->easy_init($INFO);
+                use Wubot::LocalMessageStore;
+                $main::messenger = Wubot::LocalMessageStore->new();
+             }
+        );
+        die $results->errmsg unless $results->ok;
+    }
 
-    my $results2 = $machine->sub(
-        get_message => q{
-            my $path = $_[0];
-            my $message = $main::messenger->get( $path );
-            return $message;
-        },
-    );
-    die $results2->errmsg unless $results2->ok;
+    {
+        my $results = $machine->sub(
+            get_message => q{
+                my $path = $_[0];
+                my ( $message, $callback ) = $main::messenger->get( $path );
+                $main::callback = $callback;
+                return $message;
+            },
+        );
+        die $results->errmsg unless $results->ok;
+    }
+
+    {
+        my $results = $machine->sub(
+            processed_message => q{
+                $main::callback->();
+            },
+        );
+        die $results->errmsg unless $results->ok;
+    }
 
     my $init_results = $machine->init();
 

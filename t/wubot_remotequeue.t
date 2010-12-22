@@ -13,9 +13,12 @@ Log::Log4perl->easy_init($WARN);
 use Wubot::LocalMessageStore;
 use Wubot::Plugin::RemoteQueue;
 
+my @reactions;
+
 my $init = { key        => 'RemoteQueue-testcase',
              class      => 'Wubot::Plugin::RemoteQueue',
              cache_file => '/dev/null',
+             reactor    => sub { push @reactions, $_[0] },
          };
 
 ok( my $remote_queue = Wubot::Plugin::RemoteQueue->new( $init ),
@@ -39,13 +42,11 @@ my $message = { foo        => 1,
         "Creating a new messenger"
     );
 
-    ok( $messenger->store( { %{ $message }, count => 1 }, $tempdir ),
-        "Storing message"
-    );
-
-    ok( $messenger->store( { %{ $message }, count => 2 }, $tempdir ),
-        "Storing message"
-    );
+    for my $count ( 0 .. 19 ) {
+        ok( $messenger->store( { %{ $message }, count => $count }, $tempdir ),
+            "Storing message"
+        );
+    }
 }
 
 my $config  = { host => 'localhost',
@@ -54,29 +55,60 @@ my $config  = { host => 'localhost',
             };
 
 {
-    my $results = $remote_queue->check( { config => $config } );
+    ok( ! $remote_queue->check( { config => $config } ),
+        "Calling check() method on remote queue"
+    );
 
-
-    is( $results->{react}->[0]->{subject},
+    is( $reactions[0]->{subject},
         "GRID::Machine connecting to $config->{host}",
         "Checking that GRID::Machine connection established to $config->{host}"
     );
+    undef @reactions;
 
-    is_deeply( $results->{react}->[1],
-               { %{ $message }, count => 1 },
-               "Checking that message 1 was received in 'results'"
-           );
 }
 
 {
-    my $results = $remote_queue->check( { config => $config } );
+    ok( ! $remote_queue->check( { config => $config } ),
+        "Calling check() method on remote queue"
+    );
 
-    is_deeply( $results->{react}->[0],
-               { %{ $message }, count => 2 },
-               "Checking that message 2 was received in 'results'"
-           );
+    for my $idx ( 0 .. 9 ) {
+
+        is( $reactions[ $idx ]->{count},
+            $idx,
+            "Checking that GRID::Machine connection pulled first 10 messages from queue"
+        );
+
+    }
+    undef @reactions;
+
 }
 
-ok( ! $remote_queue->check( { config => $config } ),
-    "Checking that no messages left in queue"
-);
+{
+    ok( ! $remote_queue->check( { config => $config } ),
+        "Calling check() method on remote queue"
+    );
+
+    for my $idx ( 0 .. 9 ) {
+
+        is( $reactions[ $idx ]->{count},
+            $idx + 10,
+            "Checking that GRID::Machine connection pulled second 10 messages from queue"
+        );
+
+    }
+    undef @reactions;
+
+}
+
+{
+    ok( ! $remote_queue->check( { config => $config } ),
+        "Calling check() with no messages left in queue"
+    );
+
+    is_deeply( \@reactions,
+               [],
+               "Checking that no messages left in queue"
+           );
+
+}

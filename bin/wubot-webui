@@ -196,14 +196,29 @@ get '/ical' => sub {
     $self->render( template => 'calendar', format => 'ics', handler => 'epl' );
 };
 
+get '/tv/crew/(.first)/(.last)' => sub {
+    my $self = shift;
+
+    my $first = $self->stash( 'first' );
+    my $last  = $self->stash( 'last' );
+
+    my %program_ids;
+
+    for my $program_id ( $tv->get_roles( $first, $last ) ) {
+        $program_ids{ $program_id }++;
+    }
+
+    $self->stash( 'program_ids', [ sort keys %program_ids ] );
+
+    $self->render( template => 'crew' );
+
+
+};
+
 get '/tv/program/(.program_id)' => sub {
     my $self = shift;
 
     my $program_id = $self->stash( 'program_id' );
-
-    if ( length( $program_id ) == 10 ) {
-        $program_id .= "0000";
-    }
 
     my ( $program_data ) = $tv->get_program_details( $program_id );
 
@@ -231,6 +246,13 @@ get '/tv/program/(.program_id)' => sub {
         push @crew, $crew;
     }
     $program_data->{crew}  = \@crew;
+
+    my @episodes;
+    for my $episode_id ( $tv->get_episodes( $program_id ) ) {
+        my ( $episode_details ) = $tv->get_program_details( $episode_id );
+        push @episodes, $episode_details;
+    }
+    $program_data->{episodes} = \@episodes;
 
     $self->stash( 'program', $program_data );
 
@@ -316,12 +338,12 @@ get '/tv/schedule/crew/(.first)/(.last)' => sub {
 };
 
 
-get '/tv/newschedule' => sub {
+get '/tv/schedule' => sub {
     my $self = shift;
 
     my @display;
 
-    for my $program ( $tv->get_schedule( { start   => $self->param( 'start'   ) || time-300,
+    for my $program ( $tv->get_schedule( { start   => $self->param( 'start'   ) || undef,
                                            limit   => $self->param( 'limit'   ) || 100,
                                            channel => $self->param( 'channel' ) || undef,
                                            score   => $self->param( 'score'   ) || undef,
@@ -337,7 +359,7 @@ get '/tv/newschedule' => sub {
     $self->render( template => 'newtv' );
 };
 
-get '/tv/newschedule/(.program_id)' => sub {
+get '/tv/schedule/(.program_id)' => sub {
     my $self = shift;
 
     my $program_id = $self->stash('program_id');
@@ -358,7 +380,7 @@ get '/tv/newschedule/(.program_id)' => sub {
     $self->render( template => 'newtv' );
 };
 
-get '/tv/schedule' => sub {
+get '/tv/oldschedule' => sub {
     my $self = shift;
 
     my $sqlite_tv = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/xmltv.sql' } );

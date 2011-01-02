@@ -29,10 +29,10 @@
     | <a href="?start=-1h">1 hour ago</a>
     | <a href="?start=1h">in 1 hour</a>
     | <a href="?new=1">new</a>
-    | <a href="?new=1&video=HD">new-HD</a>
-    | <a href="?video=HD">HD</a>
+    | <a href="?new=1&hd=1">new-HD</a>
+    | <a href="?hd=1">HD</a>
     | <a href="?rating=R">R</a>
-    | <a href="?video=HD&rating=R">HD-R</a>
+    | <a href="?hd=1&rating=R">HD-R</a>
     | <a href="?rating=TV-MA">TV-MA</a>
     | <a href="?rating=TV-MA&video=HD">HD-TV-MA</a>
     | <a href="?new=1&score=3&limit=500">hot</a>

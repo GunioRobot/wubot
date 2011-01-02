@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <title>Wubot: <%= $first %> <%= $last %></title>
+
+     <script language="javascript">
+     function HideFrame(){
+      fr = document.getElementById ("blah");
+      if (fr.style.display!='none'){
+       fr.style.display="none";
+      }
+      else {
+       fr.style.display="block";
+      }
+     }
+     </script>
+    
+  </head>
+  <body bgcolor=gray>
+    
+    <table border=1 cellpadding=3>
+      <tr>
+        <td>lastupdate</td>
+        <td><%= scalar localtime $crew->{lastupdate} %></td>
+      </tr>
+      <tr>
+        <td>Date</td>
+        <td></td>
+      </tr>
+    </table>
+    <iframe name='blah' id='blah' width="1" height="1"></iframe>
+  </body>
+</html>
+
+

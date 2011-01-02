@@ -1,0 +1,20 @@
+#!/usr/local/bin/perl -w
+use strict;
+use warnings;
+
+use Log::Log4perl;
+
+use Wubot::Logger;
+use Wubot::Util::XMLTV;
+
+my $logger = Log::Log4perl::get_logger( 'default' );
+
+my $tv = Wubot::Util::XMLTV->new();
+
+my $dd_file = shift @ARGV;
+
+$logger->info( "Procesing file: $dd_file" );
+
+$tv->process_data( $dd_file );
+
+$logger->info( "Done processing file: $dd_file" );

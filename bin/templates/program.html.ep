@@ -16,6 +16,8 @@
     
   </head>
   <body bgcolor=gray>
+
+<table><tr><td valign='top'>
     
     <table border=1 cellpadding=3>
       <tr>
@@ -43,7 +45,10 @@
       </tr>
       <tr>
         <td>Program ID</td>
-        <td><%= $program->{program_id} %></td>
+        <td>
+          <a href='/tv/program/<%= $program->{program_id} %>'><%= $program->{program_id} %></a>
+          <a href='/tv/schedule/<%= $program->{program_id} %>'>[->] </a>
+        </td>
       </tr>
       <tr>
         <td>Episode</td>
@@ -51,6 +56,13 @@
       </tr>
       <tr>
         <td>Episode ID</td>
+        <td>
+          <a href='/tv/program/<%= $program->{ep_id} %>'><%= $program->{ep_id} %></a>
+          <a href='/tv/schedule/<%= $program->{ep_id} %>'>[->] </a>
+        </td>
+      </tr>
+      <tr>
+        <td>Episode Number</td>
         <td><%= $program->{episode_id} %></td>
       </tr>
       <tr>
@@ -100,7 +112,7 @@
                   <tr bgcolor='<%= $row->{other}->{$other}->{color} %>'>
                     <td>
                       <a href='/tv/program/<%= $row->{other}->{$other}->{program_id} %>'><%= $other %></a>
-                      <a href='/tv/newschedule/<%= $row->{other}->{$other}->{program_id} %>'>[->]</a>
+                      <a href='/tv/schedule/<%= $row->{other}->{$other}->{program_id} %>'>[->]</a>
                     </td>
                   </tr>
                 </table>
@@ -113,7 +125,31 @@
           </table>
         </td>
       </tr>
+
+
     </table>
+    </td>
+<td valign='top'>
+
+  <table>
+      <tr>
+        <td>
+          <table border=1 cellspacing=0 cellpadding=5>
+            
+            <% for my $row ( @{ $program->{episodes} } ) { %>
+            <tr>
+              <td>
+                <a href='/tv/program/<%= $row->{ep_id} %>'><%= $row->{subtitle} %></a> <%= $row->{episode_id}  %><BR>
+              </td>
+            </tr>
+            <% } %>
+          </table>
+        </td>
+      </tr>
+      </table>
+
+</td></tr></table>
+
     <iframe name='blah' id='blah' width="1" height="1"></iframe>
   </body>
 </html>

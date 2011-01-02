@@ -57,7 +57,7 @@ has 'score_colors' => ( is => 'ro',
                         lazy => 1,
                         default => sub {
                             return { 0 => 'gray',
-                                     1 => '#666699',
+                                     1 => '#770000',
                                      2 => '#666699',
                                      3 => '#999900',
                                      4 => '#AA7700',
@@ -270,15 +270,51 @@ sub get_program_id {
 
 }
 
+sub get_episodes {
+    my ( $self, $showid ) = @_;
+
+    if ( length $showid == 14 ) {
+        $showid =~ s|....$||;
+    }
+    if ( $showid =~ m|^SH0| ) {
+        $showid =~ s|^SH|EP|;
+    }
+
+    my %ids;
+
+    $self->db->select( { tablename => 'program',
+                         fields    => 'program_id',
+                         where     => { program_id => { 'LIKE' => "$showid%" } },
+                         callback  => sub {
+                             my $entry = shift;
+                             $ids{ $entry->{program_id} }++;
+                         },
+                     } );
+
+    return sort keys %ids;
+
+}
+
 sub get_program_details {
     my ( $self, $program_id ) = @_;
 
     my @details;
 
+    if ( length( $program_id ) == 10 ) {
+        $program_id .= "0000";
+    }
+
     $self->db->select( { tablename => 'program',
                          where     => { program_id => $program_id },
                          callback  => sub {
                              my $entry = shift;
+
+                             if ( $entry->{program_id} =~ m|^EP| ) {
+                                 $entry->{ep_id} = $entry->{program_id};
+                                 $entry->{program_id} =~ s|^EP|SH|;
+                                 $entry->{program_id} =~ s|....$||;
+                             }
+
                              push @details, $entry;
                          },
                      } );
@@ -306,8 +342,11 @@ sub get_station {
 sub get_program_crew {
     my ( $self, $program_id ) = @_;
 
-    return $self->get_data( 'crew', { program_id => $program_id } );
+    if ( length( $program_id ) == 10 ) {
+        $program_id .= "0000";
+    }
 
+    return $self->get_data( 'crew', { program_id => $program_id } );
 }
 
 sub get_roles {
@@ -364,6 +403,10 @@ sub is_station_hidden {
 sub set_score {
     my ( $self, $program_id, $score ) = @_;
 
+    if ( length( $program_id ) == 10 ) {
+        $program_id .= "0000";
+    }
+
     $self->db->insert_or_update( 'score',
                                  { score => $score, program_id => $program_id, lastupdate => time },
                                  { program_id => $program_id },
@@ -382,19 +425,30 @@ sub get_program_color {
 
 }
 
+sub clean_program_id {
+    my ( $self, $program_id ) = @_;
+
+    if ( $program_id =~ m|^EP| ) {
+        $program_id =~ s|^EP|SH|;
+        $program_id =~ s|....$||;
+    }
+    if ( length( $program_id ) == 10 ) {
+        $program_id .= "0000";
+    }
+
+    return $program_id;
+}
+
 sub get_score {
     my ( $self, $program_id ) = @_;
 
-    my $series_id = $program_id;
-    $series_id =~ s|....$|0000|;
+    $program_id = $self->clean_program_id( $program_id );
 
     my $score;
 
     eval {
         ( $score ) = $self->get_data( 'score',
-                                      [ { program_id => $program_id },
-                                        { program_id => $series_id  },
-                                    ],
+                                      { program_id => $program_id },
                                       'score'
                                   );
     };
@@ -412,8 +466,12 @@ sub get_schedule {
 
         $where->{start} = { '>', time + $seconds };
     }
+    elsif ( $options->{start_utime} ) {
+
+        $where->{start} = { '>', $options->{start_utime} };
+    }
     else {
-        $where->{start} = { '>', time };
+        $where->{start} = { '>', time - 300 };
     }
 
     if ( $options->{channel} ) {

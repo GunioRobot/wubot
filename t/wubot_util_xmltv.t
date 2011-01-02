@@ -36,6 +36,15 @@ is_deeply( [ $tv->get_program_id( 'Futurama' ) ],
            "Getting futurama program ids"
        );
 
+is_deeply( [ $tv->get_episodes( 'SH00303483' ) ],
+           [ qw( EP003034830009 EP003034830019 EP003034830073 EP003034830079 EP003034830080
+                 EP003034830081 EP003034830082 EP003034830091 EP003034830097
+           )
+         ],
+           "Getting futurama episode program ids"
+       );
+
+
 is( ( $tv->get_program_details( 'EP003034830009' ) )[0]->{date},
     '1999-04-27',
     "Getting program details for a single episode of futurama: date"
@@ -94,28 +103,45 @@ is_deeply( [ $tv->get_program_genres( 'EP003034830009' ) ],
            "Checking program genres"
        );
 
-ok( ! $tv->get_score( 'EP003034830009' ),
-    "Checking program has no score"
-);
+{
+    ok( ! $tv->get_score( 'SH00303483' ),
+        "Checking program has no score"
+    );
 
-ok( $tv->set_score( 'EP003034830009', 5 ),
-    "Setting program score to 5"
-);
+    ok( $tv->set_score( 'SH00303483', 5 ),
+        "Setting program score to 5"
+    );
 
-is( $tv->get_score( 'EP003034830009' ),
-    5,
-    "Checking program score was set"
-);
+    is( $tv->get_score( 'SH00303483' ),
+        5,
+        "Checking program score was set"
+    );
 
-ok( $tv->set_score( 'EP003034830009', undef ),
-    "Setting program score back to 'undef'"
-);
+    is( $tv->get_score( 'SH003034830000' ),
+        5,
+        "Checking program score was set on full show id"
+    );
 
-ok( ! $tv->get_score( 'EP003034830009' ),
-    "Checking program score is unset"
-);
+    is( $tv->get_score( 'EP003034830009' ),
+        5,
+        "Getting score for an episode falls back to show score"
+    );
 
-ok( $tv->get_schedule( { start => 1293839700, limit => 1 } ),
+    ok( $tv->set_score( 'SH00303483', undef ),
+        "Setting program score back to 'undef'"
+    );
+
+    ok( ! $tv->get_score( 'SH00303483' ),
+        "Checking program score is unset"
+    );
+
+    ok( ! $tv->get_score( 'EP003034830009' ),
+        "Getting score for an episode falls back to show score"
+    );
+
+}
+
+ok( $tv->get_schedule( { start_utime => 1293839700, limit => 1 } ),
     "Getting next program scheduled in the future"
 );
 
@@ -130,7 +156,7 @@ is( $tv->get_channel( '10139' ),
 );
 
 {
-    my ( $show ) = $tv->get_schedule( { start => 1293839700, limit => 1 } );
+    my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1 } );
     is( $show->{program_id},
         'SH013568520000',
         "Checking that get_schedule got the next scheduled item"
@@ -152,7 +178,7 @@ is( $tv->is_station_hidden( '10139' ),
 );
 
 {
-    my ( $show ) = $tv->get_schedule( { start => 1293839700, limit => 1 } );
+    my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1 } );
     isnt( $show->{program_id},
           'SH013568520000',
           "Checking that get_schedule ignored entry on hidden channel"
@@ -170,7 +196,7 @@ is( $tv->is_station_hidden( '10139' ),
 
 
 {
-    my ( $show ) = $tv->get_schedule( { start => 1293839700, limit => 1 } );
+    my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1 } );
     is( $show->{program_id},
         'SH013568520000',
         "Checking that get_schedule got the item from unhidden channel"
@@ -178,7 +204,7 @@ is( $tv->is_station_hidden( '10139' ),
 }
 
 {
-    my ( $show ) = $tv->get_schedule( { start => 1293839700, limit => 1, channel => '36' } );
+    my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1, channel => '36' } );
     is( $show->{program_id},
         'SH012460860000',
         "Checking that get_schedule got the next scheduled item on channel 36"
@@ -198,8 +224,19 @@ is( $tv->is_station_hidden( '10139' ),
         'John King, USA',
         "Checking program title"
     );
+}
 
-    print YAML::Dump $show;
+{
+    is( ( $tv->get_program_details( 'EP011958300006' ) )[0]->{title},
+        'Biography on CNBC',
+        "Getting program details for a single episode id"
+    );
+
+    is( ( $tv->get_program_details( 'SH01195830' ) )[0]->{title},
+        'Biography on CNBC',
+        "Getting program details for a single episode id"
+    );
+
 }
 
 

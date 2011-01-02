@@ -39,7 +39,7 @@ my $lastupdate = time;
 my $maxcount   = 50;
 
 my $timer = AnyEvent->timer( after    => 1,
-                             interval => 5,
+                             interval => 1,
                              cb       => sub {
 
                                  my $count = 0;
@@ -49,7 +49,14 @@ my $timer = AnyEvent->timer( after    => 1,
                                      $count++;
 
                                      # send message through the reactor
-                                     react( $message );
+                                     eval {                          # try
+                                         react( $message );
+                                         1;
+                                     } or do {                       # catch
+                                         my $error = $@;
+                                         warn "ERROR in reaction: $@";
+                                         print YAML::Dump $message;
+                                     };
 
                                      # delete the message now that it has been processed
                                      $callback->();

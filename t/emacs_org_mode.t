@@ -137,8 +137,8 @@ my $cache_file = "$tempdir/storage.yaml";
         );
 
         is( $results->{react}->[7]->{priority},
-            "-1",
-            "Checking that task1 priority is 'c' or '-1'"
+            "0",
+            "Checking that task1 priority is 'c' or '0'"
         );
 
         is( $results->{react}->[7]->{file},
@@ -167,8 +167,8 @@ my $cache_file = "$tempdir/storage.yaml";
         );
 
         is( $results->{react}->[8]->{priority},
-            "0",
-            "Checking that task1 priority is default, 0"
+            "-1",
+            "Checking that task1 priority is default, -1"
         );
 
         is( $results->{react}->[8]->{file},
@@ -184,6 +184,26 @@ my $cache_file = "$tempdir/storage.yaml";
         is( $results->{react}->[8]->{deadline_text},
             "2010-12-21 Tue 12:30",
             "Checking task3 deadline is 2010-12-21 Tue 12:30"
+        );
+
+        is( $results->{react}->[9]->{deadline_text},
+            '2010-12-22 Wed 12:30',
+            "Checking that recurring task time is parsed properly"
+        );
+
+        is( $results->{react}->[10]->{deadline_text},
+            '2010-12-22 Wed 12:30',
+            "Checking that relative recurring task time is parsed properly"
+        );
+
+        is( $results->{react}->[10]->{deadline_recurrence},
+            '+1d',
+            "Checking deadline recurrence"
+        );
+
+        is( $results->{react}->[11]->{scheduled_recurrence},
+            '+1w',
+            "Checking schedule recurrence"
         );
 
         ok( my $results2 = $check->check( { config => { directory => 't/org' },

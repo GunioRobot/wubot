@@ -90,12 +90,12 @@ sub check {
                 my $task;
                 $task->{type} = 'task';
 
-                my $priorities = { C => -1, B => 1, A => 2 };
+                my $priorities = { C => 0, B => 1, A => 2 };
                 if ( $block =~ s|^\[\#(\w)\]\s|| ) {
                     $task->{priority} = $priorities->{ $1 };
                 }
                 else {
-                    $task->{priority} = 0
+                    $task->{priority} = -1;
                 }
 
                 $task->{status} = lc( $name );
@@ -107,13 +107,15 @@ sub check {
 
                 $task->{taskid} = join( ".", $task->{file}, $task->{title} );
 
-                if ( $block =~ s|^\s+DEADLINE\:\s\<(.*)\>||m ) {
+                if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
                     $task->{deadline_text} = $1;
                     $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" );
+                    $task->{deadline_recurrence}    = $2;
                 }
-                if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*)\>||m ) {
+                if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
                     $task->{scheduled_text} = $1;
                     $task->{scheduled}      = UnixDate( ParseDate( $1 ), "%s" );
+                    $task->{scheduled_recurrence}     = $2;
                 }
 
                 $block =~ s|^\s+\n||s;
@@ -125,6 +127,7 @@ sub check {
         }
 
         push @react, { name      => $filename,
+                       file      => $filename,
                        type      => 'org',
                        timestamp => $updated,
                        subject   => "org file updated: $entry",

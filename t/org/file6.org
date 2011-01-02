@@ -16,3 +16,25 @@
   - [ ] y
   - [ ] z
 
+
+** TODO task 4
+  DEADLINE: <2010-12-22 Wed 12:30 +1d>
+  - State "DONE"       from "TODO"       [2010-12-23 Thu 22:37]
+
+  - [X] x
+  - [ ] y
+  - [ ] z
+
+
+** TODO task 5
+  DEADLINE: <2010-12-22 Wed 12:30 .+1d>
+  - State "DONE"       from "TODO"       [2010-12-23 Thu 22:37]
+
+  - [X] x
+  - [ ] y
+  - [ ] z
+
+** TODO task 6
+   SCHEDULED: <2011-01-02 Sun +1w>
+
+  - [ ] asdf

@@ -36,7 +36,8 @@ sub check {
     my $res = $ua->request( $req );
 
     unless ( $res->is_success ) {
-        my $subject = "Failure getting content: " . $res->status_line || "no error text";
+        my $error = $res->status_line || "no error text";
+        my $subject = "Request failure: $error";
         $self->logger->error( $self->key . ": $subject" );
         return { cache => $cache, react => { subject => $subject } };
     }
@@ -46,7 +47,8 @@ sub check {
     eval { $feed = XML::Feed->parse( \$content ) };
 
     unless ( $feed ) {
-        my $subject = "Failure parsing XML Feed: " . XML::Feed->errstr || "no error text";
+        my $error = XML::Feed->errstr || "no error text";
+        my $subject = "Failure parsing XML Feed: $error";
         $self->logger->error( $self->key . ": $subject" );
         return { cache => $cache, react => { subject => $subject } };
     }

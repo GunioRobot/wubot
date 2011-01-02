@@ -67,6 +67,8 @@ sub create_table {
 
     $command .= "\n);";
 
+    $self->logger->debug( $command );
+
     $self->dbh->do( $command );
 }
 
@@ -145,9 +147,11 @@ sub insert_or_update {
     };
 
     if ( $count ) {
+        $self->logger->debug( "updating $table" );
         return $self->update( $table, $update, $where, $schema_h );
     }
 
+    $self->logger->debug( "inserting into $table" );
     return $self->insert( $table, $update, $schema_h );
 
     return 1;
@@ -173,6 +177,8 @@ sub select {
     my( $statement, @bind ) = $self->sql_abstract->select( $tablename, $fields, $where, $order );
 
     if ( $limit ) { $statement .= " LIMIT $limit" }
+
+    #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 
     my $sth = $self->dbh->prepare($statement) or confess "Can't prepare $statement\n";
 
@@ -225,7 +231,9 @@ sub delete {
 
     my @conditions;
     for my $key ( keys %{ $conditions } ) {
-        push @conditions, "$key = '$conditions->{$key}'";
+        my $condition = $conditions->{$key};
+        $condition =~ s|'|''|g;
+        push @conditions, "$key = '$condition'";
     }
 
     $delete .= join( " AND ", @conditions );

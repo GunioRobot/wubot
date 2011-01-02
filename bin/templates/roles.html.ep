@@ -1,0 +1,22 @@
+<html>
+<head>
+<title><%= $name  %></title>
+</head>
+<body>
+
+    <table border=1 cellpadding=3>
+
+      <% for my $program ( @{ $programs } ) { %>
+        <tr>
+          <td><%= $program %></td>
+          <td></td>
+       </tr>
+      <% } %>
+
+    </table>
+
+</body>
+</html>
+
+
+

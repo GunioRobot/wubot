@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Tasks</title>
+<link rel='stylesheet' href='http://wubot/sort/style.css' type='text/css' />
+<script type='text/javascript' src='http://wubot/sort/common.js'></script>
+<script type='text/javascript' src='http://wubot/sort/css.js'></script>
+<script type='text/javascript' src='http://wubot/sort/standardista-table-sorting.js'></script>
+</head>
+<body bgcolor=black>
+<table class='sortable autostripe'>
+<thead>
+  <tr>
+    <% for my $header ( @$headers ) { %>
+        <th><%= $header %></th>
+    <% } %>
+  </tr>
+</thead>
+
+<tbody>
+
+  <% for my $row ( @{ $body_data } ) { %>
+    <tr bgcolor="<%= $row->{color} %>">
+      <% for my $key ( @$headers ) { %>
+        <td> <%= $row->{ $key } %> </td>
+      <% } %>
+
+    </tr>
+    <% } %>
+
+</tbody>
+<tfoot></tfoot>
+</table>
+</body>
+</html>
+
+

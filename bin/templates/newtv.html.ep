@@ -1,0 +1,107 @@
+<html>
+  <head>
+    <title>TV Schedule</title>
+    <link rel='stylesheet' href='http://wubot/sort/style.css' type='text/css' />
+    <script type='text/javascript' src='http://wubot/sort/common.js'></script>
+    <script type='text/javascript' src='http://wubot/sort/css.js'></script>
+    <script type='text/javascript' src='http://wubot/sort/standardista-table-sorting.js'></script>
+
+     <script language="javascript">
+     function HideFrame(){
+      fr = document.getElementById ("blah");
+      if (fr.style.display!='none'){
+       fr.style.display="none";
+      }
+      else {
+       fr.style.display="block";
+      }
+     }
+     </script>
+
+  </head>
+  <body bgcolor=black>
+    <center>
+    <font color='purple'>
+    | <a href="/tv/schedule">now</a>
+    | <a href="?limit=500">more</a>
+    | <a href="?all=1">unhide</a>
+    | <a href="?score=3&limit=500">favorites</a>
+    | <a href="?start=-1h">1 hour ago</a>
+    | <a href="?start=1h">in 1 hour</a>
+    | <a href="?new=1">new</a>
+    | <a href="?new=1&video=HD">new-HD</a>
+    | <a href="?video=HD">HD</a>
+    | <a href="?rating=R">R</a>
+    | <a href="?video=HD&rating=R">HD-R</a>
+    | <a href="?rating=TV-MA">TV-MA</a>
+    | <a href="?rating=TV-MA&video=HD">HD-TV-MA</a>
+    | <a href="?new=1&score=3&limit=500">hot</a>
+    |
+    </font>
+    </center>
+    <font size="-2">
+    <table class='sortable autostripe'>
+    <thead>
+    <tr>
+    <th>count</th>
+    <th>station</th>
+    <th>chan</th>
+    <th>start</th>
+    <th>length</th>
+    <th>new</th>
+    <th>show</th>
+    <th>episode</th>
+    <th>scores</th>
+    <th>hd</th>
+    <th>rated</th>
+    <th>lastupdate</th>
+    </tr>
+</thead>
+
+<tbody>
+
+    <% for my $row ( @{ $body_data } ) { %>
+     <tr bgcolor="<%= $row->{color} %>">
+      <td><%= $row->{count} %></td>
+      <td><a href='/tv/station/hide/<%= $row->{channel_station_id} %>/<%= $row->{channel_hide} ? 0 : 1 %>' target='blah' title='<%= $row->{channel_name} %>'><%= $row->{channel_callsign} %></a></td>
+      <td><a href='?channel=<%= $row->{channel} %>'><%= $row->{channel} %></a></td>
+      <td><%= $row->{start_time} %></td>
+      <td><%= $row->{duration} %></td>
+      <td bgcolor="<%= $row->{fresh} ? 'green' : '' %>"><%= $row->{fresh} %></td>
+      <td>
+        <div style="width: 200px">
+          <%= $row->{program_id} =~ m|^MV| ? "[" :"" %>
+          <a href='/tv/program/<%= $row->{program_id} %>' title='<%= $row->{desc} %>'><%= $row->{title} %></a>
+          <%= $row->{program_id} =~ m|^MV| ? "]" :"" %>
+          <%= $row->{title_date} ? " $row->{title_date}" : ""  %>
+          <%= $row->{stars} ? " [$row->{stars}]" : ""  %>
+          <a href='/tv/schedule?all=1&search=<%= $row->{show_esc} %>'>+</a>
+        </div>
+      </td>
+      <td>
+        <div style="width: 300px">
+          <a href='/tv/program/<%= $row->{program_id} %><%= $row->{episode_num} %>' title='<%= $row->{desc} %>'><%= $row->{subtitle} %></a>
+            <%= $row->{episode_num} ? "[$row->{episode_num}]" : "" %>
+            <%= $row->{subtitle_date} ? "[$row->{subtitle_date}]" : ""  %>
+            <a href="/tv/seen/<%= $row->{program_id} %>/<%= $row->{episode_num} %>/1"><%= $row->{episode_num} && ! $row->{seen} ? '[X]' : '' %></a>
+            <a href="/tv/seen/<%= $row->{program_id} %>/<%= $row->{episode_num} %>/0"><%= $row->{episode_num} && $row->{seen} ? '[X]' : '' %></a>
+        </div>
+      </td>
+      <td>
+        <a href='/tv/score/<%= $row->{program_id} %>/1' target='blah'>-</a><a href='/tv/score/<%= $row->{program_id} %>/2' target='blah'>-</a><a href='/tv/score/<%= $row->{program_id} %>/3' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/4' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/5' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/D' target='blah'>X</a>
+      </td>
+      <td bgcolor="<%= $row->{hd} ? 'green' : '' %>"><a href='?video=<%= $row->{hd} %>'><%= $row->{hd} ? "HD" : "" %></a></td>
+      <td><a href='?rating=<%= $row->{mpaa_rating} %>'><%= $row->{mpaa_rating} %></a></td>
+      <td><%= $row->{lastupdate} %></td>
+    </tr>
+    <% } %>
+
+</tbody>
+<tfoot></tfoot>
+</table>
+</font>
+<iframe name='blah' id='blah' width="1" height="1"></iframe>
+</body>
+</html>
+
+

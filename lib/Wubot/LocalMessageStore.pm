@@ -8,7 +8,7 @@ use Wubot::SQLite;
 use Log::Log4perl;
 use POSIX qw(strftime);
 use Sys::Hostname qw();
-use YAML;
+use YAML::XS;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -34,6 +34,15 @@ has 'sqlite'  => ( is => 'ro',
                );
 
 
+my $schema = { message_queue => { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                                  date     => 'VARCHAR(32)',
+                                  subject  => 'VARCHAR(256)',
+                                  data     => 'TEXT',
+                                  hostname => 'VARCHAR(32)',
+                                  seen     => 'INTEGER',
+                              }
+           };;
+
 
 sub store {
     my ( $self, $message, $directory ) = @_;
@@ -57,8 +66,7 @@ sub store {
         $message->{hostname}  = $self->hostname;
     }
 
-    my $message_text = YAML::Dump $message;
-    utf8::encode( $message_text );
+    my $message_text = Dump $message;
 
     my $time = $message->{lastupdate};
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
@@ -72,13 +80,7 @@ sub store {
                                           hostname => $message->{hostname},
                                           seen     => undef,
                                       },
-                                        { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                                          date     => 'VARCHAR(32)',
-                                          subject  => 'VARCHAR(256)',
-                                          data     => 'TEXT',
-                                          hostname => 'VARCHAR(32)',
-                                          seen     => 'INTEGER',
-                                      }
+                                        $schema->{message_queue}
                                     );
 
     return 1;
@@ -89,7 +91,10 @@ sub get {
 
     my $dbfile = "$directory/queue.sqlite";
 
-    return unless -r $dbfile;
+    unless ( -r $dbfile ) {
+        $self->logger->debug( "ERROR: dbfile not found: $dbfile" );
+        return;
+    }
 
     # if we don't have a sqlite object for this file, create one now
     unless ( $self->sqlite->{ $dbfile } ) {
@@ -100,7 +105,28 @@ sub get {
 
     return unless $entry;
 
-    my $message = YAML::Load $entry->{data};
+    my $message;
+    eval {                          # try
+        $message = Load $entry->{data};
+        1;
+    } or do {                       # catch
+        # error
+        my $error = $@;
+        $self->logger->error( "ERROR LOADING MESSAGE: $entry->{id} => $entry->{subject}: $error" );
+
+        $self->sqlite->{ $dbfile }->insert( 'rejected',
+                                            $entry,
+                                            $schema->{message_queue}
+                                        );
+
+        $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
+
+        $message = { subject => "LocalMessageStore: rejected $entry->{id}: $entry->{subject}",
+                     errmsg  => $error,
+                 };
+
+    };
+
 
     # if called in array context, return the message and a callback
     # method to delete the item from the queue AFTER it has been

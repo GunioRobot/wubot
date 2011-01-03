@@ -69,6 +69,8 @@ sub check {
         # is a change between the old App::Wubot and the new Wubot
         $notification->{growl_title} = $notification->{title};
 
+        $notification->{no_post} = 1;
+
         push @results, $notification;
 
         # mark these ids for deletion next time this check runs.  we

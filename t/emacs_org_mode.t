@@ -206,6 +206,26 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking schedule recurrence"
         );
 
+        is( $results->{react}->[12]->{title},
+            'task 7',
+            "Checking duration removed from title of task 7"
+        );
+
+        is( $results->{react}->[12]->{duration},
+            '1h',
+            "Checking duration of task 7"
+        );
+
+        is( $results->{react}->[13]->{title},
+            'task 8',
+            "Checking duration removed from title of task 8"
+        );
+
+        is( $results->{react}->[13]->{duration},
+            '1h30m',
+            "Checking duration on task 8"
+        );
+
         ok( my $results2 = $check->check( { config => { directory => 't/org' },
                                             cache  => $results->{cache}         } ),
             "Calling check() method with lastupdate set to now"

@@ -98,6 +98,10 @@ sub check {
                     $task->{priority} = -1;
                 }
 
+                if ( $block =~ s|^((?:\d+[smhd])+)\s|| ) {
+                    $task->{duration} = $1;
+                }
+
                 $task->{status} = lc( $name );
 
                 $task->{file} = $filename;

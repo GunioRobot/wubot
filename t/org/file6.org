@@ -38,3 +38,15 @@
    SCHEDULED: <2011-01-02 Sun +1w>
 
   - [ ] asdf
+
+
+** TODO 1h task 7
+   SCHEDULED: <2011-01-02 Sun +1w>
+
+  - [ ] asdf
+
+
+** TODO [#B] 1h30m task 8
+   SCHEDULED: <2011-01-02 Sun +1w>
+
+  - [ ] asdf

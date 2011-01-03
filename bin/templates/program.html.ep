@@ -17,9 +17,9 @@
   </head>
   <body bgcolor=gray>
 
-<table><tr><td valign='top'>
+<table width=100%><tr><td valign='top'>
     
-    <table border=1 cellpadding=3>
+    <table width=100% border=1 cellpadding=3>
       <tr>
         <td>lastupdate</td>
         <td><%= scalar localtime $program->{lastupdate} %></td>
@@ -106,18 +106,21 @@
                 <%= $row->{role} %></td><td><a href='/tv/schedule/crew/<%= $row->{givenname} %>/<%= $row->{surname} %>'><%= $row->{givenname} %> <%= $row->{surname} %></a><BR>
               </td>
               <td>
+                <table width=100% cellspacing=0>
                 <% for my $other ( sort keys %{ $row->{other} } ) { %>
 
-                <table cellspacing=0>
-                  <tr bgcolor='<%= $row->{other}->{$other}->{color} %>'>
-                    <td>
+                  <tr>
+                    <td bgcolor='<%= $row->{other}->{$other}->{color} %>'>
                       <a href='/tv/program/<%= $row->{other}->{$other}->{program_id} %>'><%= $other %></a>
                       <a href='/tv/schedule/<%= $row->{other}->{$other}->{program_id} %>'>[->]</a>
                     </td>
+                    <td>
+                      <%= $row->{other}->{$other}->{year} || $row->{other}->{$other}->{date} %>
+                    </td>
                   </tr>
-                </table>
 
                 <% } %>
+                </table>
                 
               </td>
             </tr>

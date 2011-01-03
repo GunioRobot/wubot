@@ -49,6 +49,7 @@
     <th>start</th>
     <th>length</th>
     <th>new</th>
+    <th>date</th>
     <th>show</th>
     <th>episode</th>
     <th>scores</th>
@@ -67,7 +68,8 @@
       <td><a href='?channel=<%= $row->{channel} %>'><%= $row->{channel} %></a></td>
       <td><%= $row->{start_time} %></td>
       <td><%= $row->{duration} %></td>
-      <td bgcolor="<%= $row->{fresh} ? 'green' : '' %>"><%= $row->{fresh} %></td>
+      <td bgcolor="<%= $row->{new} ? 'green' : '' %>"><%= $row->{new} ? 'NEW' : '' %></td>
+      <td><%= $row->{year} || $row->{date} %></td>
       <td>
         <div style="width: 200px">
           <%= $row->{program_id} =~ m|^MV| ? "[" :"" %>

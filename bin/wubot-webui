@@ -261,6 +261,8 @@ get '/tv/program/(.program_id)' => sub {
 
             $other_titles{ $other_program_details->{title} } = { program_id => $other_program_id,
                                                                  color      => $color,
+                                                                 date       => $other_program_details->{date},
+                                                                 year       => $other_program_details->{year},
                                                              };
         }
 

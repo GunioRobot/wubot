@@ -123,11 +123,13 @@ sub check {
         alarm 0;
     };
 
+    my $error = $@;
+
     my $end = new Benchmark;
     my $diff = timediff( $end, $start );
     $self->logger->debug( $self->key, ":", timestr( $diff, 'all' ) );
 
-    if ( my $error = $@ ) {
+    if ( $error ) {
         if ( $error eq "alarm\n" ) {
             $self->logger->error( "Timed out after $timeout seconds for check: ", $self->key );
         }

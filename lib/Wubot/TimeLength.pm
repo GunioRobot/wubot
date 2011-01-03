@@ -5,12 +5,15 @@ my $constants = { s => 1,
                   m => 60,
                   h => 60*60,
                   d => 60*60*24,
+                  w => 60*60*24*7,
               };
 
 sub get_seconds {
     my ( $self, $time ) = @_;
 
     my $seconds = 0;
+
+    $time =~ s|^\+||;
 
     for my $part ( split /\s/, $time ) {
 

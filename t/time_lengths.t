@@ -107,6 +107,11 @@ ok( my $timelength = Wubot::TimeLength->new(),
         "seconds: 1m"
     );
 
+    is( $timelength->get_seconds( '+1m' ),
+        60,
+        "seconds: +1m"
+    );
+
     is( $timelength->get_seconds( '1h' ),
         60*60,
         "seconds: 1h"
@@ -115,6 +120,11 @@ ok( my $timelength = Wubot::TimeLength->new(),
     is( $timelength->get_seconds( '1d' ),
         60*60*24,
         "seconds: 1d"
+    );
+
+    is( $timelength->get_seconds( '1w' ),
+        60*60*24*7,
+        "seconds: 1w"
     );
 
     throws_ok( sub { $timelength->get_seconds( '1x' ) },

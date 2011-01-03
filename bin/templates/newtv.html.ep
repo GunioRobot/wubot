@@ -31,10 +31,10 @@
     | <a href="?new=1">new</a>
     | <a href="?new=1&hd=1">new-HD</a>
     | <a href="?hd=1">HD</a>
-    | <a href="?rating=R">R</a>
-    | <a href="?hd=1&rating=R">HD-R</a>
-    | <a href="?rating=TV-MA">TV-MA</a>
-    | <a href="?rating=TV-MA&video=HD">HD-TV-MA</a>
+    | <a href="?rated=R">R</a>
+    | <a href="?hd=1&rated=R">HD-R</a>
+    | <a href="?rated=TV-MA">TV-MA</a>
+    | <a href="?rated=TV-MA&video=HD">HD-TV-MA</a>
     | <a href="?new=1&score=3&limit=500">hot</a>
     |
     </font>
@@ -93,7 +93,7 @@
         <a href='/tv/score/<%= $row->{program_id} %>/1' target='blah'>-</a><a href='/tv/score/<%= $row->{program_id} %>/2' target='blah'>-</a><a href='/tv/score/<%= $row->{program_id} %>/3' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/4' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/5' target='blah'>+</a><a href='/tv/score/<%= $row->{program_id} %>/D' target='blah'>X</a>
       </td>
       <td bgcolor="<%= $row->{hd} ? 'green' : '' %>"><a href='?video=<%= $row->{hd} %>'><%= $row->{hd} ? "HD" : "" %></a></td>
-      <td><a href='?rating=<%= $row->{mpaa_rating} %>'><%= $row->{mpaa_rating} %></a></td>
+      <td><a href='?rated=<%= $row->{mpaa_rating} %>'><%= $row->{mpaa_rating} %></a></td>
       <td><%= $row->{lastupdate} %></td>
     </tr>
     <% } %>

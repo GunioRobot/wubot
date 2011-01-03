@@ -473,13 +473,17 @@ sub get_schedule {
     else {
         $where->{start} = { '>', time - 300 };
     }
-
     if ( $options->{channel} ) {
         ( $where->{station_id} ) = $self->get_station_id( $options->{channel} );
     }
-
     if ( $options->{program_id} ) {
         $where->{program_id} = $options->{program_id};
+    }
+    if ( $options->{new} ) {
+        $where->{new} = 'true';
+    }
+    if ( $options->{hd} ) {
+        $where->{hd} = 'true';
     }
 
     my @entries;
@@ -522,6 +526,10 @@ sub get_schedule {
                              }
                              else {
                                  return if $options->{score};
+                             }
+
+                             if ( $options->{rated} ) {
+                                 return unless $entry->{mpaa_rating} eq $options->{rated};
                              }
 
                              $entry->{color} = $self->get_program_color( $entry->{program_id}, $entry->{score} );

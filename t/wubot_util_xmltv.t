@@ -203,6 +203,16 @@ is( $tv->is_station_hidden( '10139' ),
     );
 }
 
+
+{
+    my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1, new => 1 } );
+
+    is( $show->{program_id},
+        'SH012460860000',
+        "Checking get_schedule with 'new' filter"
+    );
+}
+
 {
     my ( $show ) = $tv->get_schedule( { start_utime => 1293839700, limit => 1, channel => '36' } );
     is( $show->{program_id},
@@ -231,6 +241,8 @@ is( $tv->is_station_hidden( '10139' ),
         'Biography on CNBC',
         "Getting program details for a single episode id"
     );
+
+    print YAML::Dump $tv->get_program_details( 'SH013315130000' );
 
     is( ( $tv->get_program_details( 'SH01195830' ) )[0]->{title},
         'Biography on CNBC',

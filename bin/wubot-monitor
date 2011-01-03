@@ -62,11 +62,19 @@ for my $plugin ( $config->get_plugins() ) {
     my $now        = time;
     my $delay      = $plugin_config->{delay} || 1;
 
-    my $lastupdate = $plugin_objs->{ $plugin }->instance->get_cache->{lastupdate} || 0;
+    my $cache = $plugin_objs->{ $plugin }->instance->get_cache;
+
+    my $lastupdate = 0;
+    if ( $cache && $cache->{lastupdate} ) {
+        $lastupdate = $plugin_objs->{ $plugin }->instance->get_cache->{lastupdate};
+    }
 
     my $schedule_time;
-    if ( $lastupdate + $delay > $now ) {
-        $schedule_time = $lastupdate + $delay;
+    if ( ! $lastupdate && $plugin_config->{rand} ) {
+        $schedule_time = $now + int rand( $plugin_config->{rand} );
+    }
+    elsif ( $lastupdate + $delay > $now ) {
+        $schedule_time = $lastupdate + $delay + int rand( $plugin_config->{rand} || 0 );
     }
     else {
         $schedule_time = $now;

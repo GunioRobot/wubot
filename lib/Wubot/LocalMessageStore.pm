@@ -132,7 +132,7 @@ sub get {
     # method to delete the item from the queue AFTER it has been
     # processed.
     if ( wantarray ) {
-        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => 1 }, { id => $entry->{id} } ) };
+        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => 1 }, { id => $entry->{id} }, $schema->{message_queue} ) };
         return ( $message, $callback );
     }
 

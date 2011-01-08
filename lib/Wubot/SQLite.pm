@@ -123,7 +123,14 @@ sub insert {
 sub update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
 
-    my( $command, @bind ) = $self->sql_abstract->update( $table, $update, $where );
+    my $insert;
+    for my $field ( keys %{ $schema_h } ) {
+        next if $field eq "constraints";
+        next unless exists $update->{ $field };
+        $insert->{ $field } = $update->{ $field };
+    }
+
+    my( $command, @bind ) = $self->sql_abstract->update( $table, $insert, $where );
 
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 

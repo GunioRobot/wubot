@@ -29,7 +29,16 @@ sub react {
         $self->sqlite->{ $config->{file} } = Wubot::SQLite->new( { file => $config->{file} } );
     }
 
-    $self->sqlite->{ $config->{file} }->insert( $config->{tablename}, $message, $config->{schema} );
+    if ( $config->{update} ) {
+        my $update_where;
+        for my $field ( keys %{ $config->{update} } ) {
+            $update_where->{ $field } = $message->{ $field };
+        }
+        $self->sqlite->{ $config->{file} }->insert_or_update( $config->{tablename}, $message, $update_where, $config->{schema} );
+    }
+    else {
+        $self->sqlite->{ $config->{file} }->insert( $config->{tablename}, $message, $config->{schema} );
+    }
 
     return $message;
 }

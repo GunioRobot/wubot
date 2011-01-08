@@ -242,14 +242,54 @@ is( $tv->is_station_hidden( '10139' ),
         "Getting program details for a single episode id"
     );
 
-    print YAML::Dump $tv->get_program_details( 'SH013315130000' );
+    #print YAML::Dump $tv->get_program_details( 'SH013315130000' );
 
-    is( ( $tv->get_program_details( 'SH01195830' ) )[0]->{title},
-        'Biography on CNBC',
-        "Getting program details for a single episode id"
-    );
+    # is( ( $tv->get_program_details( 'SH01195830' ) )[0]->{title},
+    #     'Biography on CNBC',
+    #     "Getting program details for a single episode id"
+    # );
 
 }
 
 
+
+# {
+#     print YAML::Dump $tv->get_rt_search_results( 'Erik the Viking' );
+#     die;
+
+
+#     is_deeply( $tv->get_rt_search_results( 'Conan the Barbarian' ),
+#                { 'Conan the Barbarian' => { 1982 => '/m/conan_the_barbarian/',
+#                                             2011 => '/m/conan_2011/',
+#                                         } },
+#                "Parsing search results for Conan the Barbarian"
+#            );
+
+#     is( $tv->fetch_rt_score( 'MV000197500000' )->{percent},
+#         '63',
+#         "Checking rottentomatoes score for Goonies"
+#     );
+
+#     is( $tv->fetch_rt_score( 'MV000197500000' )->{percent},
+#         '63',
+#         "Checking rottentomatoes score for Goonies"
+#     );
+
+#     is( $tv->fetch_rt_score( undef, 'Conan the Barbarian', 1982 )->{percent},
+#         '76',
+#         "Checking rottentomatoes score for 1982 Conan the Barbarian"
+#     );
+
+#     is( $tv->fetch_rt_score( undef, 'Conan the Barbarian', 2011 )->{percent},
+#         undef,
+#         "Checking rottentomatoes score for Conan the Barbarian 2011"
+#     );
+
+#     is( $tv->fetch_rt_score( undef, 'Zardoz', 1974 )->{percent},
+#         44,
+#         "Checking rottentomatoes score for Zardoz, year is incorrect but only one match"
+#     );
+
+
+# }
 

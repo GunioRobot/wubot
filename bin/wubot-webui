@@ -263,10 +263,15 @@ get '/tv/program/(.program_id)' => sub {
                                                                  color      => $color,
                                                                  date       => $other_program_details->{date},
                                                                  year       => $other_program_details->{year},
+                                                                 rottentomato => $other_program_details->{rottentomato},
+                                                                 rottentomato_link => $other_program_details->{rottentomato_link},
                                                              };
         }
 
         $crew->{other} = \%other_titles;
+
+        utf8::decode( $crew->{givenname} );
+        utf8::decode( $crew->{surname} );
 
         push @crew, $crew;
     }
@@ -307,7 +312,7 @@ get '/tv/station/hide/(.station_id)/(.hide)' => sub {
     my $self = shift;
 
     my $station_id = $self->stash( 'station_id' );
-    my $hide_flag  = $self->stash( 'station_id' );
+    my $hide_flag  = $self->stash( 'hide' );
 
     $logger->info( "Station hide: $station_id => $hide_flag" );
 
@@ -326,7 +331,7 @@ get '/tv/score/(.show)/(.score)' => sub {
 
     if ( $score eq "D" ) {
         $sqlite_tv_data->update( 'tv_data', { myscore => undef }, [ { show => $show }, { show => $show } ], $schemas->{tv_data} );
-        $tv->set_score( $show, 'undef' );
+        $tv->set_score( $show, undef );
     }
     else {
         $sqlite_tv_data->insert_or_update( 'tv_data', { show => $show, myscore => $score }, { show => $show }, $schemas->{tv_data} );
@@ -334,9 +339,18 @@ get '/tv/score/(.show)/(.score)' => sub {
     }
 
     $self->render( template => 'ok' );
-    return "";
-    #$self->redirect_to( "/tv/schedule" );
 };
+
+get '/tv/rt/(.program_id)' => sub {
+    my $self = shift;
+
+    my $program_id = $self->stash( 'program_id' );
+
+    $tv->fetch_rt_score( $program_id );
+
+    $self->redirect_to( "/tv/program/$program_id" );
+};
+
 
 get '/tv/schedule/crew/(.first)/(.last)' => sub {
     my $self = shift;
@@ -353,6 +367,8 @@ get '/tv/schedule/crew/(.first)/(.last)' => sub {
     my @display;
     for my $program ( $tv->get_schedule( { start      => time-300,
                                            program_id => \@program_ids,
+                                           all        => 1,
+                                           start      => $self->param( 'start'   )  || undef,
                                        } ) ) {
         push @display, $program;
     }
@@ -373,6 +389,11 @@ get '/tv/schedule' => sub {
                                            channel => $self->param( 'channel' ) || undef,
                                            score   => $self->param( 'score'   ) || undef,
                                            all     => $self->param( 'all'     ) || undef,
+                                           new     => $self->param( 'new'     ) || undef,
+                                           hd      => $self->param( 'hd'      ) || undef,
+                                           rated   => $self->param( 'rated'   ) || undef,
+                                           title   => $self->param( 'title'   ) || undef,
+                                           search  => $self->param( 'search'  ) || undef,
                                        } ) ) {
 
         push @display, $program;
@@ -387,13 +408,13 @@ get '/tv/schedule' => sub {
 get '/tv/schedule/(.program_id)' => sub {
     my $self = shift;
 
-    my $program_id = $self->stash('program_id');
-
     my @display;
 
     for my $program ( $tv->get_schedule( { start      => time-300,
-                                           program_id => $program_id,
-                                           channel    => $self->param( 'channel' ),
+                                           program_id => $self->stash('program_id') || undef,
+                                           channel    => $self->param( 'channel' )  || undef,
+                                           all        => 1,
+                                           start      => $self->param( 'start'   )  || undef,
                                        } ) ) {
 
         push @display, $program;
@@ -403,6 +424,80 @@ get '/tv/schedule/(.program_id)' => sub {
     $self->stash( 'body_data', \@display );
 
     $self->render( template => 'newtv' );
+};
+
+get '/tv/ical' => sub {
+    my $self = shift;
+
+    my $calendar = Data::ICal->new();
+
+    my $seen;
+
+    my @programs = $tv->get_schedule( { limit      => 100,
+                                        score      => 5,
+                                        start      => -12*60*60,
+                                    } );
+
+    push @programs, $tv->get_schedule( { limit      => 500,
+                                         new        => 1,
+                                         score      => 3,
+                                         start      => -12*60*60,
+                                     } );
+
+    for my $program ( @programs ) {
+
+        next if $seen->{ $program->{title} }->{ $program->{start} };
+        $seen->{ $program->{title} }->{ $program->{start} } = 1;
+
+        my $duration = 1800;
+        if ( $program->{duration} ) {
+            $duration = $timelength->get_seconds( $program->{duration} );
+        }
+
+        my $dt_start = DateTime->from_epoch( epoch => $program->{start}        );
+        my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';
+
+        my $dt_end   = DateTime->from_epoch( epoch => $program->{start} + $duration );
+        my $end      = $dt_end->ymd('') . 'T' . $dt_end->hms('') . 'Z';
+
+        my $id = join "-", 'TV', md5_hex( $program->{title} ), $program->{start};
+
+        my $title = $program->{title};
+        if ( $program->{new} ) {
+            $title = "$title NEW";
+        }
+        if ( $program->{hd} ) {
+            $title = "$title HD";
+        }
+        $title = "[$program->{score}] $title";
+        $title = "$title [$program->{channel}]";
+
+        my %event_properties = ( summary     => $title,
+                                 dtstart     => $start,
+                                 dtend       => $end,
+                                 uid         => $id,
+                                 description => $program->{description},
+                             );
+
+        utf8::encode( $event_properties{summary} );
+        utf8::encode( $event_properties{description} );
+
+        my $vevent = Data::ICal::Entry::Event->new();
+        $vevent->add_properties( %event_properties );
+
+        my $alarm_time = $program->{start} - 60*15;
+        my $valarm_sound = Data::ICal::Entry::Alarm::Audio->new();
+        $valarm_sound->add_properties(
+            trigger   => [ Date::ICal->new( epoch => $alarm_time )->ical, { value => 'DATE-TIME' } ],
+        );
+        $vevent->add_entry($valarm_sound);
+
+        $calendar->add_entry($vevent);
+    }
+
+    $self->stash( calendar => $calendar->as_string );
+
+    $self->render( template => 'calendar', format => 'ics', handler => 'epl' );
 };
 
 get '/tv/oldschedule' => sub {

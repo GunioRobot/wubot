@@ -1,7 +1,9 @@
 package Wubot::Util::XMLTV;
 use Moose;
 
+use Capture::Tiny qw/capture/;
 use Date::Manip;
+use LWP::Simple;
 use POSIX qw(strftime);
 use XML::Twig;
 use YAML;
@@ -52,6 +54,13 @@ has 'timelength' => ( is => 'ro',
                       },
                   );
 
+has 'cache'        => ( is => 'ro',
+                        isa => 'HashRef',
+                        lazy => 1,
+                        default => sub { {} },
+                    );
+
+
 has 'score_colors' => ( is => 'ro',
                         isa => 'HashRef',
                         lazy => 1,
@@ -68,6 +77,36 @@ has 'score_colors' => ( is => 'ro',
                     );
 
 
+sub fetch_process_data {
+    my ( $self, $tmpfile ) = @_;
+
+    for my $day ( 0 .. 14 ) {
+        print "Fetching data for day $day\n";
+
+        my $command = "/usr/local/root/perl/bin/tv_grab_na_dd -dd-data $tmpfile --days 1 --offset $day --download-only";
+        #print "COMMAND: $command\n";
+        system( $command );
+
+        print "Processing data\n";
+
+        my ($stdout, $stderr) = capture {
+            $self->process_data( $tmpfile );
+        };
+
+        for my $line ( split /\n/, $stderr ) {
+            next if $line =~ m|are not unique|;
+            next if $line =~ m|constraint failed|;
+
+            print "> $line\n";
+        }
+
+        print $stdout;
+    }
+
+    print "DONE PROCESSING DATA\n";
+
+
+}
 
 sub process_data {
     my ( $self, $xmlfile ) = @_;
@@ -112,7 +151,6 @@ sub process_data {
                                      );
                   }
 
-
               },
               schedule     => sub {
 
@@ -156,10 +194,18 @@ sub process_data {
                                 lastupdate  => $now,
                             };
 
-                  $self->db->insert( 'program',
-                                     $entry,
-                                     $self->schemas->{tv_program}
-                                 );
+                  my $score_id = $entry->{program_id};
+                  if ( $score_id =~ m|^EP| ) {
+                      $score_id =~ s|^EP|SH|;
+                      $score_id =~ s|....$|0000|;
+                  }
+                  $entry->{score_id} = $score_id;
+
+                  $self->db->insert_or_update( 'program',
+                                               $entry,
+                                               { program_id => $entry->{program_id} },
+                                               $self->schemas->{tv_program}
+                                           );
 
 
               },
@@ -253,13 +299,21 @@ sub get_series_id {
 }
 
 sub get_program_id {
-    my ( $self, $name ) = @_;
+    my ( $self, $name, $like ) = @_;
 
     my %ids;
 
+    my $search;
+    if ( $like ) {
+        $search->{title} = { like => "%$name%" };
+    }
+    else {
+        $search->{title} = $name;
+    }
+
     $self->db->select( { tablename => 'program',
                          fields    => 'program_id',
-                         where     => { title => $name },
+                         where     => $search,
                          callback  => sub {
                              my $entry = shift;
                              $ids{ $entry->{program_id} }++;
@@ -309,11 +363,21 @@ sub get_program_details {
                          callback  => sub {
                              my $entry = shift;
 
+                             utf8::decode( $entry->{title} );
+                             utf8::decode( $entry->{description} );
+
                              if ( $entry->{program_id} =~ m|^EP| ) {
                                  $entry->{ep_id} = $entry->{program_id};
                                  $entry->{program_id} =~ s|^EP|SH|;
                                  $entry->{program_id} =~ s|....$||;
                              }
+
+                             if ( $entry->{year} && ! $entry->{date} ) {
+                                 $entry->{date} = $entry->{year};
+                             }
+
+                             ( $entry->{rottentomato}, $entry->{rottentomato_link} )
+                                 = $self->get_rt( $entry->{program_id}, $entry->{title} );
 
                              push @details, $entry;
                          },
@@ -407,11 +471,19 @@ sub set_score {
         $program_id .= "0000";
     }
 
-    $self->db->insert_or_update( 'score',
-                                 { score => $score, program_id => $program_id, lastupdate => time },
-                                 { program_id => $program_id },
-                                 $self->schemas->{tv_score}
-                             );
+    if ( $score ) {
+        $self->db->insert_or_update( 'score',
+                                     { score => $score, program_id => $program_id, lastupdate => time },
+                                     { program_id => $program_id },
+                                     $self->schemas->{tv_score}
+                                 );
+    }
+    else {
+        $self->db->delete( 'score',
+                           { program_id => $program_id },
+                           $self->schemas->{tv_score}
+                       );
+    }
 }
 
 sub get_program_color {
@@ -453,7 +525,7 @@ sub get_score {
                                   );
     };
 
-    return $score;
+    return $score || 0;
 }
 
 sub get_schedule {
@@ -473,36 +545,57 @@ sub get_schedule {
     else {
         $where->{start} = { '>', time - 300 };
     }
-    if ( $options->{channel} ) {
-        ( $where->{station_id} ) = $self->get_station_id( $options->{channel} );
+    if ( $options->{channel} && ! $options->{all} ) {
+        $where->{'lineup.channel'} = $options->{channel};
     }
     if ( $options->{program_id} ) {
-        $where->{program_id} = $options->{program_id};
+        $where->{'schedule.program_id'} = $options->{program_id};
     }
     if ( $options->{new} ) {
-        $where->{new} = 'true';
+        $where->{'schedule.new'} = 'true';
+    }
+    if ( $options->{score} ) {
+        $where->{score} = $options->{score};
+    }
+    elsif ( ! $options->{all} ) {
+        my $is_null = "is null";
+        $where->{score} = [ { '>' => 2 }, \$is_null ];
+    }
+    unless ( $options->{all} ) {
+        my $is_not_null = "IS NULL";
+        $where->{'station.hide'} = \$is_not_null;
     }
     if ( $options->{hd} ) {
-        $where->{hd} = 'true';
+        $where->{'schedule.hd'} = 'true';
+    }
+    if ( $options->{title} ) {
+        $where->{'schedule.program_id'} = [ $self->get_program_id( $options->{title} ) ];
+    }
+    elsif ( $options->{search} ) {
+        $where->{'schedule.program_id'} = [ $self->get_program_id( $options->{search}, 1 ) ];
     }
 
     my @entries;
     my $count = 0;
 
-    $self->db->select( { tablename => 'schedule',
+    # todo: why are a tiny amount of items duplicated?
+    my $seen;
+
+    $self->db->select( { tablename => 'schedule left join program on schedule.program_id = program.program_id left join score on program.score_id = score.program_id left join lineup on schedule.station_id = lineup.station_id left join station on schedule.station_id = station.station_id',
                          where     => $where,
                          limit     => $options->{limit} || 100,
                          order     => 'start',
+                         fields    => 'program.program_id as x_program_id, station.station_id as x_station_id, *',
                          callback  => sub {
                              my $entry = shift;
 
                              $count++;
 
-                             my ( $station_data ) = $self->get_station( { station_id => $entry->{station_id} } );
-                             return if $station_data->{hide};
-                             for my $key ( keys %{ $station_data } ) {
-                                 $entry->{ "channel_$key" } = $station_data->{ $key };
-                             }
+                             $entry->{program_id} = $entry->{x_program_id};
+                             $entry->{station_id} = $entry->{x_station_id};
+
+                             return if $seen->{ $entry->{program_id} }->{ $entry->{station_id} }->{ $entry->{start} };
+                             $seen->{ $entry->{program_id} }->{ $entry->{station_id} }->{ $entry->{start} } = 1;
 
                              my ( $program_data ) = $self->get_program_details( $entry->{program_id} );
                              return if $program_data->{hide};
@@ -510,9 +603,11 @@ sub get_schedule {
                                  $entry->{ $key } = $program_data->{ $key };
                              }
 
-                             $entry->{channel} = $self->get_channel( $station_data->{station_id} );
+                             #$entry->{channel} = $self->get_channel( $station_data->{station_id} );
 
-                             $entry->{score} = $self->get_score( $entry->{program_id} );
+                             #$entry->{score} = $self->get_score( $entry->{program_id} );
+
+                             $entry->{score} = 0 unless $entry->{score};
 
                              if ( $entry->{score} && ! $options->{all} ) {
 
@@ -534,7 +629,7 @@ sub get_schedule {
 
                              $entry->{color} = $self->get_program_color( $entry->{program_id}, $entry->{score} );
 
-                             $entry->{start_time}  = strftime( "%a %l:%M%p", localtime( $entry->{start} ) );
+                             $entry->{start_time}  = strftime( "%a %d %l:%M%p", localtime( $entry->{start} ) );
 
                              $entry->{runtime}  = $entry->{duration} || $entry->{runtime};
                              $entry->{runtime}  =~ s|^PT0||;
@@ -549,6 +644,163 @@ sub get_schedule {
                      } );
 
     return @entries;
+}
+
+
+sub get_rt {
+    my ( $self, $program_id, $title ) = @_;
+
+    # only look for RT scores for movies
+    return unless $program_id =~ m|^MV|;
+
+    if ( $self->cache->{rt}->{ $program_id } ) {
+        return @{ $self->cache->{rt}->{ $program_id } };
+    }
+
+    my ( $rt_data ) = $self->get_data( 'rottentomato', { program_id => $program_id } );
+
+    if ( ! $rt_data && $title ) {
+        ( $rt_data ) = $self->get_data( 'rottentomato', { title => $title } );
+
+        if ( $rt_data ) {
+            $rt_data->{program_id} = $program_id;
+            $rt_data->{lastupdate} = time;
+            $self->db->update( 'rottentomato',
+                               $rt_data,
+                               { title => $title },
+                               $self->schemas->{tv_rottentomato}
+                           );
+        }
+    }
+
+
+    if ( $rt_data->{link} ) {
+        $rt_data->{link} = "http://www.rottentomatoes.com$rt_data->{link}";
+    }
+
+    $self->cache->{rt}->{ $program_id } = [ $rt_data->{percent}, $rt_data->{link}, $rt_data->{synopsis} ];
+
+    return @{ $self->cache->{rt}->{ $program_id } };
+}
+
+sub fetch_rt_score {
+    my ( $self, $program_id, $program_title, $program_year ) = @_;
+
+    my $results;
+
+    unless ( $program_title && $program_year ) {
+        my ( $program_data ) = $self->get_program_details( $program_id );
+        $program_title = $program_data->{title};
+        $program_year  = $program_data->{year};
+
+        $results->{program_id} = $program_id;
+    }
+
+    my $search_results = $self->get_rt_search_results( $program_title );
+
+  TITLE:
+    for my $search_title ( keys %{ $search_results } ) {
+
+        # check that titles match
+        next TITLE unless lc( $search_title ) eq lc( $program_title );
+
+        my $num_keys = scalar keys %{ $search_results->{ $search_title } };
+
+        # if there are multiple years, require that one match exactly.
+        # If there's only one year, we'll go with that--otherwise we
+        # might miss some that have years off by 1 in different systems.
+        my $year_match;
+        if ( $num_keys > 1 ) {
+
+          YEAR:
+            for my $year ( keys %{ $search_results->{ $search_title } } ) {
+                #print "Checking $program_title from '$year' against '$program_year'\n";
+                next YEAR unless $year == $program_year;
+                $year_match = $year;
+                #print "\tMatch!\n";
+            }
+
+            next TITLE unless $year_match;
+        }
+        else {
+            ( $year_match ) = keys %{ $search_results->{ $search_title } };
+        }
+
+        $results->{link}  = $search_results->{ $search_title }->{ $year_match };
+        $results->{title} = $program_title;
+
+    }
+
+    unless ( $results->{link} ) {
+        warn "ERROR: NO LINK FOUND: TITLE=$program_title!";
+        return;
+    }
+
+    print "GOT: LINK:$results->{link} TITLE:$results->{title}\n";
+
+    my $review_content = get( "http://www.rottentomatoes.com/$results->{link}" );
+
+    if ( $review_content ) {
+        if ( $review_content =~ m|\<span id\=\"all-critics-meter\".*?\>(\d+)\<\/span\>| ) {
+            $results->{percent} = $1;
+        }
+
+        if ( $review_content =~ m|Runtime\:.*?property\=\"v\:runtime\".*?\>(.*?)\<|s ) {
+            $results->{runtime} = $1;
+        }
+
+        if ( $review_content =~ m|Synopsis\:.*?movie_synopsis_all\".*?>(.*?)\<\/span\>|s ) {
+            $results->{synopsis} = $1;
+        }
+    }
+
+    $results->{lastupdate} = time;
+
+    if ( $program_id ) {
+        $self->db->insert_or_update( 'rottentomato',
+                                     $results,
+                                     { program_id => $program_id },
+                                     $self->schemas->{tv_rottentomato}
+                                 );
+
+        # update the cache
+        delete $self->cache->{rt}->{ $program_id };
+    }
+
+    return $results;
+}
+
+sub get_rt_search_results {
+    my ( $self, $title ) = @_;
+
+    $title    =~ s| |\+|g;
+
+    my $url = "http://www.rottentomatoes.com/search/full_search.php?search=$title";
+    print "RT: $url\n";
+
+    my $content = get( $url );
+
+    my $results;
+
+  SECTION:
+    for my $section ( split /\<a href\=/, $content ) {
+
+        next SECTION unless $section =~ m|\"(.*?)\".*?\>\s*(.*?)\s*\<.*?\<p\>\<strong\>(\d\d\d\d)\<\/strong\>\<\/p\>|s;
+
+        my ( $link, $title, $year ) = ( $1, $2, $3 );
+
+        # ignore non-movie links
+        next unless $link =~ m|^\/m\/|;
+
+        $title = lc( $title );
+
+        $results->{ $title }->{ $year } = $link;
+
+
+    }
+
+    return $results;
+
 }
 
 1;

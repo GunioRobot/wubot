@@ -45,6 +45,7 @@ tv_schedule:
 tv_program:
   id: INTEGER PRIMARY KEY AUTOINCREMENT
   program_id: VARCHAR(16)
+  score_id: VARCHAR(16)
   title: VARCHAR(128)
   subtitle: VARCHAR(128)
   description: TEXT
@@ -88,3 +89,14 @@ tv_score:
   constraints:
     - UNIQUE( program_id )
 
+tv_rottentomato:
+  id: INTEGER PRIMARY KEY AUTOINCREMENT
+  program_id: VARCHAR(16)
+  percent: INTEGER
+  link: VARCHAR(128)
+  title: VARCHAR(128)
+  runtime: VARCHAR(8)
+  synopsis: VARCHAR(512)
+  lastupdate: INTEGER
+  constraints:
+    - UNIQUE( program_id )

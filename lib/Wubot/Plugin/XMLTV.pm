@@ -57,26 +57,10 @@ sub check {
     # perform the check, catch any exceptions
     eval {                          # try
 
-        if ( $config->{grab} ) {
-            my ( $mtime ) = ( stat( $xmlfile ) )[9] || 0;
-            my $age       = time - $mtime;
-
-            my $human_age = $self->timelength->get_human_readable( $age );
-            $self->logger->info( $self->key, ": cache age: $human_age" );
-
-            if ( $age > 60*60*20 ) {
-                $self->logger->warn( "Grabbing XMLTV Data, cache is $human_age old" );
-                system( "$config->{grab} -dd-data $xmlfile --download-only" );
-            } else {
-                $self->logger->info( "Not getting latest xmltv data - only $human_age old" );
-            }
-        }
-
-        $self->logger->warn( "Parsing XMLTV Data" );
+        $self->logger->warn( "Downloading and parsing XMLTV Data" );
 
         my $tv = Wubot::Util::XMLTV->new();
-
-        $tv->process_data( $xmlfile );
+        $tv->fetch_process_data( $xmlfile );
 
         $self->logger->warn( "Finished parsing XMLTV Data" );
 

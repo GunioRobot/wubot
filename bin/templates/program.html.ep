@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" >
     <title>Wubot: <%= $program->{title} %></title>
 
      <script language="javascript">
@@ -26,11 +27,14 @@
       </tr>
       <tr>
         <td>Date</td>
-        <td> <%= $program->{date} %> <%= $program->{year} %> </td>
+        <td> <%= $program->{date} %> </td>
       </tr>
       <tr>
         <td>Title</td>
-        <td bgcolor='<%= $program->{color}  %>'><%= $program->{title} %></td>
+        <td bgcolor='<%= $program->{color}  %>'>
+          <%= $program->{title} %>
+          <a href='/tv/schedule?all=1&search=<%= $program->{title} %>'>+</a>
+        </td>
       </tr>
       <tr>
         <td>Score</td>
@@ -82,6 +86,15 @@
         <td><%= $program->{stars} %></td>
       </tr>
       <tr>
+        <td>RT</td>
+        <td>
+          <% if ( $program->{rottentomato} ) { %>
+          <a href='<%= $program->{rottentomato_link} %>'><%= $program->{rottentomato} %></a>
+          <% } %>
+          <a href='/tv/rt/<%= $program->{program_id}  %>'>(fetch)</a>
+        </td>
+      </tr>
+      <tr>
         <td>Rating</td>
         <td><%= $program->{mpaa_rating} %></td>
       </tr>
@@ -107,15 +120,25 @@
               </td>
               <td>
                 <table width=100% cellspacing=0>
-                <% for my $other ( sort keys %{ $row->{other} } ) { %>
+                <% for my $other ( sort { $row->{other}->{$a}->{date} cmp $row->{other}->{$b}->{date} } keys %{ $row->{other} } ) { %>
 
                   <tr>
-                    <td bgcolor='<%= $row->{other}->{$other}->{color} %>'>
+                    <td width='300' bgcolor='<%= $row->{other}->{$other}->{color} %>'>
                       <a href='/tv/program/<%= $row->{other}->{$other}->{program_id} %>'><%= $other %></a>
                       <a href='/tv/schedule/<%= $row->{other}->{$other}->{program_id} %>'>[->]</a>
                     </td>
+                    <td width='100'>
+                      <%= $row->{other}->{$other}->{date} %>
+                    </td>
+                    <td width=40>
+                      <%= $row->{other}->{$other}->{program_id} =~ m|^MV| ? " " : "($row->{other}->{$other}->{count})"  %>
+                    </td>
                     <td>
-                      <%= $row->{other}->{$other}->{year} || $row->{other}->{$other}->{date} %>
+                      <% if ( $row->{other}->{$other}->{rottentomato} ) { %>
+                      <a href='<%= $row->{other}->{$other}->{rottentomato_link} %>'><%= $row->{other}->{$other}->{rottentomato} %></a>
+                      <% } elsif ( $row->{other}->{$other}->{program_id} =~ m|^MV| ) { %>
+                      <a href='/tv/rt/<%= $row->{other}->{$other}->{program_id} %>'>?</a>
+                      <% } %>
                     </td>
                   </tr>
 
@@ -139,10 +162,16 @@
         <td>
           <table border=1 cellspacing=0 cellpadding=5>
             
-            <% for my $row ( @{ $program->{episodes} } ) { %>
+            <% for my $row ( sort { $a->{date} cmp $b->{date}  } @{ $program->{episodes} } ) { %>
             <tr>
               <td>
-                <a href='/tv/program/<%= $row->{ep_id} %>'><%= $row->{subtitle} %></a> <%= $row->{episode_id}  %><BR>
+                <a href='/tv/program/<%= $row->{ep_id} %>'><%= $row->{subtitle} %></a>
+              </td>
+              <td>
+                <%= $row->{episode_id}  %>
+              </td>
+              <td>
+                <%= $row->{date} %>
               </td>
             </tr>
             <% } %>

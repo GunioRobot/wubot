@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use File::Temp qw/ tempdir /;
 use Log::Log4perl;
 
 use Wubot::Logger;
@@ -11,10 +12,10 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 
 my $tv = Wubot::Util::XMLTV->new();
 
-my $dd_file = shift @ARGV;
+my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-$logger->info( "Procesing file: $dd_file" );
+my $tmpfile = "$tempdir/tv-data.xml";
 
-$tv->process_data( $dd_file );
+$tv->fetch_process_data( $tmpfile );
 
-$logger->info( "Done processing file: $dd_file" );
+

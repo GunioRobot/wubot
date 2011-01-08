@@ -15,7 +15,10 @@ sub get_seconds {
 
     $time =~ s|^\+||;
 
-    for my $part ( split /\s/, $time ) {
+    # space-separate time fields for easier split
+    $time =~ s|([a-z])|$1 |;
+
+    for my $part ( split /\s+/, $time ) {
 
         if ( $part =~ m|^(\-?[\d\.]+)(\w)$| && $constants->{$2} ) {
             $seconds += $1 * $constants->{$2};

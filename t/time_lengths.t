@@ -117,6 +117,16 @@ ok( my $timelength = Wubot::TimeLength->new(),
         "seconds: 1h"
     );
 
+    is( $timelength->get_seconds( '1h0m' ),
+        60*60,
+        "seconds: 1h0m"
+    );
+
+    is( $timelength->get_seconds( '1h00m' ),
+        60*60,
+        "seconds: 1h00m"
+    );
+
     is( $timelength->get_seconds( '1d' ),
         60*60*24,
         "seconds: 1d"

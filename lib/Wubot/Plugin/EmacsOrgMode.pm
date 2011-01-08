@@ -109,6 +109,10 @@ sub check {
                 $block =~ s|^(.*)||;
                 $task->{title} = $1;
 
+                if ( $task->{title} =~ s|\s*\[(\d+.*?)\]\s*$|| ) {
+                    $task->{progress} = $1;
+                }
+
                 $task->{taskid} = join( ".", $task->{file}, $task->{title} );
 
                 if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {

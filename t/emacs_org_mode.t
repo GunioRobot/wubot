@@ -226,6 +226,16 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking duration on task 8"
         );
 
+        is( $results->{react}->[14]->{title},
+            'task9',
+            "Checking task with progress - title"
+        );
+
+        is( $results->{react}->[14]->{progress},
+            '0/1',
+            "Checking task with progress - progress"
+        );
+
         ok( my $results2 = $check->check( { config => { directory => 't/org' },
                                             cache  => $results->{cache}         } ),
             "Calling check() method with lastupdate set to now"

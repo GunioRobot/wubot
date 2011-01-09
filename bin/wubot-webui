@@ -11,6 +11,7 @@ use Date::Manip;
 use DateTime;
 use Digest::MD5 qw( md5_hex );
 use POSIX qw(strftime);
+use URI::Escape;
 use YAML;
 
 use Wubot::Logger;
@@ -89,17 +90,19 @@ get '/tasks' => sub {
                                       },
                    } );
 
-    $sqlite_tasks->select( { tablename => 'tasks',
-                       order     => [ 'priority DESC', 'lastupdate', 'id' ],
-                             where     => { scheduled => undef, deadline => undef, status => 'todo' },
-                             callback  => sub { my $task = $_[0];
-                                                next if $seen->{ $task->{id} };
-                                                $seen->{ $task->{id} } = 1;
-                                                $count++;
-                                                $task->{count} = $count;
-                                                push @tasks, $task;
-                                            },
-                         } );
+    unless ( $self->param( 'due' ) ) {
+        $sqlite_tasks->select( { tablename => 'tasks',
+                                 order     => [ 'priority DESC', 'lastupdate', 'id' ],
+                                 where     => { scheduled => undef, deadline => undef, status => 'todo' },
+                                 callback  => sub { my $task = $_[0];
+                                                    next if $seen->{ $task->{id} };
+                                                    $seen->{ $task->{id} } = 1;
+                                                    $count++;
+                                                    $task->{count} = $count;
+                                                    push @tasks, $task;
+                                                },
+                             } );
+    }
 
 
     my $prio_colors = { -1 => 'green', 0 => 'blue', 1 => 'orange', 2 => 'yellow' };
@@ -112,6 +115,10 @@ get '/tasks' => sub {
                 $task->{color} = $pretty_colors->{ $prio_colors->{ $task->{priority} } };
             }
         }
+
+        $task->{emacs_link} = $task->{title};
+        $task->{emacs_link} =~ s|\/|__SLASH__|;
+        $task->{emacs_link} = uri_escape( $task->{emacs_link} );
     }
 
     $self->stash( 'headers', [qw/count lastupdate file title priority scheduled deadline/ ] );
@@ -120,6 +127,38 @@ get '/tasks' => sub {
 
     $self->render( template => 'tasks' );
 
+};
+
+get '/open/org/(.file)/(.link)' => sub {
+    my $self = shift;
+
+    my $filename = $self->stash( 'file' );
+    $filename =~ tr/a-z\.//cd;
+    print "FILENAME: $filename\n";
+
+    my $link = uri_unescape( $self->stash( 'link' ) );
+    $link =~ s|[\'\"]|.|g;
+    $link =~ s|__SLASH__|/|;
+    $link = "file:/Users/wu/org/$filename\:\:$link";
+
+    my $command;
+    if ( $self->param('done') ) {
+        my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(org-todo)(save-buffer)(raise-frame)) };
+        $command = qq(emacsclient -e '$emacs_foo' &);
+    }
+    else {
+        my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(raise-frame)) };
+        $command = qq(emacsclient -e '$emacs_foo' &);
+    }
+
+    print "EMACS: $command\n";
+    system( $command );
+
+    # switch to x11 emacs
+    system( qq{osascript -e 'tell app "X11" to activate'} );
+
+
+    $self->redirect_to( "/tasks?due=1" );
 };
 
 get '/ical' => sub {
@@ -186,6 +225,7 @@ get '/ical' => sub {
 
             if ( $entry->{status} eq "todo" ) {
                 for my $alarm ( 10 ) {
+
                     my $alarm_time = $due - 60*$alarm;
 
                     my $valarm_sound = Data::ICal::Entry::Alarm::Audio->new();
@@ -205,7 +245,8 @@ get '/ical' => sub {
 
     my $select = { tablename => 'tasks',
                    callback  => $callback,
-                   order     => 'id',
+                   where     => [ { scheduled => { '<', $time } }, { deadline => { '<', $time } } ],
+                   order     => 'deadline, scheduled',
                };
 
     if ( $self->param( 'status' ) ) {
@@ -252,6 +293,7 @@ get '/tv/program/(.program_id)' => sub {
     for my $crew ( $tv->get_program_crew( $program_id ) ) {
 
         my %other_titles;
+        my $title_counts;
       OTHER:
         for my $other_program_id ( $tv->get_roles( $crew->{givenname}, $crew->{surname} ) ) {
             next OTHER if $other_program_id eq $program_id;
@@ -259,12 +301,15 @@ get '/tv/program/(.program_id)' => sub {
 
             my $color = $tv->get_program_color( $other_program_id );
 
+            $title_counts->{ $other_program_details->{title} }++;
+
             $other_titles{ $other_program_details->{title} } = { program_id => $other_program_id,
                                                                  color      => $color,
                                                                  date       => $other_program_details->{date},
                                                                  year       => $other_program_details->{year},
                                                                  rottentomato => $other_program_details->{rottentomato},
                                                                  rottentomato_link => $other_program_details->{rottentomato_link},
+                                                                 count      => $title_counts->{ $other_program_details->{title} },
                                                              };
         }
 

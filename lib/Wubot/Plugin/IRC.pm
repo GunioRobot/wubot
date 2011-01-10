@@ -42,9 +42,15 @@ sub check {
 
     my $config = $inputs->{config};
     my $key    = $self->key;
+    $self->logger->info( "$key: Setting up new connection" );
 
     $self->con->reg_cb( registered  => sub { $self->reactor->( { subject => "connected" } );
                                              $self->con->send_srv ("JOIN", $config->{channel} );
+                                             $self->con->enable_ping( 60,
+                                                                      sub {
+                                                                          $self->reactor->( { subject => "ping: no response received" } );
+                                                                          $self->initialized( undef );
+                                                                      } );
                                          }
                     );
 

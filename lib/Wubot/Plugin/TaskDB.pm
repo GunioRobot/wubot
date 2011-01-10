@@ -59,22 +59,29 @@ sub check {
         }
     }
 
-    unless ( $task ) {
-        $self->sql->select( { tablename => $config->{tablename},
-                              order     => [ 'priority', 'lastupdate' ],
-                              where     => { scheduled => undef, deadline => undef, status => 'todo' },
-                              limit     => 1,
-                              callback  => sub { $task = $_[0] },
-                          } );
-
-        if ( $task ) {
-            $task->{subject} = "Top task: $task->{file}.org => $task->{title}\n";
-            $task->{color}   = 'blue';
-        }
-    }
-
     if ( $task ) {
-        return { react => $task };
+
+        if ( $cache->{lasttask} && $cache->{lasttask} eq $task->{subject} ) {
+
+            # task hasn't changed.  if we've already sent a
+            # notification in the last 15 minutes, don't send another.
+            if ( $cache->{lastnotify} && time - $cache->{lastnotify} < 900 ) {
+                return;
+            }
+
+        }
+        else {
+            # if this is a new task, set the 'sticky' bit on for the notification
+            $task->{sticky} = 1;
+        }
+
+        # cache the last task
+        $cache->{lasttask}   = $task->{subject};
+        $cache->{lastnotify} = time;
+
+        return { react => $task,
+                 cache => $cache,
+             };
     }
 
     return;

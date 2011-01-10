@@ -1,0 +1,52 @@
+#!/usr/local/bin/perl -w
+use strict;
+use warnings;
+
+use Log::Log4perl;
+use Sys::Hostname;
+
+use Wubot::Logger;
+use Wubot::SQLite;
+use Wubot::Check;
+
+my $logger = Log::Log4perl::get_logger( 'default' );
+
+my ( $plugin, $key ) = @ARGV;
+unless ( $plugin && $key ) {
+    die "ERROR: you must specify both a plugin and a key name!"
+}
+
+$logger->warn( "PLUGIN: $plugin" );
+$logger->warn( "KEY:    $key" );
+
+my $glob = "$ENV{HOME}/wubot/config/plugins/$plugin/$key.yaml*";
+my ( $config_file ) = glob( $glob );
+
+unless ( $config_file ) {
+    die "ERROR: config file not found: $glob";
+}
+
+unless ( -r $config_file ) {
+    $logger->logdie( "ERROR: config file not found: $config_file" );
+}
+my $config = YAML::LoadFile( $config_file );
+$logger->info( "CONFIG: ", YAML::Dump $config );
+
+my $cache_file = "$ENV{HOME}/wubot/cache/$plugin-$key.yaml";
+if ( -r $cache_file ) {
+    $logger->info( "Found cache file: $cache_file" );
+}
+
+my $check = Wubot::Check->new( { key        => "$plugin-$key",
+                                 class      => "Wubot::Plugin::$plugin",
+                                 cache_file => $cache_file,
+                                 reactor    => sub { print YAML::Dump $_[0] },
+                             } );
+
+$logger->info( "Initializing" );
+print YAML::Dump $check->init( $config );
+
+$logger->info( "Checking" );
+my $results = $check->check( $config );
+
+

@@ -22,11 +22,11 @@ sub react {
     my ( $self, $message, $config ) = @_;
 
     my $mailbox;
-    if ( $message->{mailbox} ) {
-        $mailbox = $message->{mailbox};
-    }
-    elsif ( $config->{mailbox} ) {
+    if ( $config->{mailbox} ) {
         $mailbox = $config->{mailbox};
+    }
+    elsif ( $message->{mailbox} ) {
+        $mailbox = $message->{mailbox};
     }
     else {
         $mailbox = lc( $message->{plugin} );
@@ -55,14 +55,23 @@ sub react {
     my $body = $message->{body_text} || $message->{body} || "";
     my $body_text = "FEED:    $key\nSUBJECT: $message->{subject}\n\n$body\n";
 
+    if ( $config->{dump} ) {
+        $body = YAML::Dump $message;
+    }
+
     my %message_data = (
         Type        => 'text/plain',
         Date        => $date,
-        From        => $message->{username}     || $message->{key},
+        From        => $message->{mailbox_username} || $message->{username} || $message->{key},
         To          => $message->{to_user}      || 'wubot',
         Subject     => $message->{subject_text} || $message->{subject},
         Data        => $body,
+        'X-Key'     => $message->{key},
     );
+
+    if ( $message->{color} ) {
+        $message_data{'X-Color'} = $message->{color};
+    }
 
     my $msg = MIME::Entity->build( %message_data );
 

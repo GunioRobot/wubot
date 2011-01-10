@@ -71,6 +71,12 @@ has 'reactor'   => ( is => 'ro',
                          return sub {
                              my ( $message ) = @_;
 
+                             unless ( ref $message eq "HASH" ) {
+                                 my ($package, $file, $line) = caller();
+                                 warn "ERROR: react() called without a hash: $package:$line: ", YAML::Dump $message;
+                                 return;
+                             }
+
                              $self->enqueue_results( $message );
                          };
                      },
@@ -162,6 +168,11 @@ sub react_results {
         return;
     }
 
+    unless ( ref $react eq "HASH" ) {
+        $self->logger->error( "React results called without a hash ref: ", YAML::Dump $react );
+        return;
+    }
+
     # push any configured 'tags' along with the message
     if ( $config->{tags} ) {
         $react->{tags} = $config->{tags};
@@ -174,6 +185,12 @@ sub enqueue_results {
     my ( $self, $results ) = @_;
 
     return unless $results;
+
+    unless ( ref $results eq "HASH" ) {
+        my ($package, $file, $line) = caller();
+        warn "ERROR: enqueue_results called without a hash: $package:$line: ", YAML::Dump $results;
+        return;
+    }
 
     # use our class name for the 'plugin' field
     unless ( $results->{plugin} ) {

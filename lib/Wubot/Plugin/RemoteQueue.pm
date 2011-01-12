@@ -5,6 +5,8 @@ use GRID::Machine;
 use Log::Log4perl;
 use YAML;
 
+use Wubot::TimeLength;
+
 has 'logger'    => ( is      => 'ro',
                      isa     => 'Log::Log4perl::Logger',
                      lazy    => 1,
@@ -22,15 +24,19 @@ has 'reactor'  => ( is => 'ro',
                     required => 1,
                 );
 
-has 'count'    => ( is => 'rw',
-                    isa => 'Num',
-                    default => 0,
-                );
-
 has 'lastfetch' => ( is => 'rw',
                      isa => 'Num',
                      default => 0,
                  );
+
+has 'timelength' => ( is => 'ro',
+                      isa => 'Wubot::TimeLength',
+                      lazy => 1,
+                      default => sub {
+                          return Wubot::TimeLength->new();
+                      },
+                  );
+
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
@@ -41,19 +47,21 @@ sub check {
     my $config = $inputs->{config};
     my $cache  = $inputs->{cache};
 
+    $cache->{check_count}++;
+
     $self->logger->debug( "Checking remote queue on $config->{host}" );
 
     unless ( $self->machine ) {
         $self->logger->warn( "CONNECTING TO HOST: $config->{host}" );
         $self->machine( $self->create_machine( $config ) );
         $self->reactor->( { subject => "GRID::Machine connecting to $config->{host}" } );
-        return;
+        return {};
     }
 
     my $count = 0;
 
   MESSAGE:
-    for my $message ( 1 .. 100 ) {
+    for my $message ( 1 .. 50 ) {
         my $results = $self->machine->get_message( $config->{path} );
 
         if ( $results->{errmsg} ) {
@@ -63,9 +71,13 @@ sub check {
 
         last MESSAGE unless $results->{results}->[0];
 
-        $self->reactor->( $results->{results}->[0] );
-
-        $self->machine->processed_message();
+        if ( ref $results->{results}->[0] eq "HASH" ) {
+            $self->reactor->( $results->{results}->[0] );
+            $self->machine->processed_message();
+        }
+        else {
+            warn "GRID::Machine got unexpected result: ", YAML::Dump $results;
+        }
 
         $cache->{lastfetch} = time;
 
@@ -76,8 +88,10 @@ sub check {
         $self->logger->info( $self->key, ": fetched $count messages" );
     }
 
-    if ( $cache->{lastfetch} + 300 < time ) {
-        $self->reactor->( { subject => "ERROR: no messages fetched in more than 5 minutes" } );
+    my $now = time;
+    if ( $cache->{lastfetch} + 300 < $now && $cache->{check_count} % 10 == 0 ) {
+        my $time = $self->timelength->get_human_readable( $now - $cache->{lastfetch} );
+        $self->reactor->( { subject => "ERROR: no messages fetched in $time" } );
     }
 
     return { cache => $cache };
@@ -98,7 +112,7 @@ sub create_machine {
             init        => q{
                 use Log::Log4perl qw(:easy);
                 Log::Log4perl->easy_init($DEBUG);
-                return 1;
+                return { subject => 'initialized' };
              }
         );
         YAML::Dump $results;

@@ -37,7 +37,13 @@ sub write_cache {
 
     YAML::DumpFile( $tempfile, $cache );
 
-    system( "mv", $tempfile, $self->cache_file );
+    my $cache_file = $self->cache_file;
+
+    if ( -r $cache_file ) {
+        system( "mv", $cache_file, "$cache_file.bak" );
+    }
+
+    system( "mv", $tempfile, $cache_file );
 }
 
 sub cache_mark_seen {

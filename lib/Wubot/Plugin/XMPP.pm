@@ -5,6 +5,16 @@ use AnyEvent::XMPP::Client;
 use Log::Log4perl;
 use YAML;
 
+use Wubot::LocalMessageStore;
+
+has 'mailbox'   => ( is      => 'ro',
+                     isa     => 'Wubot::LocalMessageStore',
+                     lazy    => 1,
+                     default => sub {
+                         return Wubot::LocalMessageStore->new();
+                     },
+                 );
+
 has 'reactor'  => ( is => 'ro',
                     isa => 'CodeRef',
                     required => 1,
@@ -28,7 +38,32 @@ sub check {
     my $config = $inputs->{config};
     my $cache  = $inputs->{cache};
 
+    # if connected, see if there are any outgoing messages in the queue
     if ( $self->{cl} ) {
+
+        # nothing to do unless the session is ready
+        return {} unless $self->{session_ready};
+
+        # if there's no table to transmit data from, we're done here
+        return {} unless $config->{directory};
+
+      MESSAGE:
+        for ( 1 .. 10 ) {
+            # get message from the queue
+            my ( $message, $callback ) = $self->mailbox->get( $config->{directory} );
+
+            last unless $message;
+
+            # convert to text
+            my $message_text = YAML::Dump $message;
+
+            # send the message using YAML
+            $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
+
+            # delete message from the queue
+            $callback->();
+        }
+
         return {};
     }
 
@@ -36,39 +71,43 @@ sub check {
 
     $self->{cl} = AnyEvent::XMPP::Client->new( debug => $debug );
 
-    $self->{cl}->add_account( $config->{account}, $config->{password} );
+    $self->{cl}->add_account( $config->{account}, $config->{password}, $config->{host}, $config->{port} );
 
     $self->{cl}->reg_cb( session_ready => sub {
-                     my ($cl, $acc) = @_;
-                     $self->reactor->( { subject => "XMPP: session ready" } );
-                 },
-                 disconnect => sub {
-                     my ($cl, $acc, $h, $p, $reas) = @_;
-                     $self->reactor->( { subject => "XMPP: disconnect ($h:$p): $reas" } );
-                     delete $self->{cl};
-                 },
-                 error => sub {
-                     my ($cl, $acc, $err) = @_;
-                     $self->reactor->( { subject => "XMPP: ERROR: " . $err->string } );
-                 },
-                 message => sub {
-                     my ($cl, $acc, $msg) = @_;
-                     my $body = $msg->any_body;
+                             my ($cl, $acc) = @_;
+                             $self->{session_ready} = 1;
+                             $self->reactor->( { subject => "XMPP: session ready" } );
+                         },
+                         disconnect => sub {
+                             my ($cl, $acc, $h, $p, $reas) = @_;
+                             $self->logger->error( "XMPP: disconnect ($h:$p): $reas" );
+                             $self->reactor->( { subject => "XMPP: disconnect ($h:$p): $reas" } );
+                             delete $self->{cl};
+                             delete $self->{session_ready};
+                         },
+                         error => sub {
+                             my ($cl, $acc, $err) = @_;
+                             $self->logger->error( "XMPP: ERROR: " . $err->string );
+                             $self->reactor->( { subject => "XMPP: ERROR: " . $err->string } );
+                         },
+                         message => sub {
+                             my ($cl, $acc, $msg) = @_;
+                             my $body = $msg->any_body;
 
-                     my $data;
+                             my $data;
 
-                     eval {                          # try
-                         $data = YAML::Load( $body );
-                         1;
-                     } or do {                       # catch
-                         $data = { subject => $body };
-                     };
+                             eval { # try
+                                 $data = YAML::Load( $body );
+                                 1;
+                             } or do { # catch
+                                 $data = { subject => $body };
+                             };
 
-                     $self->reactor->( $data );
+                             $self->reactor->( $data );
 
-                     $self->logger->debug( "XMPP: Message received from: " . $msg->from );
-                 }
-             );
+                             $self->logger->debug( "XMPP: Message received from: " . $msg->from );
+                         }
+                     );
 
     $self->{cl}->start;
 

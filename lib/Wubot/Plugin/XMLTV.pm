@@ -48,7 +48,7 @@ sub check {
     if ( $pid ) {
         # parent process
         return { cache => { pid => $pid },
-                 react => { subject => "launched child pid $pid" }
+                 react => { subject => "launched xmltv child pid: $pid" }
              };
     }
 

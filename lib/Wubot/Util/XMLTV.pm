@@ -631,6 +631,8 @@ sub get_schedule {
 
                              $entry->{start_time}  = strftime( "%a %d %l:%M%p", localtime( $entry->{start} ) );
 
+                             $entry->{lastupdate}  = strftime( "%m-%d.%H:%M", localtime( $entry->{lastupdate} ) );
+
                              $entry->{runtime}  = $entry->{duration} || $entry->{runtime};
                              $entry->{runtime}  =~ s|^PT0||;
                              $entry->{runtime}  =~ s|^0H||;

@@ -33,6 +33,8 @@ sub check {
   MESSAGE:
     while (my $msg = $mb->next_message) {
 
+        next if $msg->header->{subject} eq "DON'T DELETE THIS MESSAGE -- FOLDER INTERNAL DATA";
+
         my $id = $msg->header->{'message-id'};
 
         # ignore messages we've already seen

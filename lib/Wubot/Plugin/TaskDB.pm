@@ -27,8 +27,8 @@ sub check {
     if ( $cache->{lasttask} && $cache->{lasttask} eq $task->{subject} ) {
 
         # task hasn't changed.  if we've already sent a
-        # notification in the last 15 minutes, don't send another.
-        if ( $cache->{lastnotify} && time - $cache->{lastnotify} < 900 ) {
+        # notification in the last 30 minutes, don't send another.
+        if ( $cache->{lastnotify} && time - $cache->{lastnotify} < 1800 ) {
             return;
         }
 

@@ -51,75 +51,27 @@ my $sqlite_tasks = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tasks.s
 
 my $timelength = Wubot::TimeLength->new();
 
+use Wubot::Util::Tasks;
+my $taskutil   = Wubot::Util::Tasks->new();
+
 get '/tasks' => sub {
     my $self = shift;
 
 
-    my @tasks;
+    my @tasks = $taskutil->get_tasks();
 
-    my $now = time;
-    my $start = $now + 900;
-    if ( $self->param('start') ) {
-        $start = $now + $timelength->get_seconds( $self->param('start') );
-    }
-
-    my $count = 0;
-    my $seen  = {};
-
-
-    $sqlite_tasks->select( { tablename => 'tasks',
-                             where     => { 'deadline' => { '<', $start }, status => 'todo' },
-                             order     => [ 'deadline', 'scheduled', 'priority DESC', 'id' ],
-                             callback  => sub { my $task = $_[0];
-                                                next if $seen->{ $task->{id} };
-                                                $seen->{ $task->{id} } = 1;
-                                                $count++;
-                                                $task->{count} = $count;
-                                                $task->{color} = $pretty_colors->{red};
-                                                $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} ) );
-                                                push @tasks, $task;
-                                            },
-                         } );
-
-    $sqlite_tasks->select( { tablename => 'tasks',
-                       where     => { 'scheduled' => { '<', $start }, status => 'todo' },
-                       order     => [ 'scheduled', 'priority DESC', 'id' ],
-                       callback  => sub { my $task = $_[0];
-                                          next if $seen->{ $task->{id} };
-                                          $seen->{ $task->{id} } = 1;
-                                          $count++;
-                                          $task->{count} = $count;
-                                          $task->{color} = $pretty_colors->{yellow};
-                                          $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );
-                                          push @tasks, $task;
-                                      },
-                   } );
-
-    unless ( $self->param( 'due' ) ) {
-        $sqlite_tasks->select( { tablename => 'tasks',
-                                 order     => [ 'priority DESC', 'lastupdate', 'id' ],
-                                 where     => { scheduled => undef, deadline => undef, status => 'todo' },
-                                 callback  => sub { my $task = $_[0];
-                                                    next if $seen->{ $task->{id} };
-                                                    $seen->{ $task->{id} } = 1;
-                                                    $count++;
-                                                    $task->{count} = $count;
-                                                    push @tasks, $task;
-                                                },
-                             } );
-    }
-
-
-    my $prio_colors = { -1 => 'green', 0 => 'blue', 1 => 'orange', 2 => 'yellow' };
+    #my $prio_colors = { -1 => 'green', 0 => 'blue', 1 => 'orange', 2 => 'yellow' };
     for my $task ( @tasks ) {
 
         $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
 
-        unless ( $task->{color} ) {
-            if ( $prio_colors->{ $task->{priority} } ) {
-                $task->{color} = $pretty_colors->{ $prio_colors->{ $task->{priority} } };
-            }
-        }
+        $task->{color} = $pretty_colors->{ $task->{color} };
+
+        # unless ( $task->{color} ) {
+        #     if ( $prio_colors->{ $task->{priority} } ) {
+        #         $task->{color} = $pretty_colors->{ $prio_colors->{ $task->{priority} } };
+        #     }
+        # }
 
         $task->{emacs_link} = $task->{title};
         $task->{emacs_link} =~ s|\/|__SLASH__|;
@@ -138,7 +90,7 @@ get '/open/org/(.file)/(.link)' => sub {
     my $self = shift;
 
     my $filename = $self->stash( 'file' );
-    $filename =~ tr/a-z\.//cd;
+    $filename =~ tr/a-z0-9\.\-//cd;
     print "FILENAME: $filename\n";
 
     my $link = uri_unescape( $self->stash( 'link' ) );

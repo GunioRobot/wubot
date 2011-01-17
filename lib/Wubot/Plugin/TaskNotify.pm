@@ -45,7 +45,7 @@ sub check {
                           order     => [ 'deadline', 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
                                              my $due = strftime( "%l:%M %p", localtime( $task->{deadline} ) );
-                                             $task->{subject} = "Deadline $due: $task->{file} => $task->{title}";
+                                             $task->{subject} = "Deadline: $task->{file} => $task->{title}";
                                              $task->{color}   = 'red';
                                              push @tasks, $task;
                                          },
@@ -58,7 +58,7 @@ sub check {
                           order     => [ 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
                                              my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} ) );
-                                             $task->{subject} = "Scheduled $due: $task->{file} => $task->{title}";
+                                             $task->{subject} = "Scheduled: $task->{file} => $task->{title}";
                                              $task->{color}   = 'yellow';
                                              push @tasks, $task;
                                          },

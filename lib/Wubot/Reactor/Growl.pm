@@ -51,6 +51,10 @@ sub react {
     $image = join( "/", $image_dir, $image );
     $notification->{image} = $image;
 
+    if ( $message->{growl_id} ) {
+        $notification->{identifier} = $message->{growl_id};
+    }
+
     $notification->{results} = Growl::Tiny::notify( $notification );
 
     $message->{growl} = $notification;

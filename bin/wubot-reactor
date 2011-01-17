@@ -39,7 +39,7 @@ my $lastupdate = time;
 my $maxcount   = 50;
 
 my $timer = AnyEvent->timer( after    => 1,
-                             interval => 1,
+                             interval => 5,
                              cb       => sub {
 
                                  my $count = 0;
@@ -73,6 +73,15 @@ my $timer = AnyEvent->timer( after    => 1,
                                  }
                              },
                          );
+
+use Wubot::Reactor::Voice;
+my $voice = Wubot::Reactor::Voice->new();
+my $voice_timer = AnyEvent->timer( after    => 1,
+                                   interval => 5,
+                                   cb       => sub {
+                                       $voice->say();
+                                   },
+                               );
 
 $logger->error( "Running..." );
 $end->recv;

@@ -101,6 +101,22 @@ sub check {
                         body       => $body,
                     };
 
+        if ( $config->{capture} ) {
+            for my $field ( keys %{ $config->{capture} } ) {
+                next unless $article->{$field};
+
+                for my $name ( keys %{ $config->{capture}->{$field} } ) {
+                    my $regexp = $config->{capture}->{$field}->{$name};
+
+                    if ( $article->{$field} =~ m|$regexp|s ) {
+                        $article->{$name} = $1;
+                    }
+                }
+
+            }
+
+        }
+
         push @react, $article;
     }
 

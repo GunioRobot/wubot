@@ -71,7 +71,13 @@ sub store {
     my $time = $message->{lastupdate};
     my $date = strftime( "%a, %d %b %Y %H:%M:%S %z", localtime( $time ) );
 
-    my $subject = join( ": ", $message->{key}, $message->{subject} || $date );
+    my $subject;
+    if ( $message->{key} ) {
+        $subject = join( ": ", $message->{key}, $message->{subject} || $date );
+    }
+    else {
+        $subject = $message->{subject} || $date;
+    }
 
     $self->sqlite->{ $dbfile }->insert( 'message_queue',
                                         { date     => $date,

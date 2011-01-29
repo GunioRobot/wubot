@@ -78,13 +78,17 @@ sub react {
         close $fh or die "Error closing file: $!\n";
     }
 
+    # if this message is more than 5 minutes old, don't generate the
+    # graphs.  this prevents regenerating the same graphs over and
+    # over when the queue is behind
+    return $message if time - $message->{lastupdate} > 300;
+
     # graph
     my $period = $config->{period} || [ 'day' ];
 
     $self->logger->debug( "Regenerating rrd graph: $graph_dir" );
 
     my %graph_options = ( destination => $graph_dir,
-                          basename    => $filename,
                           periods     => $period,
                           color       => $config->{color} || [ 'BACK#666666', 'CANVAS#111111' ],
                       );

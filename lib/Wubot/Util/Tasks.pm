@@ -63,6 +63,40 @@ sub get_tasks {
 
 }
 
+sub check_schedule {
+    my ( $self ) = @_;
+
+    my $now = time;
+
+    my @tasks;
+    $self->sql->select( { tablename => 'tasks',
+                          where     => { deadline => { '>', $now - 60, '<', $now + 60*15 },
+                                         status => 'todo',
+                                     },
+                          order     => [ 'deadline', 'scheduled', 'priority DESC' ],
+                          callback  => sub { my $task = shift;
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{deadline} ) );
+                                             $task->{subject} = "Deadline: $task->{file} => $task->{title}";
+                                             $task->{color}   = 'red';
+                                             push @tasks, $task;
+                                         },
+                      } );
+
+    $self->sql->select( { tablename => 'tasks',
+                          where     => { scheduled => { '>', $now - 60, '<', $now + 60*15 },
+                                         status    => 'todo',
+                                     },
+                          order     => [ 'scheduled', 'priority DESC' ],
+                          callback  => sub { my $task = shift;
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} ) );
+                                             $task->{subject} = "Scheduled: $task->{file} => $task->{title}";
+                                             $task->{color}   = 'yellow';
+                                             push @tasks, $task;
+                                         },
+                      } );
+
+    return @tasks;
+}
 
 1;
 

@@ -111,9 +111,16 @@ my $timer = AnyEvent->timer( after    => 1,
                                      for my $plugin ( @{ $schedule->{$time} } ) {
                                          my $plugin_config = $config->get_plugin_config( $plugin );
 
-                                         $plugin_objs->{$plugin}->check( $plugin_config );
+                                         my $results = $plugin_objs->{$plugin}->check( $plugin_config );
 
                                          my $delay = $plugin_config->{delay} || 60;
+
+                                         if ( ref $results eq "HASH" ) {
+                                             if ( $results->{delay} ) {
+                                                 $delay = $results->{delay};
+                                                 $logger->info( "Check rescheduled itself in $delay seconds" );
+                                             }
+                                         }
 
                                          my $next = time + $delay;
                                          push @{ $schedule->{$next} }, $plugin;

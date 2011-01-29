@@ -18,6 +18,8 @@ sub react {
 
         $message->{$newfield} = $hs->parse( $message->{$field} );
 
+        $message->{$newfield} =~ s|\xA0| |g;
+
         if ( utf8::is_utf8( $message->{$newfield} ) ) {
             utf8::encode( $message->{$newfield} );
         }

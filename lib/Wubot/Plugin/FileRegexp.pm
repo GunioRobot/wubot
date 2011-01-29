@@ -33,8 +33,8 @@ with 'Wubot::Plugin::Roles::Plugin';
 sub init {
     my ( $self, $inputs ) = @_;
 
-    $self->{react} = $inputs->{cache};
-    delete $self->{react}->{lastupdate};
+    #$self->{react} = $inputs->{cache};
+    #delete $self->{react}->{lastupdate};
 
     $self->path( $inputs->{config}->{path} );
 
@@ -64,16 +64,17 @@ sub init {
 sub check {
     my ( $self, $inputs ) = @_;
 
+    $self->{react} = {};
+
     $self->tail->get_lines();
 
     if ( $self->{react} ) {
         return { react => { %{ $self->{react} } },
-                 cache => { %{ $self->{react} }, position => $self->tail->position },
+                 cache => { position => $self->tail->position },
              };
     }
 
-    $inputs->{cache}->{position} = $self->tail->position;
-    return { cache => $inputs->{cache} };
+    return { cache => { position => $self->tail->position } };
 }
 
 1;

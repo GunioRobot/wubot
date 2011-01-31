@@ -20,6 +20,9 @@ use Wubot::SQLite;
 use Wubot::TimeLength;
 use Wubot::Util::XMLTV;
 
+# change log level from default of 'debug'
+app->log->level('info');
+
 my $tv = Wubot::Util::XMLTV->new();
 
 my $logger = Log::Log4perl::get_logger( __PACKAGE__ );

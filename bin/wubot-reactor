@@ -13,12 +13,10 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 
 use Wubot::Config;
 use Wubot::Reactor;
-use Wubot::Reactor::MessagePoster;
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
 my $messenger = Wubot::LocalMessageStore->new();
-my $poster    = Wubot::Reactor::MessagePoster->new();
 
 my $reactor_config = "$ENV{HOME}/wubot/config/reactor.yaml";
 $logger->info( "loading reactor config: $reactor_config" );
@@ -77,7 +75,7 @@ my $timer = AnyEvent->timer( after    => 1,
 use Wubot::Reactor::Voice;
 my $voice = Wubot::Reactor::Voice->new();
 my $voice_timer = AnyEvent->timer( after    => 1,
-                                   interval => 5,
+                                   interval => 10,
                                    cb       => sub {
                                        $voice->say();
                                    },

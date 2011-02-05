@@ -40,7 +40,7 @@ sub write_cache {
     my $cache_file = $self->cache_file;
 
     if ( -r $cache_file ) {
-        system( "mv", $cache_file, "$cache_file.bak" );
+        system( "cp", $cache_file, "$cache_file.bak" );
     }
 
     system( "mv", $tempfile, $cache_file );

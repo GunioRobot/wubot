@@ -2,6 +2,8 @@
 use Mojolicious::Lite;
 use strict;
 
+$| = 1;
+
 use Data::ICal;
 use Data::ICal::Entry::Alarm::Audio;
 use Data::ICal::Entry::Alarm::Display;
@@ -49,7 +51,6 @@ my $schemas = { tv_data => { show             => 'VARCHAR(128)',
                          },
             };
 
-
 my $sqlite_rss     = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/rss.sql' } );
 my $sqlite_tv_data = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tv_data.sql' } );
 my $sqlite_tasks   = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tasks.sql' } );
@@ -64,21 +65,17 @@ my $taskutil   = Wubot::Util::Tasks->new();
 get '/tasks' => sub {
     my $self = shift;
 
+    my $due = $self->param( 'due' );
 
-    my @tasks = $taskutil->get_tasks();
+    print "DUE: $due\n";
 
-    #my $prio_colors = { -1 => 'green', 0 => 'blue', 1 => 'orange', 2 => 'yellow' };
+    my @tasks = $taskutil->get_tasks( $due );
+
     for my $task ( @tasks ) {
 
         $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
 
         $task->{color} = $pretty_colors->{ $task->{color} };
-
-        # unless ( $task->{color} ) {
-        #     if ( $prio_colors->{ $task->{priority} } ) {
-        #         $task->{color} = $pretty_colors->{ $prio_colors->{ $task->{priority} } };
-        #     }
-        # }
 
         $task->{emacs_link} = $task->{title};
         $task->{emacs_link} =~ s|\/|__SLASH__|g;
@@ -97,7 +94,7 @@ get '/open/org/(.file)/(.link)' => sub {
     my $self = shift;
 
     my $filename = $self->stash( 'file' );
-    $filename =~ tr/a-z0-9\.\-//cd;
+    $filename =~ tr/A-Za-z0-9\.\-\_//cd;
     print "FILENAME: $filename\n";
 
     my $link = uri_unescape( $self->stash( 'link' ) );
@@ -120,7 +117,6 @@ get '/open/org/(.file)/(.link)' => sub {
 
     # switch to x11 emacs
     system( qq{osascript -e 'tell app "X11" to activate'} );
-
 
     $self->redirect_to( "/tasks?due=1" );
 };
@@ -151,15 +147,20 @@ get '/rss/(.mailbox).xml' => sub {
 
                                               my $site = $entry->{key};
 
-                                              my $title = Encode::decode_utf8( $entry->{title} || $entry->{subject} || "no title" );
+                                              my $title = $entry->{title} || $entry->{subject} || "no title";
+                                              utf8::decode( $title );
+
                                               $title = "[$site] $title";
 
                                               my $link = $entry->{link} || $title;
 
+                                              my $body = $entry->{body};
+                                              utf8::decode( $body );
+
                                               $rss->add_item(
                                                   title       => $title,
                                                   link        => $link,
-                                                  description => $entry->{body},
+                                                  description => $body,
                                                   dc => {
                                                       date => format_date_time( $entry->{lastupdate} )
                                                   }
@@ -510,14 +511,20 @@ get '/tv/ical' => sub {
 
     my $seen;
 
-    my @programs = $tv->get_schedule( { limit      => 100,
-                                        score      => 5,
+    # my @programs = $tv->get_schedule( { limit      => 100,
+    #                                     score      => 5,
+    #                                     start      => -12*60*60,
+    #                                 } );
+
+    my @programs = $tv->get_schedule( { limit      => 500,
+                                        new        => 1,
+                                        score      => 3,
                                         start      => -12*60*60,
                                     } );
 
     push @programs, $tv->get_schedule( { limit      => 500,
                                          new        => 1,
-                                         score      => 3,
+                                         score      => 4,
                                          start      => -12*60*60,
                                      } );
 

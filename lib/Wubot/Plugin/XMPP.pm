@@ -2,7 +2,9 @@ package Wubot::Plugin::XMPP;
 use Moose;
 
 use AnyEvent::XMPP::Client;
+use Encode;
 use Log::Log4perl;
+use MIME::Base64;
 use YAML;
 
 use Wubot::LocalMessageStore;
@@ -55,7 +57,7 @@ sub check {
             last unless $message;
 
             # convert to text
-            my $message_text = YAML::Dump $message;
+            my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
 
             # send the message using YAML
             $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
@@ -97,13 +99,13 @@ sub check {
                              my $data;
 
                              eval { # try
-                                 $data = YAML::Load( $body );
+                                 $data = YAML::Load( MIME::Base64::decode( Encode::decode( "UTF-8", $body ) ) );
+                                 $self->reactor->( $data );
                                  1;
                              } or do { # catch
-                                 $data = { subject => $body };
+                                 $self->logger->error( "UNABLE TO DECODE MESSAGE" );
+                                 $self->logger->info( $body );
                              };
-
-                             $self->reactor->( $data );
 
                              $self->logger->debug( "XMPP: Message received from: " . $msg->from );
                          }

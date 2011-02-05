@@ -13,12 +13,16 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 
 use Wubot::Config;
 use Wubot::Reactor;
+use Wubot::TimeLength;
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
 my $messenger = Wubot::LocalMessageStore->new();
 
-my $reactor_config = "$ENV{HOME}/wubot/config/reactor.yaml";
+my $hostname = Sys::Hostname::hostname();
+$hostname =~ s|\..*$||;
+
+my $reactor_config = "$ENV{HOME}/wubot/config/reactor.yaml.$hostname";
 $logger->info( "loading reactor config: $reactor_config" );
 my $config = YAML::LoadFile( $reactor_config );
 
@@ -26,9 +30,6 @@ my $num_rules = scalar @{ $config->{rules} };
 $logger->warn( "Loaded $num_rules rules" );
 
 my $reactor = Wubot::Reactor->new( config => $config );
-
-my $hostname = Sys::Hostname::hostname();
-$hostname =~ s|\..*$||;
 
 $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
@@ -42,7 +43,6 @@ my $timer = AnyEvent->timer( after    => 1,
 
                                  my $count = 0;
 
-                                 my $now = time;
                                  while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
                                      $count++;
 
@@ -59,12 +59,18 @@ my $timer = AnyEvent->timer( after    => 1,
                                      # delete the message now that it has been processed
                                      $callback->();
 
-                                     $lastupdate = $now;
+                                     $lastupdate = time;
                                      return if $count >= $maxcount;
+
+                                     if ( $ENV{LIMIT} ) {
+                                         exit if $count == $ENV{LIMIT};
+                                     }
                                  }
 
+                                 my $now = time;
                                  if ( $now - $lastupdate > 120 ) {
-                                     react( { subject    => 'reactor has not received a message in more than 2 minutes',
+                                     my $time = get_human_readable( $now - $lastupdate );
+                                     react( { subject    => 'reactor has not received a message in $time',
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );

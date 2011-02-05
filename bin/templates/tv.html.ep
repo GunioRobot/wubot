@@ -26,6 +26,7 @@
     | <a href="?limit=500">more</a>
     | <a href="?all=1">unhide</a>
     | <a href="?score=3&limit=500">favorites</a>
+    | <a href="?score=5">flagged</a>
     | <a href="?start=-1h">1 hour ago</a>
     | <a href="?start=1h">in 1 hour</a>
     | <a href="?new=1">new</a>

@@ -22,7 +22,7 @@ has 'dbfile' => ( is      => 'rw',
               );
 
 sub get_tasks {
-    my ( $self ) = @_;
+    my ( $self, $due ) = @_;
 
     my @tasks;
 
@@ -30,11 +30,14 @@ sub get_tasks {
 
     my $count;
 
+    my $seen;
+
     $self->sql->select( { tablename => 'tasks',
                           where     => { 'deadline' => { '<', $start }, status => 'todo' },
                           order     => [ 'priority DESC', 'deadline', 'scheduled' ],
                           callback  => sub {
                               my $task = shift;
+                              $seen->{$task->{file}}->{$task->{title}} = 1;
                               $task->{subject} = "Past Deadline: $task->{file}.org => $task->{title}\n";
                               $task->{color}   = 'red';
                               $count++;
@@ -50,6 +53,8 @@ sub get_tasks {
                           order     => [ 'priority DESC', 'scheduled' ],
                           callback  => sub {
                               my $task = shift;
+                              next if $seen->{$task->{file}}->{$task->{title}};
+                              $seen->{$task->{file}}->{$task->{title}} = 1;
                               $task->{subject} = "Overdue: $task->{file}.org => $task->{title}\n";
                               $task->{color}   = 'yellow';
                               $count++;
@@ -58,6 +63,23 @@ sub get_tasks {
                               push @tasks, $task;
                           },
                       } );
+
+    unless ( $due ) {
+        $self->sql->select( { tablename => 'tasks',
+                              where     => { 'priority' => { '>', -1 }, scheduled => undef, deadline => undef, status => 'todo' },
+                              order     => [ 'priority DESC', 'scheduled' ],
+                              callback  => sub {
+                                  my $task = shift;
+                                  next if $seen->{$task->{file}}->{$task->{title}};
+                                  $seen->{$task->{file}}->{$task->{title}} = 1;
+                                  $task->{subject} = "Priority: $task->{file}.org => $task->{title}\n";
+                                  $task->{color}   = 'yellow';
+                                  $count++;
+                                  $task->{count} = $count;
+                                  push @tasks, $task;
+                              },
+                          } );
+    }
 
     return @tasks;
 

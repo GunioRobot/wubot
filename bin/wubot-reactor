@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 use strict;
 
-#use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
+use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 use AnyEvent;
 use Getopt::Long;

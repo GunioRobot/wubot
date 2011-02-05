@@ -44,7 +44,7 @@ sub react {
     if ( $config->{transform} ) {
         for my $transform ( keys %{ $config->{transform} } ) {
             my $text = $config->{transform}->{$transform};
-            $subject =~ s|$transform| $text |ig;
+            $subject =~ s|$transform|$text|ig;
         }
     }
 
@@ -72,6 +72,7 @@ sub say {
     $callback->();
 
     return $return;
+
 }
 
 

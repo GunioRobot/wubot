@@ -1,6 +1,43 @@
 This project is the 9th generation of a personal reactive automation
 tool I've been working on for the last several years.
 
+The simplest way to think of this project is that it is like email
+rules on steroids.  Most email clients allow you to set rules to tell
+the email client what to do when a new email arrives.  This project
+allows you to have a set of monitors that collect data from email
+boxes, rss feeds, IRC, XMPP, log files, system monitors, xmltv, tivo,
+etc., or you can even write your own custom monitor plugins in perl.
+Data collected from each monitor is sent through a set of rules that
+can perform actions such as:
+
+  - pop up an alert, e.g. using Growl
+  - send a colorized message to stdout
+  - store the message in a mailbox
+  - add the message to a SQLite database
+  - store data from the message in RRD and graph the data over time
+  - add the message to outgoing RSS feeds
+  - send a notification to IRC
+
+Beyond just doing something with the message or portions of the
+message, you also have the option to modify the message, e.g. set a
+color to be used for alerts, transform some field in the message with
+a regexp, capture data from a field, strip HTML, and so forth.
+
+The monitors can run locally on any number of hosts, and can be
+processed locally, and/or forwarded to another host for further
+processing.
+
+Unlike previous generations of this project, the rules are entirely
+controlled by configuration.  So it is not necessary to write any perl
+code to use the rules.  In the future there will be a user interface
+for configuring the rules.
+
+Rules can be nested, so that when a rule matches, it can cause
+additional sub-rules to run.  Nesting rules makes the rules processing
+much more efficient so that not every rule needs to be run on every
+message.  Rules processing is recursive and rules can be nested
+arbitrarily deep.
+
 This project is still under construction.
 
 More to come...

@@ -49,7 +49,7 @@ sub write_cache {
 sub cache_mark_seen {
     my ( $self, $cache, $id ) = @_;
 
-    $self->logger->debug( "Cache seen: $id" );
+    $self->logger->trace( "Cache seen: $id" );
     $cache->{seen}->{$id} = time;
 
 }
@@ -71,7 +71,7 @@ sub cache_expire {
     for my $id ( keys %{ $cache->{seen} } ) {
         if ( $cache->{seen}->{ $id } < $expired ) {
             delete $cache->{seen}->{ $id };
-            $self->logger->debug( "Removing item from cache: $id" );
+            $self->logger->trace( "Removing item from cache: $id" );
         }
     }
 }

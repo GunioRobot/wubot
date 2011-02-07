@@ -6,6 +6,7 @@ use Log::Log4perl;
 use YAML;
 
 use Wubot::LocalMessageStore;
+use Wubot::Reactor;
 
 has 'key'      => ( is => 'ro',
                     isa => 'Str',
@@ -82,6 +83,14 @@ has 'reactor'   => ( is => 'ro',
                      },
                  );
 
+has 'wubot_reactor' => ( is => 'ro',
+                         isa => 'Wubot::Reactor',
+                         lazy => 1,
+                         default => sub {
+                             Wubot::Reactor->new();
+                         },
+                     );
+
 sub init {
     my ( $self, $config ) = @_;
 
@@ -116,6 +125,9 @@ sub check {
     my $start = new Benchmark;
 
     my $timeout = 30;
+    if ( $config->{timeout} ) {
+        $timeout = $config->{timeout};
+    }
 
     my $results;
     eval {
@@ -178,7 +190,19 @@ sub react_results {
         $react->{tags} = $config->{tags};
     }
 
-    $self->reactor->( $react );
+    if ( $config->{react} ) {
+        $self->logger->debug( "Running reaction configured directly on check instance" );
+        $self->wubot_reactor->react( $react, $config->{react} );
+    }
+
+    if ( $react->{no_more_rules} ) {
+        $self->logger->debug( " - check instance reaction set no_more_rules" );
+        $self->logger->trace( YAML::Dump $react );
+    }
+    else {
+        $self->logger->debug( " - sending check results to queue" );
+        $self->reactor->( $react );
+    }
 }
 
 sub enqueue_results {

@@ -7,7 +7,6 @@ use YAML;
 
 has 'config' => ( is => 'ro',
                   isa => 'HashRef',
-                  required => 1,
               );
 
 has 'logger'  => ( is => 'ro',

@@ -6,13 +6,13 @@ use Log::Log4perl qw(:easy);
 
 BEGIN {
 
-    my $log_level = $ENV{LOG_DEBUG} ? 'DEBUG' : 'INFO';
+    my $log_level = $ENV{LOG_TRACE} ? 'TRACE' : $ENV{LOG_DEBUG} ? 'DEBUG' : 'INFO';
 
     my $log_name = $0;
     $log_name =~ s|^.*\/||;
 
     Log::Log4perl->init(\ <<"EOT");
-        log4perl.category = DEBUG, Screen, Logfile
+        log4perl.category = TRACE, Screen, Logfile
         log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
         log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
         log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
@@ -32,6 +32,7 @@ BEGIN {
         log4perl.appender.Logfile.TZ          = PST
         log4perl.appender.Logfile.layout      = Log::Log4perl::Layout::PatternLayout
         log4perl.appender.Logfile.layout.ConversionPattern = %d %m %n
+        log4perl.appender.Logfile.Threshold    = DEBUG
 
 EOT
 

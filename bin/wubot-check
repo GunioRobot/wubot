@@ -51,6 +51,15 @@ $logger->info( "Initializing" );
 print YAML::Dump $check->init( $config );
 
 $logger->info( "Checking" );
-my $results = $check->check( $config );
+
+eval {                          # try
+    my $results = $check->check( $config );
+    print YAML::Dump $results;
+    1;
+} or do {                       # catch
+    print "ERROR RUNNING CHECK: $@\n";
+    exit;
+};
+
 
 $j->wait;

@@ -79,7 +79,7 @@ sub check {
 
         # if we've already seen this item, move along
         if ( $self->cache_is_seen( $cache, $subject ) ) {
-            $self->logger->debug( "Already seen: ", $subject );
+            $self->logger->trace( "Already seen: ", $subject );
 
             # touch cache time on this subject
             $self->cache_mark_seen( $cache, $subject );

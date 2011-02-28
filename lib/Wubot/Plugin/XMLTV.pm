@@ -44,12 +44,14 @@ sub check {
 
     my $sqlite = Wubot::SQLite->new( { file => $config->{dbfile} } );
 
-    my $pid = fork();
-    if ( $pid ) {
-        # parent process
-        return { cache => { pid => $pid },
-                 react => { subject => "launched xmltv child pid: $pid" }
-             };
+    unless ( $config->{nofork} ) {
+        my $pid = fork();
+        if ( $pid ) {
+            # parent process
+            return { cache => { pid => $pid },
+                     react => { subject => "launched xmltv child pid: $pid" }
+                 };
+        }
     }
 
     my $count = 0;

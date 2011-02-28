@@ -34,7 +34,7 @@ sub get_tasks {
 
     $self->sql->select( { tablename => 'tasks',
                           where     => { 'deadline' => { '<', $start }, status => 'todo' },
-                          order     => [ 'priority DESC', 'deadline', 'scheduled' ],
+                          order     => [ 'priority DESC', 'deadline', 'scheduled', 'lastupdate DESC' ],
                           callback  => sub {
                               my $task = shift;
                               $seen->{$task->{file}}->{$task->{title}} = 1;
@@ -50,13 +50,13 @@ sub get_tasks {
 
     $self->sql->select( { tablename => 'tasks',
                           where     => { 'scheduled' => { '<', $start }, status => 'todo' },
-                          order     => [ 'priority DESC', 'scheduled' ],
+                          order     => [ 'priority DESC', 'scheduled', 'lastupdate DESC' ],
                           callback  => sub {
                               my $task = shift;
                               next if $seen->{$task->{file}}->{$task->{title}};
                               $seen->{$task->{file}}->{$task->{title}} = 1;
                               $task->{subject} = "Overdue: $task->{file}.org => $task->{title}\n";
-                              $task->{color}   = 'yellow';
+                              $task->{color}   = 'orange';
                               $count++;
                               $task->{count} = $count;
                               $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );
@@ -64,16 +64,17 @@ sub get_tasks {
                           },
                       } );
 
+    my $priority_colors = { 2 => 'yellow', 1 => 'blue', 0 => 'green' };
     unless ( $due ) {
         $self->sql->select( { tablename => 'tasks',
                               where     => { 'priority' => { '>', -1 }, scheduled => undef, deadline => undef, status => 'todo' },
-                              order     => [ 'priority DESC', 'scheduled' ],
+                              order     => [ 'priority DESC', 'lastupdate DESC' ],
                               callback  => sub {
                                   my $task = shift;
                                   next if $seen->{$task->{file}}->{$task->{title}};
                                   $seen->{$task->{file}}->{$task->{title}} = 1;
                                   $task->{subject} = "Priority: $task->{file}.org => $task->{title}\n";
-                                  $task->{color}   = 'yellow';
+                                  $task->{color}   = $priority_colors->{ $task->{priority} };
                                   $count++;
                                   $task->{count} = $count;
                                   push @tasks, $task;

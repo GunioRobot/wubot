@@ -74,7 +74,6 @@ sub check {
         my $link = $i->link;
 
         my $subject = $i->title;
-        $subject = encode( 'UTF-8', $subject );
 
         next ARTICLE unless $subject;
 

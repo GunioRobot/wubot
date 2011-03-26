@@ -70,15 +70,10 @@ has 'reactor'   => ( is => 'ro',
                          my ( $self ) = @_;
 
                          return sub {
-                             my ( $message ) = @_;
+                             my ( $message, $config ) = @_;
 
-                             unless ( ref $message eq "HASH" ) {
-                                 my ($package, $file, $line) = caller();
-                                 warn "ERROR: react() called without a hash: $package:$line: ", YAML::Dump $message;
-                                 return;
-                             }
+                             $self->react_results( $message, $config );
 
-                             $self->enqueue_results( $message );
                          };
                      },
                  );
@@ -105,7 +100,7 @@ sub init {
     my $results = $self->instance->init( { config => $config, cache => $cache } );
 
     if ( $results->{react} ) {
-        $self->react_results( $results->{react}, $config );
+        $self->reactor->( $results->{react}, $config );
     }
 
     if ( $results->{cache} ) {
@@ -158,7 +153,8 @@ sub check {
     }
 
     if ( $results->{react} ) {
-        $self->react_results( $results->{react}, $config );
+        $self->logger->debug( " - running rules defined in react" );
+        $self->reactor->( $results->{react}, $config );
     }
 
     if ( $results->{cache} ) {
@@ -186,11 +182,11 @@ sub react_results {
     }
 
     # push any configured 'tags' along with the message
-    if ( $config->{tags} ) {
+    if ( $config && $config->{tags} ) {
         $react->{tags} = $config->{tags};
     }
 
-    if ( $config->{react} ) {
+    if ( $config && $config->{react} ) {
         $self->logger->debug( "Running reaction configured directly on check instance" );
         $self->wubot_reactor->react( $react, $config->{react} );
     }
@@ -201,8 +197,10 @@ sub react_results {
     }
     else {
         $self->logger->debug( " - sending check results to queue" );
-        $self->reactor->( $react );
+        $self->enqueue_results( $react );
     }
+
+    return $react;
 }
 
 sub enqueue_results {

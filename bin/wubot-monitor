@@ -4,9 +4,11 @@ use strict;
 use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 use AnyEvent;
+use AnyEvent::Watchdog::Util;
 use File::Path;
 use Getopt::Long;
 use Log::Log4perl qw(:easy);
+use POSIX qw(strftime);
 use YAML;
 
 use Wubot::Logger;
@@ -95,12 +97,18 @@ else {
     $logger->logdie( "ERROR: no plugin config files processed in $config_directory" );
 }
 
+my $start_date = strftime( "%Y-%m-%d", localtime() );
+
 $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
+
+my $loops;
 
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
+
+                                 $loops++;
 
                                  my $now = time;
 
@@ -128,6 +136,19 @@ my $timer = AnyEvent->timer( after    => 1,
 
                                      delete $schedule->{$time};
                                  }
+
+                                 my $current_date = strftime( "%Y-%m-%d", localtime() );
+
+                                 # daily restart
+                                 unless ( $start_date eq $current_date ) {
+                                     AnyEvent::Watchdog::Util::restart;
+                                 }
+
+                                 # for profiling
+                                 # if ( $loops > 10 ) {
+                                 #     $end->recv;
+                                 # }
+
                              } );
 
 $logger->error( "Running..." );

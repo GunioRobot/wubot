@@ -1,10 +1,10 @@
     <html>
     <head>
     <title>TV Schedule</title>
-    <link rel='stylesheet' href='http://wubot/sort/style.css' type='text/css' />
-    <script type='text/javascript' src='http://wubot/sort/common.js'></script>
-    <script type='text/javascript' src='http://wubot/sort/css.js'></script>
-    <script type='text/javascript' src='http://wubot/sort/standardista-table-sorting.js'></script>
+    <link rel='stylesheet' href='sort/style.css' type='text/css' />
+    <script type='text/javascript' src='sort/common.js'></script>
+    <script type='text/javascript' src='sort/css.js'></script>
+    <script type='text/javascript' src='sort/standardista-table-sorting.js'></script>
 
      <script language="javascript">
      function HideFrame(){

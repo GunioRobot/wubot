@@ -37,6 +37,11 @@ my $end = AnyEvent->condvar;
 my $lastupdate = time;
 my $maxcount   = 50;
 
+my $timelength = Wubot::TimeLength->new();
+
+# cleanup seen items in message queue on startup
+$messenger->delete_seen( $message_directory );
+
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
@@ -69,7 +74,7 @@ my $timer = AnyEvent->timer( after    => 1,
 
                                  my $now = time;
                                  if ( $now - $lastupdate > 120 ) {
-                                     my $time = get_human_readable( $now - $lastupdate );
+                                     my $time = $timelength->get_human_readable( $now - $lastupdate );
                                      react( { subject    => 'reactor has not received a message in $time',
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,

@@ -44,18 +44,21 @@ sub check {
     my $key    = $self->key;
     $self->logger->info( "$key: Setting up new connection" );
 
-    $self->con->reg_cb( registered  => sub { $self->reactor->( { subject => "connected" } );
+    $self->con->reg_cb( registered  => sub { $self->reactor->( { subject => "connected" }, $config );
                                              $self->con->send_srv ("JOIN", $config->{channel} );
                                              $self->con->enable_ping( 60,
                                                                       sub {
-                                                                          $self->reactor->( { subject => "ping: no response received" } );
+                                                                          $self->reactor->( { subject => "ping: no response received" }, $config );
                                                                           $self->initialized( undef );
                                                                       } );
                                          }
                     );
 
-    $self->con->reg_cb( disconnect  => sub { $self->reactor->( { subject => "disconnected" } );
+    $self->con->reg_cb( disconnect  => sub { $self->reactor->( { subject => "disconnected" }, $config );
                                              $self->initialized( undef );
+
+                                             # replace connection with a new one
+                                             #$self->con( AnyEvent::IRC::Client->new() );
                                          }
                     );
 
@@ -72,7 +75,7 @@ sub check {
                                                                    username => $user,
                                                                    userid   => $ircmsg->{prefix},
                                                                    type     => 'public',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -88,7 +91,7 @@ sub check {
                                                                    username => $user,
                                                                    userid   => $ircmsg->{prefix},
                                                                    type     => 'private',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -97,7 +100,7 @@ sub check {
                                                                    username => $nick,
                                                                    channel  => $channel,
                                                                    type     => 'join',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -110,7 +113,7 @@ sub check {
                                                                    username => $nick,
                                                                    channel  => $channel,
                                                                    type     => 'part',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -122,7 +125,7 @@ sub check {
                                                $self->reactor->( { subject  => $subject,
                                                                    username => $nick,
                                                                    type     => 'quit',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -130,7 +133,7 @@ sub check {
                                                $self->reactor->( { subject  => "rename: $oldnick=> $newnick",
                                                                    username => $oldnick,
                                                                    type     => 'nick_change',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 
@@ -143,7 +146,7 @@ sub check {
                                                                    username => $who,
                                                                    channel  => $channel,
                                                                    type     => 'topic',
-                                                               } );
+                                                               }, $config );
                                            }
                     );
 

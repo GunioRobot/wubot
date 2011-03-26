@@ -190,3 +190,111 @@ $hostname =~ s|\..*$||;
     );
 
 }
+
+# message with UTF-8 data
+{
+    my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $message = { foo        => 1,
+                    checksum   => 1234,
+                    key        => 'testcase',
+                    lastupdate => time,
+                    hostname   => $hostname,
+                };
+
+    use LWP::Simple;
+    $message->{body} = get( 'http://onionstand.blogspot.com/feeds/posts/default' );
+
+    ok( my $messenger = Wubot::LocalMessageStore->new(),
+        "Creating a new messenger"
+    );
+
+    ok( $messenger->store( { %{ $message } }, $directory ),
+        "Storing message"
+    );
+
+    ok( my $got_message = $messenger->get( $directory ),
+        "Retrieving only message in queue"
+    );
+
+    # is_deeply( $got_message,
+    #            $message,
+    #            "Checking that retrieved message matches sent message"
+    #        );
+
+    # is( scalar $messenger->get( $directory ),
+    #     undef,
+    #     "Checking that no messages left in queue"
+    # );
+
+}
+
+
+
+{
+    my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $message = { foo        => 1,
+                    checksum   => 1234,
+                    key        => 'testcase',
+                    hostname   => $hostname,
+                };
+
+    my $timestamp = time - 10000;
+
+    my $messenger = Wubot::LocalMessageStore->new();
+
+    for my $message_number ( 1 .. 19 ) {
+        $messenger->store( { %{ $message, },
+                             number     => $message_number,
+                             lastupdate => $timestamp,
+                         }, $directory );
+
+    }
+
+    is( $messenger->get_count_seen( $directory ),
+        0,
+        "Checking that no messages marked 'seen' in the queue"
+    );
+
+    for my $message_number ( 1 .. 10 ) {
+        my ( $message, $callback ) = $messenger->get( $directory );
+
+        $callback->();
+    }
+
+    is( $messenger->get_count_seen( $directory ),
+        10,
+        "Checking that 10 messages marked 'seen' in the queue"
+    );
+
+    ok( $messenger->delete_seen( $directory ),
+        "Deleting messages marked seen"
+    );
+
+    is( $messenger->get_count_seen( $directory ),
+        0,
+        "Checking that there are no messages marked 'seen' in the queue"
+    );
+
+    for my $message_number ( 1 .. 9 ) {
+        my ( $message, $callback ) = $messenger->get( $directory );
+
+        $callback->();
+    }
+
+    is( $messenger->get_count_seen( $directory ),
+        9,
+        "Checking that last 9 messages marked 'seen' in the queue"
+    );
+
+    ok( $messenger->delete_seen( $directory ),
+        "Deleting messages marked seen"
+    );
+
+    is( $messenger->get_count_seen( $directory ),
+        0,
+        "Checking that there are no messages marked 'seen' in the queue"
+    );
+
+}

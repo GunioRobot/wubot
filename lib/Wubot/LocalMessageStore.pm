@@ -92,6 +92,25 @@ sub store {
     return 1;
 }
 
+sub delete_seen {
+   my ( $self, $directory ) = @_;
+
+   my $dbfile = "$directory/queue.sqlite";
+
+   unless ( -r $dbfile ) {
+       $self->logger->debug( "ERROR: dbfile not found: $dbfile" );
+       return;
+   }
+
+   # if we don't have a sqlite object for this file, create one now
+   unless ( $self->sqlite->{ $dbfile } ) {
+       $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+   }
+
+   $self->sqlite->{ $dbfile }->delete( 'message_queue', { seen => 1 } );
+
+}
+
 sub get {
     my ( $self, $directory ) = @_;
 
@@ -144,6 +163,26 @@ sub get {
 
     $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
     return $message;
+}
+
+sub get_count_seen {
+    my ( $self, $directory ) = @_;
+
+    my $dbfile = "$directory/queue.sqlite";
+
+    unless ( -r $dbfile ) {
+        $self->logger->debug( "ERROR: dbfile not found: $dbfile" );
+        return;
+    }
+
+    # if we don't have a sqlite object for this file, create one now
+    unless ( $self->sqlite->{ $dbfile } ) {
+        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+    }
+
+    my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT count(*) FROM message_queue WHERE seen IS NOT NULL" );
+
+    return $entry->{'count(*)'} || 0;
 }
 
 sub checksum {

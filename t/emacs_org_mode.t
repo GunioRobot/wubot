@@ -236,6 +236,11 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking task with progress - progress"
         );
 
+        is( $results->{react}->[16]->{body},
+            "  - [ ] foo\n  - [ ] bar\n  - [ ] baz\n",
+            "Checking that state change notes for recurring tasks are not added to body"
+        );
+
         ok( my $results2 = $check->check( { config => { directory => 't/org' },
                                             cache  => $results->{cache}         } ),
             "Calling check() method with lastupdate set to now"

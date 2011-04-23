@@ -1,6 +1,8 @@
 package Wubot::Plugin::Mbox;
 use Moose;
 
+# VERSION
+
 use Mail::MboxParser;
 
 with 'Wubot::Plugin::Roles::Cache';
@@ -33,6 +35,7 @@ sub check {
   MESSAGE:
     while (my $msg = $mb->next_message) {
 
+        next unless $msg->header->{subject};
         next if $msg->header->{subject} eq "DON'T DELETE THIS MESSAGE -- FOLDER INTERNAL DATA";
 
         my $id = $msg->header->{'message-id'};

@@ -42,7 +42,6 @@ if ( -r $cache_file ) {
 my $check = Wubot::Check->new( { key        => "$plugin-$key",
                                  class      => "Wubot::Plugin::$plugin",
                                  cache_file => $cache_file,
-                                 reactor    => sub { print YAML::Dump $_[0] },
                              } );
 
 my $j = AnyEvent->condvar;
@@ -53,6 +52,8 @@ print YAML::Dump $check->init( $config );
 $logger->info( "Checking" );
 
 eval {                          # try
+    print YAML::Dump $config;
+
     my $results = $check->check( $config );
     print YAML::Dump $results;
     1;

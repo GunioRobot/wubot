@@ -85,6 +85,8 @@ sub check {
             }
             elsif ( $name eq "TODO" || $name eq "DONE" ) {
 
+                #next if $name eq "DONE";
+
                 $block =~ s|^\w+\s+||;
 
                 my $task;
@@ -126,7 +128,10 @@ sub check {
                     $task->{scheduled_recurrence}     = $2;
                 }
 
+                $block =~ s|^\s+\- State "DONE"\s+from "TODO"\s+\[.*$||mg;
+
                 $block =~ s|^\s+\n||s;
+
                 $task->{body} = $block;
 
                 push @tasks, $task;

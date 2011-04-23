@@ -1,6 +1,8 @@
 package Wubot::Reactor::HashLookup;
 use Moose;
 
+# VERSION
+
 sub react {
     my ( $self, $message, $config ) = @_;
 

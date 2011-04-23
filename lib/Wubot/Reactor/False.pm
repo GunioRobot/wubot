@@ -1,6 +1,8 @@
 package Wubot::Reactor::False;
 use Moose;
 
+# VERSION
+
 use YAML;
 
 has 'logger'  => ( is => 'ro',

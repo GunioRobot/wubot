@@ -1,6 +1,8 @@
 package Wubot::Plugin::RemoteQueue;
 use Moose;
 
+# VERSION
+
 use GRID::Machine;
 use Log::Log4perl;
 use YAML;

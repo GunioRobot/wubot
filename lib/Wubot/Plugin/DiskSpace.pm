@@ -1,6 +1,8 @@
 package Wubot::Plugin::DiskSpace;
 use Moose;
 
+# VERSION
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 

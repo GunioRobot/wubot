@@ -1,6 +1,8 @@
 package Wubot::Reactor::Dumper;
 use Moose;
 
+# VERSION
+
 use YAML;
 
 sub react {

@@ -1,6 +1,8 @@
 package Wubot::Plugin::MemoryUsage;
 use Moose;
 
+# VERSION
+
 use Devel::Size;
 
 with 'Wubot::Plugin::Roles::Cache';

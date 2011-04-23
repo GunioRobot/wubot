@@ -1,6 +1,8 @@
 package Wubot::Plugin::AppWubotGrowlQueue;
 use Moose;
 
+# VERSION
+
 use DBI;
 use DBD::Pg;
 use Growl::Tiny;

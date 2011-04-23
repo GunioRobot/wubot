@@ -1,6 +1,8 @@
 package Wubot::Plugin::TiVo;
 use Moose;
 
+# VERSION
+
 use Net::TiVo;
 
 with 'Wubot::Plugin::Roles::Cache';

@@ -1,6 +1,8 @@
 package Wubot::Reactor::HTMLStrip;
 use Moose;
 
+# VERSION
+
 use HTML::Strip;
 use YAML;
 

@@ -1,6 +1,8 @@
 package Wubot::Reactor::Maildir;
 use Moose;
 
+# VERSION
+
 use Maildir::Lite;
 use MIME::Entity;
 use POSIX qw(strftime);

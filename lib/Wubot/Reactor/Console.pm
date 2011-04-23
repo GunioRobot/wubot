@@ -1,6 +1,8 @@
 package Wubot::Reactor::Console;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 use POSIX qw(strftime);
 use Term::ANSIColor;

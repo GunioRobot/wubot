@@ -1,6 +1,8 @@
 package Wubot::LocalMessageStore;
 use Moose;
 
+# VERSION
+
 # todo - warn if queue length above a certain size
 
 use Digest::MD5 qw( md5_hex );

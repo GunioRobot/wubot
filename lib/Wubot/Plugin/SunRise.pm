@@ -1,6 +1,8 @@
 package Wubot::Plugin::SunRise;
 use Moose;
 
+# VERSION
+
 use Astro::Sunrise;
 use Date::Manip;
 use POSIX qw(strftime);

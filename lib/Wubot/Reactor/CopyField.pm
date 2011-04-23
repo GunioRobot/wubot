@@ -1,6 +1,8 @@
 package Wubot::Reactor::CopyField;
 use Moose;
 
+# VERSION
+
 use HTML::Strip;
 use YAML;
 

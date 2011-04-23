@@ -1,6 +1,8 @@
 package Wubot::Plugin::XMLTV;
 use Moose;
 
+# VERSION
+
 use Date::Manip;
 use Log::Log4perl;
 use YAML;

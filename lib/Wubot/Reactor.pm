@@ -1,6 +1,8 @@
 package Wubot::Reactor;
 use Moose;
 
+# VERSION
+
 use Class::Load qw/load_class/;
 use Log::Log4perl;
 use YAML;

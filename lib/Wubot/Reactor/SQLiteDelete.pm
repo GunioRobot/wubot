@@ -1,6 +1,8 @@
 package Wubot::Reactor::SQLiteDelete;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 use YAML;
 

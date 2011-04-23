@@ -1,6 +1,8 @@
 package Wubot::Reactor::MessageQueue;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 use LWP::UserAgent;
 use HTTP::Request::Common qw{ POST };

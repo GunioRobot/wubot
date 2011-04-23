@@ -1,6 +1,8 @@
 package Wubot::TimeLength;
 use Moose;
 
+# VERSION
+
 my $constants = { s => 1,
                   m => 60,
                   h => 60*60,

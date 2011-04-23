@@ -1,6 +1,8 @@
 package Wubot::Plugin::WebFetch;
 use Moose;
 
+# VERSION
+
 use LWP::UserAgent;
 
 with 'Wubot::Plugin::Roles::Cache';

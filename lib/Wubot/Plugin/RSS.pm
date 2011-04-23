@@ -1,6 +1,8 @@
 package Wubot::Plugin::RSS;
 use Moose;
 
+# VERSION
+
 use Encode qw(encode decode);
 use LWP::UserAgent;
 use XML::Feed;

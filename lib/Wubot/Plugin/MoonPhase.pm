@@ -1,6 +1,8 @@
 package Wubot::Plugin::MoonPhase;
 use Moose;
 
+# VERSION
+
 use Astro::MoonPhase;
 
 use Wubot::TimeLength;

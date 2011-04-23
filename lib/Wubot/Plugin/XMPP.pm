@@ -1,6 +1,8 @@
 package Wubot::Plugin::XMPP;
 use Moose;
 
+# VERSION
+
 use AnyEvent::XMPP::Client;
 use Encode;
 use Log::Log4perl;

@@ -1,6 +1,8 @@
 package Wubot::Plugin::IRC;
 use Moose;
 
+# VERSION
+
 use AnyEvent;
 use AnyEvent::IRC::Client;
 use Log::Log4perl;

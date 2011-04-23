@@ -1,6 +1,8 @@
 package Wubot::Plugin::Roles::Plugin;
 use Moose::Role;
 
+# VERSION
+
 use Log::Log4perl;
 
 has 'key'      => ( is => 'ro',

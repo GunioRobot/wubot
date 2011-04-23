@@ -1,6 +1,8 @@
 package Wubot::Config;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 use Sys::Hostname qw();
 use YAML;

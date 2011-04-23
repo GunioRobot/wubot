@@ -1,6 +1,8 @@
 package Wubot::Tail;
 use Moose;
 
+# VERSION
+
 use Fcntl qw( SEEK_END SEEK_CUR SEEK_SET O_NONBLOCK O_RDONLY );
 
 has 'path'      => ( is       => 'rw',

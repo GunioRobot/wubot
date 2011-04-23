@@ -1,6 +1,8 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
+# VERSION
+
 use Wubot::TimeLength;
 
 has 'timelength' => ( is => 'ro',

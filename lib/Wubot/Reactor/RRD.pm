@@ -1,6 +1,8 @@
 package Wubot::Reactor::RRD;
 use Moose;
 
+# VERSION
+
 use Capture::Tiny;
 use File::Path;
 use Log::Log4perl;

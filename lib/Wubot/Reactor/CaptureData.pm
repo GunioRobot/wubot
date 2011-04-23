@@ -1,6 +1,8 @@
 package Wubot::Reactor::CaptureData;
 use Moose;
 
+# VERSION
+
 use YAML;
 
 sub react {

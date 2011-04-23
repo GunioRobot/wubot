@@ -1,6 +1,8 @@
 package Wubot::Plugin::WorkHours;
 use Moose;
 
+# VERSION
+
 use DBI;
 use POSIX qw(strftime);
 

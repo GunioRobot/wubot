@@ -1,6 +1,8 @@
 package Wubot::Reactor::ImageStrip;
 use Moose;
 
+# VERSION
+
 use HTML::Strip;
 use YAML;
 

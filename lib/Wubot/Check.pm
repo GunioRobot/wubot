@@ -1,6 +1,8 @@
 package Wubot::Check;
 use Moose;
 
+# VERSION
+
 use Benchmark;
 use Log::Log4perl;
 use YAML;

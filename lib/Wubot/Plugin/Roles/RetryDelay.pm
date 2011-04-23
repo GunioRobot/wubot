@@ -1,6 +1,8 @@
 package Wubot::Plugin::Roles::RetryDelay;
 use Moose::Role;
 
+# VERSION
+
 use Log::Log4perl;
 
 has 'logger'  => ( is => 'ro',

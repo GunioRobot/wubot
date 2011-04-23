@@ -2,6 +2,8 @@ package Wubot::Logger;
 use strict;
 use warnings;
 
+# VERSION
+
 use Log::Log4perl qw(:easy);
 
 BEGIN {

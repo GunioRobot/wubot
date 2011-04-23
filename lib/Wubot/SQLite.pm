@@ -1,6 +1,8 @@
 package Wubot::SQLite;
 use Moose;
 
+# VERSION
+
 use DBI;
 use DBD::SQLite;
 use Log::Log4perl;

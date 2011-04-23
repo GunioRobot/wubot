@@ -1,6 +1,8 @@
 package Wubot::Plugin::Outlook;
 use Moose;
 
+# VERSION
+
 use Date::Manip;
 use Encode;
 use HTML::TableExtract;

@@ -1,6 +1,8 @@
 package Wubot::Plugin::FileRegexp;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 
 use Wubot::Tail;

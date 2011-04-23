@@ -1,7 +1,7 @@
 package Wubot;
 use Moose;
 
-our $VERSION = '0.01';
+# VERSION
 
 #_* Libraries
 

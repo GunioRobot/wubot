@@ -1,6 +1,8 @@
 package Wubot::Plugin::EmacsOrgMode;
 use Moose;
 
+# VERSION
+
 use Date::Manip;
 use File::chdir;
 

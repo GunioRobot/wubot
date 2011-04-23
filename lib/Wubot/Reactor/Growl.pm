@@ -1,6 +1,8 @@
 package Wubot::Reactor::Growl;
 use Moose;
 
+# VERSION
+
 use POSIX qw(strftime);
 use YAML;
 
@@ -53,6 +55,9 @@ sub react {
 
     if ( $message->{growl_id} ) {
         $notification->{identifier} = $message->{growl_id};
+    }
+    else {
+        $notification->{identifier} = $subject;
     }
 
     $notification->{results} = Growl::Tiny::notify( $notification );

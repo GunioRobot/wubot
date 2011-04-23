@@ -1,6 +1,8 @@
 package Wubot::Plugin::Roles::Cache;
 use Moose::Role;
 
+# VERSION
+
 use YAML;
 
 has 'cache_file' => ( is => 'ro',
@@ -8,21 +10,28 @@ has 'cache_file' => ( is => 'ro',
                       required => 1,
                   );
 
+has 'cache_data' => ( is => 'rw',
+                      isa => 'HashRef',
+                      lazy => 1,
+                      default => sub {
+                          my $self = shift;
+
+                          $self->logger->debug( "Reading cache: ", $self->cache_file );
+
+                          if ( ! -r $self->cache_file ) {
+                              $self->logger->debug( "Cache file not found: ", $self->cache_file );
+                              return {};
+                          }
+
+                          return YAML::LoadFile( $self->cache_file );
+
+                      },
+                  );
+
 sub get_cache {
     my ( $self ) = @_;
 
-    $self->logger->debug( "Reading cache: ", $self->cache_file );
-
-    if ( ! -r $self->cache_file ) {
-        $self->logger->debug( "Cache file not found: ", $self->cache_file );
-        return {};
-    }
-
-    my $cache = YAML::LoadFile( $self->cache_file );
-
-    # todo: handle broken cache file
-
-    return $cache;
+    return $self->cache_data;
 }
 
 sub write_cache {
@@ -35,6 +44,9 @@ sub write_cache {
 
     my $tempfile = join ".", $self->cache_file, "tmp";
 
+    $self->cache_data( $cache );
+
+    $self->logger->info( "Writing cache file: $tempfile" );
     YAML::DumpFile( $tempfile, $cache );
 
     my $cache_file = $self->cache_file;

@@ -1,6 +1,8 @@
 package Wubot::Reactor::Voice;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 use POSIX qw(strftime);
 use YAML;
@@ -58,6 +60,8 @@ sub react {
 
 sub say {
     my ( $self ) = @_;
+
+    return unless -r $self->queue;
 
     my ( $message, $callback ) = $self->mailbox->get( $self->queue );
 

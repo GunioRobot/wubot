@@ -141,7 +141,9 @@ my $timer = AnyEvent->timer( after    => 1,
 
                                  # daily restart
                                  unless ( $start_date eq $current_date ) {
+                                     $logger->info( "Date changed, restarting monitor" );
                                      AnyEvent::Watchdog::Util::restart;
+                                     #exit;
                                  }
 
                                  # for profiling

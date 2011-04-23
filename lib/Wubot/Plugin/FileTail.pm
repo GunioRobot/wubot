@@ -1,6 +1,8 @@
 package Wubot::Plugin::FileTail;
 use Moose;
 
+# VERSION
+
 use Log::Log4perl;
 
 use Wubot::Tail;
@@ -36,7 +38,17 @@ sub init {
 
     $self->path( $inputs->{config}->{path} );
 
-    my $callback = sub { push @{ $self->{react} }, { subject => $_[0] } };
+    my $ignore;
+    if ( $inputs->{config}->{ignore} ) {
+        $ignore = join( "|", @{ $inputs->{config}->{ignore} } );
+    }
+
+    my $callback = sub {
+        my $line = $_[0];
+        return if $ignore && $line =~ m|$ignore|;
+        $self->logger->debug( "$self->{key}: $line" );
+        push @{ $self->{react} }, { subject => $line }
+    };
 
     $self->tail->callback(       $callback );
     $self->tail->reset_callback( $callback );

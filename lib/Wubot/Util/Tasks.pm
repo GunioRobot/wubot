@@ -1,6 +1,8 @@
 package Wubot::Util::Tasks;
 use Moose;
 
+# VERSION
+
 use POSIX qw(strftime);
 
 use Wubot::SQLite;
@@ -32,6 +34,18 @@ sub get_tasks {
 
     my $seen;
 
+    my $colors = { deadline => { 2 => '#CC3300',
+                                 1 => '#BB2200',
+                                 0 => '#AA1100',
+                                 -1 => '#990000',
+                                 },
+                   due      => { 2 => '#CC9900',
+                                 1 => '#BB8800',
+                                 0 => '#AA7700',
+                                 -1 => '#996600',
+                             },
+               };
+
     $self->sql->select( { tablename => 'tasks',
                           where     => { 'deadline' => { '<', $start }, status => 'todo' },
                           order     => [ 'priority DESC', 'deadline', 'scheduled', 'lastupdate DESC' ],
@@ -39,7 +53,9 @@ sub get_tasks {
                               my $task = shift;
                               $seen->{$task->{file}}->{$task->{title}} = 1;
                               $task->{subject} = "Past Deadline: $task->{file}.org => $task->{title}\n";
-                              $task->{color}   = 'red';
+
+                              $task->{color} = $colors->{deadline}->{ $task->{priority} };
+
                               $count++;
                               $task->{count} = $count;
                               $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} ) );
@@ -56,7 +72,9 @@ sub get_tasks {
                               next if $seen->{$task->{file}}->{$task->{title}};
                               $seen->{$task->{file}}->{$task->{title}} = 1;
                               $task->{subject} = "Overdue: $task->{file}.org => $task->{title}\n";
-                              $task->{color}   = 'orange';
+
+                              $task->{color} = $colors->{due}->{ $task->{priority} };
+
                               $count++;
                               $task->{count} = $count;
                               $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );

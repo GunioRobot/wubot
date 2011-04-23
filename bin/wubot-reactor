@@ -75,7 +75,7 @@ my $timer = AnyEvent->timer( after    => 1,
                                  my $now = time;
                                  if ( $now - $lastupdate > 120 ) {
                                      my $time = $timelength->get_human_readable( $now - $lastupdate );
-                                     react( { subject    => 'reactor has not received a message in $time',
+                                     react( { subject    => "reactor has not received a message in $time",
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );

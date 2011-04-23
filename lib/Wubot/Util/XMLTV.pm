@@ -1,6 +1,9 @@
 package Wubot::Util::XMLTV;
 use Moose;
 
+# VERSION
+
+use Benchmark;
 use Capture::Tiny qw/capture/;
 use Date::Manip;
 use LWP::Simple;
@@ -83,11 +86,13 @@ sub fetch_process_data {
     for my $day ( 0 .. 14 ) {
         print "Fetching data for day $day\n";
 
-        my $command = "/usr/local/root/perl/bin/tv_grab_na_dd -dd-data $tmpfile --days 1 --offset $day --download-only";
+        my $command = "/usr/local/bin/tv_grab_na_dd -dd-data $tmpfile --days 1 --offset $day --download-only";
         #print "COMMAND: $command\n";
         system( $command );
 
         print "Processing data\n";
+
+        my $start = new Benchmark;
 
         my ($stdout, $stderr) = capture {
             $self->process_data( $tmpfile );
@@ -101,10 +106,14 @@ sub fetch_process_data {
         }
 
         print $stdout;
+
+        my $end = new Benchmark;
+        my $diff = timediff( $end, $start );
+        print "Time taken was ", timestr( $diff, 'all' ), " seconds";
+
     }
 
-    print "DONE PROCESSING DATA\n";
-
+    print "DONE PROCESSING XMLTV DATA\n";
 
 }
 

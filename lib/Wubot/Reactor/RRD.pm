@@ -83,7 +83,7 @@ sub react {
     # if this message is more than 5 minutes old, don't generate the
     # graphs.  this prevents regenerating the same graphs over and
     # over when the queue is behind
-    return $message if time - $message->{lastupdate} > 300;
+    return $message if $message->{lastupdate} && time - $message->{lastupdate} > 300;
 
     # graph
     my $period = $config->{period} || [ 'day' ];

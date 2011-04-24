@@ -12,7 +12,7 @@ sub check {
     my $cache  = $inputs->{cache};
     my $config = $inputs->{config};
 
-    my @react;
+    my $react;
 
     # just setting the cache params in the config
     for my $key ( keys %{ $config } ) {
@@ -21,11 +21,10 @@ sub check {
         next if $key eq "tags";
 
         $cache->{$key}   = $config->{$key};
-
-        push @react, { $key => $config->{$key} };
+        $react->{ $key } = $config->{$key};
     }
 
-    return { cache => $cache, react => \@react };
+    return { cache => $cache, react => [ $react ] };
 }
 
 1;

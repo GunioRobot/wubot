@@ -38,8 +38,8 @@ my $cache = {};
         "Checking that next utime is in the future"
     );
 
-    ok( $results->{react}->{next_until} > 0,
-        "Checking that next_until is positive"
+    ok( $results->{react}->{next_until},
+        "Checking that next_until is not false"
     );
 
     ok( ! $results->{react}->{cache_remaining},

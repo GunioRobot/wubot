@@ -192,7 +192,7 @@ sub checksum {
 
     return unless $message;
 
-    my $text = YAML::Dump $message;
+    my $text = YAML::XS::Dump $message;
 
     utf8::encode( $text );
 

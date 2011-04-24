@@ -190,6 +190,8 @@ sub get_count_seen {
 sub checksum {
     my ( $self, $message ) = @_;
 
+    return unless $message;
+
     my $text = YAML::Dump $message;
 
     utf8::encode( $text );

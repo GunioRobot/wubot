@@ -238,7 +238,12 @@ ok( -r $sqldb,
                "Checking inserted data"
            );
 
-    ok( $sql->update( $table, { column1 => 7 }, { column1 => 0 } ),
+    throws_ok( sub { $sql->update( $table, { column1 => 7 }, { column1 => 0 } ) },
+               qr/schema required for update\(\) but not provided/,
+               "Checking that exception thrown when running a sql update without providing schema",
+           );
+
+    ok( $sql->update( $table, { column1 => 7 }, { column1 => 0 }, $schema ),
         "Calling update() to set column1 to 7 where column1 was 0"
     );
 

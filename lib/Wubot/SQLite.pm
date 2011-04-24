@@ -125,6 +125,10 @@ sub insert {
 sub update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
 
+    unless ( $schema_h ) {
+        die "ERROR: schema required for update() but not provided"
+    }
+
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
         next if $field eq "constraints";

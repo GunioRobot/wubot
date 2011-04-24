@@ -14,31 +14,31 @@ my $config_src = <<"EOF";
 rules:
   - name: key is TestCase-test1
     condition: key equals TestCase-test1
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test1
       value: test_value_test1
   - name: key matches ^TestCase2
     condition: key matches ^TestCase2
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test2
       value: test_value_test2
   - name: key matches ^TestCase
     condition: key matches ^TestCase
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test3
       value: test_value_test3
   - name: has field foo
     condition: contains foo
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test4
       value: test_value_test4
   - name: foo is testpass2
     condition: foo equals testpass2
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test4
       value: test_value_test5
@@ -46,12 +46,12 @@ rules:
     condition: contains test_array
     rules:
       - name: test_array_1
-        plugin: AddField
+        plugin: SetField
         config:
           field: test_array_1
           value: test_value_1
       - name: test_array_1
-        plugin: AddField
+        plugin: SetField
         config:
           field: test_array_2
           value: test_value_2
@@ -59,33 +59,33 @@ rules:
     condition: contains test_tree
     rules:
       - name: test_tree_always
-        plugin: AddField
+        plugin: SetField
         config:
           field: test_tree_1
           value: test_value_1
       - name: test_tree_foo
         condition: contains foo
-        plugin: AddField
+        plugin: SetField
         config:
           field: test_tree_foo
           value: test_value_1
         rules:
           - name: test_tree_bar
             condition: contains bar
-            plugin: AddField
+            plugin: SetField
             config:
               field: test_tree_bar
               value: test_value_1
   - name: key is TestCase-test6 with 'last_rule' set
     condition: key equals TestCase-test6
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test6
       value: test_value_test6
     last_rule: 1
   - name: key is TestCase-test6, should not run due to 'last_rule'
     condition: key equals TestCase-test6
-    plugin: AddField
+    plugin: SetField
     config:
       field: test_field_test6
       value: test_value_test7
@@ -130,7 +130,6 @@ my $reactor = Wubot::Reactor->new( config => $config );
         'test_value_test3',
         "checking test message field with test key matching multiple rules"
     );
-
 
     is( $reactor->react( { foo => 'true' } )->{test_field_test4},
         'test_value_test4',

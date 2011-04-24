@@ -1,7 +1,7 @@
 'wubot' is the code name for a distributed personal reactive
 automation tool I've been working on for the last several years.  It
 is built in modern Perl 5 using Moose, AnyEvent, LWP::UserAgent, YAML,
-DBI/DBD::SQLite, and Mojolicious.
+DBI/DBD::SQLite, Mojolicious, and many others.
 
 The simplest way to think of this project is to compare it to email
 filters.  Most email clients allow you to set rules to perform actions

@@ -26,11 +26,13 @@ sub check {
 
     my $task = $tasks[0];
 
+    return unless $task->{deadline} || $task->{scheduled};
+
     if ( $cache->{lasttask} && $cache->{lasttask} eq $task->{subject} ) {
 
         # task hasn't changed.  if we've already sent a
-        # notification in the last 30 minutes, don't send another.
-        if ( $cache->{lastnotify} && time - $cache->{lastnotify} < 1800 ) {
+        # notification in the last 60 minutes, don't send another.
+        if ( $cache->{lastnotify} && time - $cache->{lastnotify} < 3600 ) {
             return;
         }
 

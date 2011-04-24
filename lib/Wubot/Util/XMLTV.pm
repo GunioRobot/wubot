@@ -286,7 +286,6 @@ sub get_data {
                      } );
 
     return @data;
-
 }
 
 sub get_series_id {
@@ -303,8 +302,9 @@ sub get_series_id {
                          },
                      } );
 
-    return sort keys %ids;
+    my @ids = sort keys %ids;
 
+    return @ids;
 }
 
 sub get_program_id {
@@ -329,8 +329,9 @@ sub get_program_id {
                          },
                      } );
 
-    return sort keys %ids;
+    my @ids = sort keys %ids;
 
+    return @ids;
 }
 
 sub get_episodes {
@@ -354,8 +355,9 @@ sub get_episodes {
                          },
                      } );
 
-    return sort keys %ids;
+    my @ids = sort keys %ids;
 
+    return @ids;
 }
 
 sub get_program_details {
@@ -432,7 +434,9 @@ sub get_roles {
         push @programs, $program;
     }
 
-    return sort @programs;
+    @programs = sort @programs;
+
+    return @programs;
 }
 
 sub get_program_genres {

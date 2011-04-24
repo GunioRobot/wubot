@@ -1,20 +1,26 @@
-This project is the 9th generation of a personal reactive automation
-tool I've been working on for the last several years.
+'wubot' is the code name for a distributed personal reactive
+automation tool I've been working on for the last several years.  It
+is built in modern Perl 5 using Moose, AnyEvent, LWP::UserAgent, YAML,
+DBI/DBD::SQLite, and Mojolicious.
 
-The simplest way to think of this project is that it is like email
-rules on steroids.  Most email clients allow you to set rules to tell
-the email client what to do when a new email arrives.  This project
-allows you to have a set of monitors that collect data from sources
-including:
+The simplest way to think of this project is to compare it to email
+filters.  Most email clients allow you to set rules to perform actions
+when a new email arrives.
+
+This project allows you to have a set of monitors that collect data
+from sources including:
 
   - email boxes
-  - rss feeds
+  - RSS/Atom feeds
   - IRC
   - XMPP
   - log files
   - system monitors
   - xmltv
   - tivo
+  - OS X idle time
+  - local sunrise/sunset times
+  - moon phases
   - monitors running on remote hosts
   - your own custom monitor plugin written in perl
 
@@ -36,9 +42,9 @@ message, you also have the option to modify the message, e.g.:
 
   - set a color to be used for alerts
   - transform some field in the message with a regexp
-  - capture data from a field
+  - capture data from a field and store it in another field
   - strip images or HTML
-  - related information fetched from the web
+  - fetch related information from the web
 
 Unlike previous generations of this project, the rules are entirely
 controlled by configuration.  So it is not necessary to write any perl
@@ -51,9 +57,14 @@ much more efficient so that not every rule needs to be run on every
 message.  Rules processing is recursive so rules can be nested
 arbitrarily deep.
 
+Distributed operation currently relies on XMPP.  Using XMPP, messages
+can be sent between wubot instances on multiple hosts.  Monitors
+generate messages that may be reacted upon locally, and/or may be
+forwarded to other hosts for further reaction.
+
 This project is still under construction.
 
-More to come...
+Lots more to come...
 
 
 INSTALLATION

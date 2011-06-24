@@ -1,0 +1,31 @@
+---
+dbfile: ~/wubot/reactor/queue.sqlite
+statements:
+  - SELECT count(*) AS unseen FROM message_queue WHERE seen IS NULL
+  - SELECT count(*) AS seen FROM message_queue WHERE seen IS NOT NULL
+
+react:
+  - name: RRD
+    plugin: RRD
+    config:
+      base_dir: /Users/wu/wubot/rrd
+      fields:
+        unseen: COUNTER
+        seen: COUNTER
+      period:
+        - day
+        - week
+        - month
+      heartbeat: 1800
+      graph_options:
+        sources:
+          - unseen
+          - seen
+        source_colors:
+          - FF9933
+          - 9933FF
+        source_drawtypes:
+          - AREA
+          - LINE
+        right-axis: 1:0
+        width: 375

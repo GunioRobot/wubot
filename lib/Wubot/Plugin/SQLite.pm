@@ -14,7 +14,7 @@ sub check {
 
     my @react;
 
-    my $file = glob( $config->{dbfile} );
+    my ( $file ) = glob( $config->{dbfile} );
 
     my $sqlite =  Wubot::SQLite->new( { file => $file } );
 

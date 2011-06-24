@@ -44,6 +44,8 @@ sub check {
         }
     }
 
+    $self->cache_expire( $cache );
+
     return { cache => $cache, react => \@react };
 }
 

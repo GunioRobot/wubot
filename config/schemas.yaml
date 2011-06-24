@@ -33,6 +33,7 @@ tv_schedule:
   station_id: INTEGER
   start: INTEGER
   duration: VARCHAR(8)
+  lastupdate: INT
   new: INTEGER
   cc: INTEGER
   stereo: INTEGER

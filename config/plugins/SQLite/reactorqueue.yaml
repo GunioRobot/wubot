@@ -1,4 +1,5 @@
 ---
+delay: 300
 dbfile: ~/wubot/reactor/queue.sqlite
 statements:
   - SELECT count(*) AS unseen FROM message_queue WHERE seen IS NULL
@@ -10,8 +11,8 @@ react:
     config:
       base_dir: /Users/wu/wubot/rrd
       fields:
-        unseen: COUNTER
-        seen: COUNTER
+        seen: GAUGE
+        unseen: GAUGE
       period:
         - day
         - week
@@ -19,13 +20,12 @@ react:
       heartbeat: 1800
       graph_options:
         sources:
-          - unseen
           - seen
+          - unseen
         source_colors:
           - FF9933
           - 9933FF
         source_drawtypes:
-          - AREA
           - LINE
         right-axis: 1:0
         width: 375

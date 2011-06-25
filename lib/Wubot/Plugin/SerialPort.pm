@@ -17,7 +17,7 @@ has 'device'    => ( is      => 'rw',
                  );
 
 has 'port'      => ( is      => 'rw',
-                     isa     => 'Device::SerialPort',
+                     isa     => 'Maybe[Device::SerialPort]',
                  );
 
 has 'logger'    => ( is      => 'ro',

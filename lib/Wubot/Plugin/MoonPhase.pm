@@ -40,10 +40,9 @@ sub check {
 
     my @phases = phasehunt( $now );
 
-    my $phases = { new_moon      => $phases[0],
-                   first_quarter => $phases[1],
+    my $phases = { last_new_moon => $phases[0],
                    full_moon     => $phases[2],
-                   last_quarter  => $phases[3],
+                   new_moon      => $phases[4],
                };
 
     my $next_phase;

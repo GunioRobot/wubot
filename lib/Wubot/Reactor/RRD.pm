@@ -27,12 +27,24 @@ sub react {
 
     my $time = $message->{lastupdate} || time;
 
-    my $rrd_dir      = join( "/", $config->{base_dir}, "rrd", $message->{key} );
+    my $key;
+    if ( $config->{key_field} ) {
+        my @keys;
+        for my $field ( split /\s+/, $config->{key_field} ) {
+            push @keys, $message->{ $field };
+        }
+        $key = join( "-", @keys );
+    }
+    else {
+        $key = $message->{key};
+     }
+
+    my $rrd_dir      = join( "/", $config->{base_dir}, "rrd", $key );
     unless ( -d $rrd_dir ) {
         mkpath( $rrd_dir );
     }
 
-    my $graph_dir = join( "/", $config->{base_dir}, "graphs", $message->{key} );
+    my $graph_dir = join( "/", $config->{base_dir}, "graphs", $key );
     unless ( -d $graph_dir ) {
         mkpath( $graph_dir );
     }
@@ -42,7 +54,7 @@ sub react {
         $rrd_data{$field} = $message->{$field};
     }
 
-    my $filename = $config->{filename} || $message->{key} || 'data';
+    my $filename = $config->{filename} || $key || 'data';
     my $rrd_filename = join( "/", $rrd_dir, "$filename.rrd" );
 
     my $rrd = RRD::Simple->new( file => $rrd_filename );
@@ -63,7 +75,7 @@ sub react {
     }
 
     if ( $config->{debug} ) {
-        print YAML::Dump { key => $message->{key}, rrd => \%rrd_data };
+        print YAML::Dump { key => $key, rrd => \%rrd_data };
     }
 
     $rrd->update( $rrd_filename, $time, %rrd_data );

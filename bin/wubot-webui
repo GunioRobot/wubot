@@ -73,8 +73,6 @@ get '/tasks' => sub {
 
     my $due = $self->param( 'due' );
 
-    print "DUE: $due\n";
-
     my @tasks = $taskutil->get_tasks( $due );
 
     for my $task ( @tasks ) {
@@ -305,15 +303,9 @@ get '/ical' => sub {
             return;
         }
 
-        #my $duration = 1800;
-        #if ( $entry->{duration} ) {
-
         my $duration = $timelength->get_seconds( $entry->{duration} );
 
         for my $due ( @due ) {
-
-            # fixme: due times are off by an hour?
-            $due -= 3600;
 
             my $dt_start = DateTime->from_epoch( epoch => $due );
             my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';
@@ -542,6 +534,7 @@ get '/tv/schedule' => sub {
     my @display;
 
     for my $program ( $tv->get_schedule( { start   => $self->param( 'start'   ) || undef,
+                                           end     => $self->param( 'end'     ) || undef,
                                            limit   => $self->param( 'limit'   ) || 100,
                                            channel => $self->param( 'channel' ) || undef,
                                            score   => $self->param( 'score'   ) || undef,

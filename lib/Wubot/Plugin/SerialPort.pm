@@ -52,6 +52,8 @@ sub initalize_serial_port {
 
     $self->port( Device::SerialPort->new( $self->device ) );
 
+    return unless $self->port;
+
     # 19200, 81N on the USB ftdi driver
     $self->port->baudrate(9600);
     $self->port->databits(8);

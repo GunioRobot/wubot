@@ -567,8 +567,9 @@ sub get_schedule {
     if ( $options->{new} ) {
         $where->{'schedule.new'} = 'true';
     }
+
     if ( $options->{score} ) {
-        $where->{score} = $options->{score};
+        $where->{score} = { '>=' => $options->{score} };
     }
     elsif ( ! $options->{all} ) {
         my $is_null = "is null";
@@ -578,6 +579,7 @@ sub get_schedule {
         my $is_not_null = "IS NULL";
         $where->{'station.hide'} = \$is_not_null;
     }
+
     if ( $options->{hd} ) {
         $where->{'schedule.hd'} = 'true';
     }
@@ -595,10 +597,10 @@ sub get_schedule {
     my $seen;
 
     $self->db->select( { tablename => 'schedule left join program on schedule.program_id = program.program_id left join score on program.score_id = score.program_id left join lineup on schedule.station_id = lineup.station_id left join station on schedule.station_id = station.station_id',
-                         where     => $where,
+                          where     => $where,
                          limit     => $options->{limit} || 100,
                          order     => 'start',
-                         fields    => 'program.program_id as x_program_id, station.station_id as x_station_id, *',
+                         fields    => 'program.program_id as x_program_id, station.station_id as x_station_id, schedule.lastupdate as lastupdate, *',
                          callback  => sub {
                              my $entry = shift;
 

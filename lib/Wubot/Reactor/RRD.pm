@@ -122,7 +122,7 @@ sub react {
 
             if ( $option_versions->{ $option } ) {
                 unless ( $version >= $option_versions->{$option} ) {
-                    $self->logger->error( "Disabling $option on older version of rrdtool, requires $option_versions->{$option}" );
+                    $self->logger->debug( "Disabling $option on older version of rrdtool, requires $option_versions->{$option}" );
                     next OPTION;
                 }
             }

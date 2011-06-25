@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+# todo: enable using Regexp::Common regexps here
+
 use YAML;
 
 sub react {

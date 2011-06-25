@@ -28,6 +28,7 @@ sub check {
     my $cache  = $inputs->{cache};
     my $config = $inputs->{config};
 
+    # todo: forking plugin fu to prevent running more than one at once
     unless ( $config->{nofork} ) {
         my $pid = fork();
         if ( $pid ) {

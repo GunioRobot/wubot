@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+# todo: select with xpath in addition to regexp
+
 use LWP::UserAgent;
 
 with 'Wubot::Plugin::Roles::Cache';

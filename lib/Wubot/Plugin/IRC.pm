@@ -51,7 +51,9 @@ sub check {
                                              $self->con->enable_ping( 60,
                                                                       sub {
                                                                           $self->reactor->( { subject => "ping: no response received" }, $config );
-                                                                          $self->initialized( undef );
+                                                                          $self->con->disconnect;
+                                                                          $self->con( AnyEvent::IRC::Client->new() );
+                                                                          $self->initialized( 0 );
                                                                       } );
                                          }
                     );

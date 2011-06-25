@@ -256,6 +256,16 @@ sub _react_results {
         $react->{tags} = $config->{tags};
     }
 
+    # use our class name for the 'plugin' field
+    unless ( $react->{plugin} ) {
+        $react->{plugin}     = $self->{class};
+    }
+
+    # use our instance key name for the 'key' field
+    unless ( $react->{key} ) {
+        $react->{key}        = $self->key;
+    }
+
     if ( $config && $config->{react} ) {
         $self->logger->debug( "Running reaction configured directly on check instance" );
         $self->wubot_reactor->react( $react, $config->{react} );

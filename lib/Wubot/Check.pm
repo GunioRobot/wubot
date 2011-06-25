@@ -266,6 +266,10 @@ sub _react_results {
         $react->{key}        = $self->key;
     }
 
+    unless ( $react->{lastupdate} ) {
+        $react->{lastupdate} = time;
+    }
+
     if ( $config && $config->{react} ) {
         $self->logger->debug( "Running reaction configured directly on check instance" );
         $self->wubot_reactor->react( $react, $config->{react} );

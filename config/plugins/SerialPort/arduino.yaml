@@ -32,3 +32,18 @@ react:
         right-axis: 1:0
         width: 375
 
+  - name: sqlite
+    condition: value is true
+    plugin: SQLite
+    config:
+      file: /Users/wu/wubot/sqlite/arduino.sql
+      tablename: sensors
+      schema:
+        id: INTEGER PRIMARY KEY AUTOINCREMENT
+        source: int
+        type: int
+        value: int
+        units: int
+
+
+

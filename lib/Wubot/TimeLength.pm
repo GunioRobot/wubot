@@ -3,11 +3,14 @@ use Moose;
 
 # VERSION
 
+has 'space' => ( is => 'ro', isa => 'Bool', default => 0 );
+
 my $constants = { s => 1,
                   m => 60,
                   h => 60*60,
                   d => 60*60*24,
                   w => 60*60*24*7,
+                  M => 60*60*24*30,
                   y => 60*60*24*7*365,
               };
 
@@ -55,10 +58,10 @@ sub get_human_readable {
         $seconds = -1 * $seconds;
     }
 
-    my $string = "";
+    my @string;
 
   TIME:
-    for my $time ( qw( d h m s ) ) {
+    for my $time ( qw( y M d h m s ) ) {
 
         if ( $time eq "s" ) {
             next TIME if $orig_seconds > $constants->{h};
@@ -73,7 +76,7 @@ sub get_human_readable {
 
             my $rounded = int( $seconds / $num_seconds );
 
-            $string = join( "", $string, "$rounded$time" );
+            push @string, "$rounded$time";
 
             $seconds -= int( $num_seconds * $rounded );
         }
@@ -81,7 +84,12 @@ sub get_human_readable {
         last TIME unless $seconds;
     }
 
-    return "$sign$string";
+    my $join = "";
+    if ( $self->space ) {
+        $join = " ";
+    }
+
+    return $sign . join( $join, @string );
 }
 
 sub get_hours {

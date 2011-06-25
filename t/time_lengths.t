@@ -166,3 +166,50 @@ ok( my $timelength = Wubot::TimeLength->new(),
     );
 }
 
+
+# space
+{
+    # without space
+    {
+        ok( my $timelength = Wubot::TimeLength->new(),
+            "Creating a new Wubot::TimeLength object without spaces"
+        );
+
+        is( $timelength->get_human_readable( 60*60*12+70 ),
+            "12h1m",
+            "Human-readable time for 12h1m"
+        );
+
+        is( $timelength->get_seconds( "12h1m" ),
+            60*60*12+60,
+            "Seconds from 12h1m"
+        );
+
+        is( $timelength->get_seconds( "12h 1m" ),
+            60*60*12+60,
+            "Seconds from 12h 1m"
+        );
+    }
+
+    # with space
+    {
+        ok( my $timelength = Wubot::TimeLength->new( space => 1 ),
+            "Creating a new Wubot::TimeLength object with spaces"
+        );
+
+        is( $timelength->get_human_readable( 60*60*12+70 ),
+            "12h 1m",
+            "Human-readable time for 12h 1m"
+        );
+
+        is( $timelength->get_seconds( "12h1m" ),
+            60*60*12+60,
+            "Seconds from 12h1m"
+        );
+
+        is( $timelength->get_seconds( "12h 1m" ),
+            60*60*12+60,
+            "Seconds from 12h 1m"
+        );
+    }
+}

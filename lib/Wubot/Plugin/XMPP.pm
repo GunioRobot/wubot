@@ -84,8 +84,10 @@ sub check {
                          },
                          disconnect => sub {
                              my ($cl, $acc, $h, $p, $reas) = @_;
-                             $self->logger->error( "XMPP: disconnect ($h:$p): $reas" );
-                             $self->reactor->( { subject => "XMPP: disconnect ($h:$p): $reas" } );
+                             my $details = "";
+                             if ( $h && $p ) { $details = "($h:$p)" };
+                             $self->logger->error( "XMPP: disconnect $details: $reas" );
+                             $self->reactor->( { subject => "XMPP: disconnect $details: $reas", no_post => 1 } );
                              delete $self->{cl};
                              delete $self->{session_ready};
                          },

@@ -1,0 +1,34 @@
+---
+enable: 1
+delay: 5
+device: /dev/tty.usbmodem411
+
+react:
+
+  - name: split
+    plugin: Split
+    config:
+      source_field: line
+      target_fields:
+        - source
+        - type
+        - value
+        - units
+
+  - name: rrd
+    condition: source is true AND type is true AND value is true AND units is true
+    plugin: RRD
+    config:
+      key_field: source type
+      base_dir: /Users/wu/wubot/rrd
+      fields:
+        value: GAUGE
+      step: 60
+      period:
+        - day
+        - week
+        - month
+      graph_options:
+        right-axis: 1:0
+        width: 375
+

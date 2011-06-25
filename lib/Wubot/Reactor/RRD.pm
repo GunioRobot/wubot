@@ -8,6 +8,7 @@ use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime);
 use RRD::Simple;
+use RRDs;
 use YAML;
 
 has 'logger'  => ( is => 'ro',
@@ -17,6 +18,13 @@ has 'logger'  => ( is => 'ro',
                        return Log::Log4perl::get_logger( __PACKAGE__ );
                    },
                );
+
+my $version = $RRDs::VERSION;
+
+my $option_versions = { 'right-axis' => 1.2028,
+                    };
+
+
 
 sub react {
     my ( $self, $message, $config ) = @_;
@@ -108,7 +116,17 @@ sub react {
                       );
 
     if ( $config->{graph_options} ) {
+
+      OPTION:
         for my $option ( keys %{ $config->{graph_options} } ) {
+
+            if ( $option_versions->{ $option } ) {
+                unless ( $version > $option_versions->{$option} ) {
+                    $self->logger->error( "Disabling $option on older version of rrdtool, requires $option_versions->{$option}" );
+                    next OPTION;
+                }
+            }
+
             $graph_options{ $option } = $config->{graph_options}->{ $option };
         }
     }

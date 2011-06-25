@@ -5,6 +5,7 @@ use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 use AnyEvent;
 use Getopt::Long;
+use POSIX qw(strftime);
 use Sys::Hostname;
 use YAML;
 
@@ -43,6 +44,8 @@ my $timelength = Wubot::TimeLength->new();
 # todo: clean up seen items more than 24 hours old
 $messenger->delete_seen( $message_directory );
 
+my $start_date = strftime( "%Y-%m-%d", localtime() );
+
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
@@ -80,6 +83,13 @@ my $timer = AnyEvent->timer( after    => 1,
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );
+                                 }
+
+                                 # daily clean up of seen messages
+                                 my $current_date = strftime( "%Y-%m-%d", localtime() );
+                                 unless ( $start_date eq $current_date ) {
+                                     $logger->info( "Date changed, cleaning out seen messages" );
+                                     $messenger->delete_seen( $message_directory );
                                  }
                              },
                          );

@@ -327,4 +327,29 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "Checking 'hostname equals navi AND NOT no_post is true no_post' when hostname is navi and no_post is unset"
     );
 
+    ok( $reactor->condition( "hostname equals navi AND hostname equals navi OR hostname equals navi", { hostname => 'navi' } ),
+        "Checking 'true AND true OR true' is true"
+    );
+    ok( $reactor->condition( "hostname equals navi AND hostname equals navi OR abc equals xyz", { hostname => 'navi' } ),
+        "Checking 'true AND true OR false' is true"
+    );
+    ok( $reactor->condition( "hostname equals navi AND abc equals xyz OR hostname equals navi", { hostname => 'navi' } ),
+        "Checking 'true AND false OR true' is true"
+    );
+    ok( ! $reactor->condition( "abc equals xyz AND hostname equals navi OR hostname equals navi", { hostname => 'navi' } ),
+        "Checking 'false AND true OR true' is false"
+    );
+    ok( ! $reactor->condition( "abc equals xyz AND abc equals xyz OR hostname equals navi", { hostname => 'navi' } ),
+        "Checking 'false AND false OR true' is false"
+    );
+    ok( ! $reactor->condition( "abc equals xyz AND hostname equals navi OR  abc equals xyz", { hostname => 'navi' } ),
+        "Checking 'false AND true OR false' is false"
+    );
+    ok( ! $reactor->condition( "hostname equals navi AND abc equals xyz OR abc equals xyz", { hostname => 'navi' } ),
+        "Checking 'true AND false OR false' is false"
+    );
+    ok( ! $reactor->condition( "abc equals xyz AND abc equals xyz OR abc equals xyz", { hostname => 'navi' } ),
+        "Checking 'false AND false OR false' is false"
+    );
+
 }

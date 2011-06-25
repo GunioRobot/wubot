@@ -1,6 +1,8 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
+use Log::Log4perl;
+
 # VERSION
 
 use Wubot::TimeLength;
@@ -12,6 +14,15 @@ has 'timelength' => ( is => 'ro',
                           return Wubot::TimeLength->new();
                       },
                   );
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
@@ -41,6 +52,8 @@ sub check {
         $idle_sec /= 1000000000;
 
         $idle_sec = int( $idle_sec );
+
+        $self->logger->debug( "IDLE SEC: $idle_sec => $line" );
 
         last;
     }

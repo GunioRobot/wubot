@@ -175,7 +175,7 @@ sub select {
 
     my $tablename = $options->{tablename};
     unless ( $tablename ) {
-        $self->logger->logcroak( "ERROR: select called but no tablename provided" ) 
+        $self->logger->logcroak( "ERROR: select called but no tablename provided" );
     }
     my $fields    = $options->{fields}     || '*';
     my $where     = $options->{where};

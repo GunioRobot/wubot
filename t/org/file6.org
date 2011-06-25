@@ -55,3 +55,9 @@
 
   - [ ] foo
 
+** TODO task 10
+   DEADLINE: <2011-06-20 Mon> SCHEDULED: <2011-06-17 Fri>
+
+  - [ ] foo
+ 
+

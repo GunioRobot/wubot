@@ -191,6 +191,11 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking that recurring task time is parsed properly"
         );
 
+        is( scalar localtime $results->{react}->[9]->{deadline},
+            'Wed Dec 22 12:30:00 2010',
+            "Checking that recurring task time is parsed properly"
+        );
+
         is( $results->{react}->[10]->{deadline_text},
             '2010-12-22 Wed 12:30',
             "Checking that relative recurring task time is parsed properly"
@@ -236,7 +241,18 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking task with progress - progress"
         );
 
-        is( $results->{react}->[16]->{body},
+        is ( $results->{react}->[15]->{deadline_text},
+             "2011-06-20 Mon",
+             "Checking that deadline text is set for task with deadline + schedule"
+         );
+
+        is ( $results->{react}->[15]->{scheduled_text},
+             "2011-06-17 Fri",
+             "Checking that schedule text is set for task with deadline + schedule"
+         );
+
+
+        is( $results->{react}->[17]->{body},
             "  - [ ] foo\n  - [ ] bar\n  - [ ] baz\n",
             "Checking that state change notes for recurring tasks are not added to body"
         );

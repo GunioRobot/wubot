@@ -545,19 +545,23 @@ sub get_schedule {
     my ( $self, $options ) = @_;
 
     my $where;
+
     if ( $options->{start} ) {
-
         my $seconds = $self->timelength->get_seconds( $options->{start} );
-
-        $where->{start} = { '>', time + $seconds };
+        $where->{start}->{'>'} = time + $seconds;
     }
     elsif ( $options->{start_utime} ) {
-
-        $where->{start} = { '>', $options->{start_utime} };
+        $where->{start}->{'>'} = $options->{start_utime};
     }
     else {
-        $where->{start} = { '>', time - 300 };
+        $where->{start}->{'>'} = time - 300;
     }
+
+    if ( $options->{end} ) {
+        my $seconds = $self->timelength->get_seconds( $options->{end} );
+        $where->{start}->{'<'} = time + $seconds;
+    }
+
     if ( $options->{channel} && ! $options->{all} ) {
         $where->{'lineup.channel'} = $options->{channel};
     }

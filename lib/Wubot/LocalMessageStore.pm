@@ -95,7 +95,7 @@ sub store {
 }
 
 sub delete_seen {
-   my ( $self, $directory ) = @_;
+   my ( $self, $directory, $age ) = @_;
 
    my $dbfile = "$directory/queue.sqlite";
 
@@ -109,8 +109,12 @@ sub delete_seen {
        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
    }
 
-   $self->sqlite->{ $dbfile }->delete( 'message_queue', { seen => 1 } );
+   my $time = time;
+   if ( $age ) { $time -= $age }
+   $self->logger->fatal( "Deleting items from message queue that are older than: ", scalar localtime $time );
 
+   my $conditions = { seen => { '<' => $time } };
+   $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );
 }
 
 sub get {
@@ -159,7 +163,8 @@ sub get {
     # method to delete the item from the queue AFTER it has been
     # processed.
     if ( wantarray ) {
-        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => 1 }, { id => $entry->{id} }, $schema->{message_queue} ) };
+        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => time }, { id => $entry->{id} }, $schema->{message_queue} ) };
+        $self->logger->trace( "Marking message_queue id seen: $entry->{id}: ", time );
         return ( $message, $callback );
     }
 

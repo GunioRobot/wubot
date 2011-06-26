@@ -58,7 +58,9 @@ sub get_tasks {
 
                               $count++;
                               $task->{count} = $count;
-                              $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} ) );
+                              $task->{deadline_utime} = $task->{deadline};
+                              # fixme: due times are off by an hour?
+                              $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} - 3600 ) );
                               $task->{urgent} = 1;
                               push @tasks, $task;
                           },
@@ -77,7 +79,8 @@ sub get_tasks {
 
                               $count++;
                               $task->{count} = $count;
-                              $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );
+                              # fixme: due times are off by an hour?
+                              $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} - 3600 ) );
                               push @tasks, $task;
                           },
                       } );

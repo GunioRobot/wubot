@@ -46,7 +46,7 @@ sub write_cache {
 
     $self->cache_data( $cache );
 
-    $self->logger->info( "Writing cache file: $tempfile" );
+    $self->logger->debug( "Writing cache file: $tempfile" );
     YAML::DumpFile( $tempfile, $cache );
 
     my $cache_file = $self->cache_file;

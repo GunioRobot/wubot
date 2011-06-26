@@ -240,18 +240,20 @@ sub delete {
         $self->logger->logcroak( "ERROR: delete: conditions is not a hash ref" );
     }
 
-    my $delete = "DELETE FROM $table WHERE ";
+    my( $statement, @bind ) = $self->sql_abstract->delete( $table, $conditions );
 
-    my @conditions;
-    for my $key ( keys %{ $conditions } ) {
-        my $condition = $conditions->{$key};
-        $condition =~ s|'|''|g;
-        push @conditions, "$key = '$condition'";
-    }
+    $self->logger->trace( join( ", ", $statement, @bind ) );
 
-    $delete .= join( " AND ", @conditions );
+    my $sth = $self->dbh->prepare($statement) or confess "Can't prepare $statement\n";
 
-    $self->dbh->do( $delete );
+    my $rv;
+    eval {
+        $sth->execute(@bind);
+        1;
+    } or do {
+        $self->logger->logcroak( "can't execute the query: $statement: $@" );
+    };
+
 }
 
 

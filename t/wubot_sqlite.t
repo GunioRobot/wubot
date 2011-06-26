@@ -375,7 +375,27 @@ ok( -r $sqldb,
 
 }
 
+{
+    my $table = "test_table_10";
+    my $schema = { column1 => 'INT',
+                   column2 => 'VARCHAR(16)',
+               };
 
+    $sql->create_table( $table, $schema );
+    $sql->insert( $table, { column1 => 123, column2 => "foo1" }, $schema );
+    $sql->insert( $table, { column1 => 234, column2 => "foo2" }, $schema );
+    $sql->insert( $table, { column1 => 345, column2 => "foo3" }, $schema );
+
+    ok( $sql->delete( $table, { column1 => { '>' => 123 } } ),
+        "Deleting entries > 123"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ { column1 => 123, column2 => "foo1" } ],
+               "Checking that only one row left in the table"
+           );
+
+}
 
 ok( $sql->disconnect(),
     "Closing SQLite file"

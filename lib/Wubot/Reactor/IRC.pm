@@ -89,13 +89,13 @@ sub react {
 sub init {
     my ( $self, $config ) = @_;
 
-    $self->con->reg_cb( registered  => sub { $self->logger->info( "reactor connected to IRC" );
+    $self->con->reg_cb( registered  => sub { $self->logger->info( "reactor connected to IRC: $config->{server}:$config->{port}" );
                                              $self->con->send_srv("JOIN", $config->{channel} );
                                          }
                     );
 
     $self->con->reg_cb( disconnect  => sub { $self->logger->info( "disconnected" );
-                                             $self->initialized( undef );
+                                             #$self->initialized( undef );
                                          }
                     );
 

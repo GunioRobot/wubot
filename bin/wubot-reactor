@@ -40,9 +40,8 @@ my $maxcount   = 50;
 
 my $timelength = Wubot::TimeLength->new();
 
-# cleanup seen items in message queue on startup
 # todo: clean up seen items more than 24 hours old
-$messenger->delete_seen( $message_directory );
+$messenger->delete_seen( $message_directory, 60*60*24 );
 
 my $start_date = strftime( "%Y-%m-%d", localtime() );
 
@@ -89,7 +88,7 @@ my $timer = AnyEvent->timer( after    => 1,
                                  my $current_date = strftime( "%Y-%m-%d", localtime() );
                                  unless ( $start_date eq $current_date ) {
                                      $logger->info( "Date changed, cleaning out seen messages" );
-                                     $messenger->delete_seen( $message_directory );
+                                     $messenger->delete_seen( $message_directory, 60*60*24 );
                                  }
                              },
                          );

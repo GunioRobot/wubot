@@ -111,7 +111,7 @@ sub delete_seen {
 
    my $time = time;
    if ( $age ) { $time -= $age }
-   $self->logger->fatal( "Deleting items from message queue that are older than: ", scalar localtime $time );
+   $self->logger->warn( "Deleting items from message queue that are older than: ", scalar localtime $time );
 
    my $conditions = { seen => { '<' => $time } };
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );

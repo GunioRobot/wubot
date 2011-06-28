@@ -39,7 +39,8 @@ sub init {
     }
 
     unless ( -r $inputs->{config}->{device} ) {
-        $self->logger->logdie( "ERROR: device not readable: $inputs->{config}->{device}" );
+        $self->logger->error( "ERROR: device not readable: $inputs->{config}->{device}" );
+        return;
     }
 
     $self->device( $inputs->{config}->{device} );

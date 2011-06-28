@@ -1,0 +1,55 @@
+---
+delay: 3600
+dbfile: ~/wubot/sqlite/xml_tv.sql
+statement: 'select program.program_id as x_program_id, station.station_id as x_station_id, schedule.lastupdate as lastupdate, * from schedule left join program on schedule.program_id = program.program_id left join score on program.score_id = score.program_id left join lineup on schedule.station_id = lineup.station_id left join station on schedule.station_id = station.station_id WHERE score > 3 and series_id is not null and series_id != "";'
+
+react:
+    
+  - name: create epguides_url_title
+    plugin: TransformField
+    config:
+      source_field: title
+      target_field: epguides_url_title
+      regexp_search: \s+
+      regexp_replace: ''
+
+  - name: 'remove "the" from epguides_url_title'
+    plugin: TransformField
+    config:
+      source_field: epguides_url_title
+      regexp_search: '^The'
+
+  - name: 'remove special characters epguides_url_title'
+    plugin: TransformField
+    config:
+      source_field: epguides_url_title
+      regexp_search: '[^a-zA-Z0-9]'
+
+  - name: create epguides_url
+    plugin: Template
+    config:
+      target_field: epguides_url
+      template: http://epguides.com/{$epguides_url_title}/
+
+  - name: epguides template
+    plugin: Template
+    config:
+      template_file: /tmp/foo.tmpl
+      target_field: monitor_config
+
+  - name: epgduide config file path
+    plugin: Template
+    config:
+      template: /Users/wu/tmp/WebMatches-{$epguides_url_title}.yaml
+      target_field: epguide_config_path
+
+  - name: write epguides config
+    plugin: WriteFile
+    config:
+      source_field: monitor_config
+      path_field: epguide_config_path
+
+      
+
+
+      

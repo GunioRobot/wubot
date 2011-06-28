@@ -5,7 +5,7 @@ use Test::More 'no_plan';
 use YAML;
 
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
+Log::Log4perl->easy_init($INFO);
 
 use Wubot::Reactor;
 

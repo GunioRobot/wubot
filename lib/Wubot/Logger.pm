@@ -13,7 +13,7 @@ BEGIN {
     my $log_name = $0;
     $log_name =~ s|^.*\/||;
 
-    Log::Log4perl->init(\ <<"EOT");
+    my $conf = <<"EOT";
         log4perl.category = TRACE, Screen, Logfile
         log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
         log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
@@ -38,10 +38,14 @@ BEGIN {
 
 EOT
 
+    Log::Log4perl->init(\$conf);
+
     my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
 
     $logger->warn( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
     $logger->warn( "Logging Initialized..." );
+
+    $logger->trace( $conf );
 
 }
 

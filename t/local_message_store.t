@@ -11,6 +11,7 @@ Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
 
 use Wubot::LocalMessageStore;
+#use Wubot::Logger;
 
 my $hostname = hostname();
 $hostname =~ s|\..*$||;
@@ -268,8 +269,19 @@ $hostname =~ s|\..*$||;
         "Checking that 10 messages marked 'seen' in the queue"
     );
 
+    sleep 1;
+
+    ok( $messenger->delete_seen( $directory, 24*60*60 ),
+        "Deleting messages marked seen that are older than 24 hours old"
+    );
+
+    is( $messenger->get_count_seen( $directory ),
+        10,
+        "Checking that there are still 10 messages marked 'seen' in the queue"
+    );
+
     ok( $messenger->delete_seen( $directory ),
-        "Deleting messages marked seen"
+        "Deleting messages marked seen older than now"
     );
 
     is( $messenger->get_count_seen( $directory ),
@@ -287,6 +299,8 @@ $hostname =~ s|\..*$||;
         9,
         "Checking that last 9 messages marked 'seen' in the queue"
     );
+
+    sleep 1;
 
     ok( $messenger->delete_seen( $directory ),
         "Deleting messages marked seen"

@@ -173,6 +173,8 @@ sub insert_or_update {
 sub select {
     my ( $self, $options ) = @_;
 
+    $self->logger->trace( "SQL Select: ", YAML::Dump $options ) if $self->logger->is_trace();
+
     my $tablename = $options->{tablename};
     unless ( $tablename ) {
         $self->logger->logcroak( "ERROR: select called but no tablename provided" );
@@ -259,6 +261,8 @@ sub delete {
 
 sub get_prepared {
     my ( $self, $table, $schema, $command ) = @_;
+
+    $self->logger->trace( $command );
 
     my $sth1;
 

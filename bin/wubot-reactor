@@ -45,7 +45,7 @@ my $timelength = Wubot::TimeLength->new();
 $messenger->delete_seen( $message_directory, 60*60*24 );
 
 
-my $start_date = strftime( "%Y-%m-%d", localtime() );
+my $last_date = strftime( "%Y-%m-%d", localtime() );
 
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
@@ -80,7 +80,7 @@ my $timer = AnyEvent->timer( after    => 1,
                                  my $now = time;
                                  if ( $now - $lastupdate > 120 ) {
                                      my $time = $timelength->get_human_readable( $now - $lastupdate );
-                                     react( { subject    => "reactor has not received a message in $time",
+                                     react( { subject    => "reactor on $hostname has not received a message in $time",
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );
@@ -88,9 +88,10 @@ my $timer = AnyEvent->timer( after    => 1,
 
                                  # daily clean up of seen messages
                                  my $current_date = strftime( "%Y-%m-%d", localtime() );
-                                 unless ( $start_date eq $current_date ) {
+                                 unless ( $last_date eq $current_date ) {
                                      $logger->info( "Date changed, cleaning out seen messages" );
                                      $messenger->delete_seen( $message_directory, 60*60*24 );
+                                     $last_date = $current_date;
                                  }
                              },
                          );

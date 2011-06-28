@@ -17,12 +17,10 @@ ok( my $transformer = Wubot::Reactor::TransformField->new(),
 );
 
 is_deeply( $transformer->react( { a => 'abc def ghi' }, { source_field   => 'a',
-                                                          regexp_search  => '',
-                                                          regexp_replace => '',
                                                           target_field   => 'b',
                                                       } ),
-           { a => 'abc def ghi', b => 'abc def ghi' },
-           "transforming field 'a' into field 'b' with no change"
+           { a => 'abc def ghi' },
+           "transforming field with no search/replace is a nop"
        );
 
 is_deeply( $transformer->react( { a => 'abc def ghi' }, { source_field   => 'a',

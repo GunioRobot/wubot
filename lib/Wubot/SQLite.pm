@@ -173,12 +173,17 @@ sub insert_or_update {
 sub select {
     my ( $self, $options ) = @_;
 
-    $self->logger->trace( "SQL Select: ", YAML::Dump $options ) if $self->logger->is_trace();
-
     my $tablename = $options->{tablename};
     unless ( $tablename ) {
         $self->logger->logcroak( "ERROR: select called but no tablename provided" );
     }
+
+    if ( $self->logger->is_trace() ) {
+        my $log_text = YAML::Dump $options;
+        $self->logger->trace( "SQL Select: $log_text" );
+    }
+
+
     my $fields    = $options->{fields}     || '*';
     my $where     = $options->{where};
     my $order     = $options->{order};

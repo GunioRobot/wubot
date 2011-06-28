@@ -53,14 +53,14 @@ sub check {
 
     my $regexp = $config->{regexp};
 
-    print "REGEXP: $regexp\n";
+    $self->logger->debug( "REGEXP: $regexp" );
 
   MATCH:
     while ( $content =~ m|$regexp|mg ) {
 
         my $match = $1;
 
-        print "MATCH: $match\n";
+        $self->logger->trace( "MATCH: $match" );
 
         if ( $self->cache_is_seen( $cache, $match ) ) {
             $self->logger->trace( "Already seen: ", $match );

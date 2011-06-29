@@ -35,7 +35,9 @@ sub check {
         $ua->proxy(['https'], $config->{proxy} );
     }
 
-    my $req = new HTTP::Request GET => $config->{url};
+	my $can_accept = HTTP::Message::decodable;
+
+    my $req = new HTTP::Request GET => $config->{url}, ['Accept-Encoding' => $can_accept];
 
     if ( $config->{user} && $config->{pass} ) {
         $req->authorization_basic( $config->{user}, $config->{pass} );
@@ -47,7 +49,7 @@ sub check {
         return { react => { 'failure getting updates: ' . $res->status_line } };
     }
 
-    my $content = $res->content;
+	my $content = $res->decoded_content;
 
     my @react;
 

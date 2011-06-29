@@ -1,8 +1,26 @@
 Revision history for Wubot
 
+0.0.3 Wed Jun 29, 2011  1:20 am
+
+  - Added a prototype Twitter plugin with OAuth 
+
+  - WebMatches support for compression, thanks to Erik Meade
+
+  - SerialPort failure to find serial port device on startup is non-fatal
+
+  - resolve bug in Wubot::SQLite::select() method, introduced in 0.0.2
+
+  - wubot-monitor - clean out seen messages from reactor queue
+
+
 0.0.2 Mon Jun 27, 2011 10:50 pm
-      updating dist-zilla config
+
+  - updating dist-zilla config
+
 
 0.0.1  Mon Jun 27, 2011 10:50 pm
-       Initial release.
+
+  - first tagged release
+
+  - all enabled test cases now passing
 

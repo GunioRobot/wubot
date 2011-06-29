@@ -178,11 +178,10 @@ sub select {
         $self->logger->logcroak( "ERROR: select called but no tablename provided" );
     }
 
-    if ( $self->logger->is_trace() ) {
-        my $log_text = YAML::Dump $options;
-        $self->logger->trace( "SQL Select: $log_text" );
-    }
-
+    # if ( $self->logger->is_trace() ) {
+    #     my $log_text = YAML::Dump $options;
+    #     $self->logger->trace( "SQL Select: $log_text" );
+    # }
 
     my $fields    = $options->{fields}     || '*';
     my $where     = $options->{where};

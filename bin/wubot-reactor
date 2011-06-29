@@ -41,7 +41,7 @@ my $maxcount   = 50;
 my $timelength = Wubot::TimeLength->new();
 
 # todo: send a message on date change, reactor rule to clean sql db
-# todo: clean up seen items more than 24 hours old
+# clean up seen items more than 24 hours old
 $messenger->delete_seen( $message_directory, 60*60*24 );
 
 

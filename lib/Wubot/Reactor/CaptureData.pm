@@ -14,9 +14,19 @@ sub react {
 
     return $message unless $field_data;
 
-    $field_data =~ m|$config->{regexp}|;
+    my $regexp;
+    if ( $config->{regexp_field} ) {
+        $regexp = $message->{ $config->{regexp_field} };
+    }
+    elsif ( $config->{regexp} ) {
+        $regexp = $config->{regexp};
+    }
 
-    $message->{ $config->{target_field} } = $1;
+    $field_data =~ m|$regexp|;
+
+    my $target_field = $config->{target_field} || $config->{source_field};
+
+    $message->{ $target_field } = $1;
 
     return $message;
 }

@@ -3,8 +3,11 @@ use strict;
 use warnings;
 
 use AnyEvent;
+use FindBin;
 use Log::Log4perl;
 use Sys::Hostname;
+
+use lib "$FindBin::Bin/../lib";
 
 use Wubot::Logger;
 use Wubot::SQLite;

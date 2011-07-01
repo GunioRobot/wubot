@@ -12,10 +12,13 @@ use Date::ICal;
 use Date::Manip;
 use DateTime;
 use Digest::MD5 qw( md5_hex );
+use FindBin;
 use POSIX qw(strftime);
 use URI::Escape;
 use XML::RSS;
 use YAML;
+
+use lib "$FindBin::Bin/../lib";
 
 use Wubot::Logger;
 use Wubot::SQLite;

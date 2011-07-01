@@ -6,10 +6,13 @@ use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 use AnyEvent;
 use AnyEvent::Watchdog::Util;
 use File::Path;
+use FindBin;
 use Getopt::Long;
 use Log::Log4perl qw(:easy);
 use POSIX qw(strftime);
 use YAML;
+
+use lib "$FindBin::Bin/../lib";
 
 use Wubot::Logger;
 my $logger = Log::Log4perl::get_logger( 'default' );

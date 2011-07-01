@@ -68,9 +68,9 @@ sub check {
 
         $self->cache_mark_seen( $cache, $status->{text} );
 
-        push @react, { subject => join( ": ", $status->{user}->{screen_name}, $status->{text} ),
-                       text    => $status->{text},
-                       user    => $status->{user}->{screen_name},
+        push @react, { subject  => join( ": ", $status->{user}->{screen_name}, $status->{text} ),
+                       text     => $status->{text},
+                       username => $status->{user}->{screen_name},
                    };
     }
 

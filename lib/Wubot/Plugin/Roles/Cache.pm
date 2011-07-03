@@ -15,18 +15,38 @@ has 'cache_data' => ( is => 'rw',
                       lazy => 1,
                       default => sub {
                           my $self = shift;
-
-                          $self->logger->debug( "Reading cache: ", $self->cache_file );
-
-                          if ( ! -r $self->cache_file ) {
-                              $self->logger->debug( "Cache file not found: ", $self->cache_file );
-                              return {};
-                          }
-
-                          return YAML::LoadFile( $self->cache_file );
-
+                          return $self->read_cache();
                       },
                   );
+
+sub read_cache {
+    my ( $self ) = @_;
+
+    $self->logger->debug( "Reading cache: ", $self->cache_file );
+
+    if ( ! -r $self->cache_file ) {
+        $self->logger->debug( "Cache file not found: ", $self->cache_file );
+        return {};
+    }
+
+    my $yaml;
+
+    eval {                      # try
+        $yaml = YAML::LoadFile( $self->cache_file );
+        1;
+    } or do {                   # catch
+        my $error = $@;
+
+        $self->logger->error( "ERROR: invalid cache file: ", $self->cache_file );
+        $self->logger->error( $error );
+        my $corrupt_cache_file = join( ".", $self->cache_file, "broken" );
+        $self->logger->error( "Renaming broken cache file to: $corrupt_cache_file" );
+        system( "mv", $self->cache_file, $corrupt_cache_file );
+        $yaml = {};
+    };
+
+    return $yaml;
+}
 
 sub get_cache {
     my ( $self ) = @_;
@@ -56,6 +76,8 @@ sub write_cache {
     }
 
     system( "mv", $tempfile, $cache_file );
+
+    return 1;
 }
 
 sub cache_mark_seen {
@@ -63,7 +85,6 @@ sub cache_mark_seen {
 
     $self->logger->trace( "Cache seen: $id" );
     $cache->{seen}->{$id} = time;
-
 }
 
 sub cache_is_seen {

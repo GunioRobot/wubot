@@ -57,7 +57,9 @@ sub react {
         $notification->{identifier} = $message->{growl_id};
     }
     else {
-        $notification->{identifier} = $message->{key} || $subject;
+        my $id = $message->{key} || $subject;
+
+        $notification->{identifier} = join( ":", $id, $sticky );;
     }
 
     $notification->{results} = Growl::Tiny::notify( $notification );

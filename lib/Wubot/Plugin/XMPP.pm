@@ -61,6 +61,9 @@ sub check {
             # convert to text
             my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
 
+            # cancel the forward flag when picking up a message
+            delete $message->{forward};
+
             # send the message using YAML
             $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
 

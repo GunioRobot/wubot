@@ -3,12 +3,20 @@ use Moose;
 
 # VERSION
 
-use Encode qw(encode decode);
-use LWP::UserAgent;
 use XML::Feed;
+
+use Wubot::Util::WebFetcher;
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
+
+has 'fetcher' => ( is  => 'ro',
+                   isa => 'Wubot::Util::WebFetcher',
+                   lazy => 1,
+                   default => sub {
+                       return Wubot::Util::WebFetcher->new();
+                   },
+               );
 
 sub check {
     my ( $self, $inputs ) = @_;
@@ -16,35 +24,17 @@ sub check {
     my $config = $inputs->{config};
     my $cache  = $inputs->{cache};
 
-    my $ua = new LWP::UserAgent;
-
-    my $timeout = $config->{timeout} || 15;
-    $ua->timeout( $timeout );
-
-    $ua->agent("Mozilla/6.0");
-
-     # set proxy
-    if ( $config->{proxy} ) {
-        $ua->proxy(['http'],  $config->{proxy} );
-        $ua->proxy(['https'], $config->{proxy} );
-    }
-
-    my $req = new HTTP::Request GET => $config->{url};
-
-    if ( $config->{user} && $config->{pass} ) {
-        $req->authorization_basic( $config->{user}, $config->{pass} );
-    }
-
-    my $res = $ua->request( $req );
-
-    unless ( $res->is_success ) {
-        my $error = $res->status_line || "no error text";
+    my $content;
+    eval {                          # try
+        $content = $self->fetcher->fetch( $config->{url}, $config );
+        1;
+    } or do {                       # catch
+        my $error = $@;
         my $subject = "Request failure: $error";
         $self->logger->error( $self->key . ": $subject" );
         return { cache => $cache, react => { subject => $subject } };
-    }
+    };
 
-    my $content = $res->content;
     my $feed;
     eval { $feed = XML::Feed->parse( \$content ) };
 

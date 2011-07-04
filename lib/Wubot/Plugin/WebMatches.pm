@@ -3,10 +3,19 @@ use Moose;
 
 # VERSION
 
-use LWP::UserAgent;
+use Wubot::Util::WebFetcher;
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
+
+
+has 'fetcher' => ( is  => 'ro',
+                   isa => 'Wubot::Util::WebFetcher',
+                   lazy => 1,
+                   default => sub {
+                       return Wubot::Util::WebFetcher->new();
+                   },
+               );
 
 sub check {
     my ( $self, $inputs ) = @_;
@@ -14,42 +23,16 @@ sub check {
     my $config = $inputs->{config};
     my $cache  = $inputs->{cache};
 
-    my $ua = new LWP::UserAgent;
-
-    if ( $config->{timeout} ) {
-        $ua->timeout( $config->{timeout} );
-    }
-    else {
-        $ua->timeout(20);
-    }
-
-    if ( $config->{agent} ) {
-        $ua->agent( $config->{agent} );
-    }
-    else {
-        $ua->agent("Mozilla/6.0");
-    }
-
-    if ( $config->{proxy} ) {
-        $ua->proxy(['http'],  $config->{proxy} );
-        $ua->proxy(['https'], $config->{proxy} );
-    }
-
-	my $can_accept = HTTP::Message::decodable;
-
-    my $req = new HTTP::Request GET => $config->{url}, ['Accept-Encoding' => $can_accept];
-
-    if ( $config->{user} && $config->{pass} ) {
-        $req->authorization_basic( $config->{user}, $config->{pass} );
-    }
-
-    my $res = $ua->request($req);
-
-    unless ($res->is_success) {
-        return { react => { 'failure getting updates: ' . $res->status_line } };
-    }
-
-	my $content = $res->decoded_content;
+    my $content;
+    eval {                          # try
+        $content = $self->fetcher->fetch( $config->{url}, $config );
+        1;
+    } or do {                       # catch
+        my $error = $@;
+        my $subject = "Request failure: $error";
+        $self->logger->error( $self->key . ": $subject" );
+        return { cache => $cache, react => { subject => $subject } };
+    };
 
     my @react;
 

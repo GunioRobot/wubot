@@ -47,63 +47,11 @@ my $message_store = Wubot::LocalMessageStore->new();
 my $message_directory = join( "/", $ENV{HOME}, 'wubot', 'reactor' );
 $message_store->delete_seen( $message_directory, 60*60*24 );
 
-
 my $count;
 
 PLUGIN:
 for my $plugin ( $config->get_plugins() ) {
-    $logger->debug( "Creating check instance for plugin: $plugin" );
-
-    my $plugin_config = $config->get_plugin_config( $plugin );
-
-    if ( exists $plugin_config->{enabled} ) {
-        unless ( $plugin_config->{enabled} ) {
-            $logger->warn( "Plugin disabled: $plugin" );
-            next PLUGIN;
-        }
-    }
-
-    $plugin_objs->{ $plugin }
-        = Wubot::Check->new( { class         => $plugin_config->{plugin},
-                               cache_file    => "$cache_directory/$plugin.yaml",
-                               key           => $plugin,
-                               reactor_queue => $message_store,
-                           } );
-
-    $plugin_objs->{ $plugin }->init( $plugin_config );
-
-    my $now        = time;
-    my $delay      = $plugin_config->{delay} || 1;
-
-    if ( $delay =~ m|\w| ) {
-        $delay = $timelength->get_seconds( $delay );
-        $plugin_config->{delay} = $delay;
-    }
-
-    my $cache = $plugin_objs->{ $plugin }->instance->get_cache;
-
-    my $lastupdate = 0;
-    if ( $cache && $cache->{lastupdate} ) {
-        $lastupdate = $plugin_objs->{ $plugin }->instance->get_cache->{lastupdate};
-    }
-
-    my $schedule_time;
-    if ( ! $lastupdate && $plugin_config->{rand} ) {
-        $schedule_time = $now + int rand( $plugin_config->{rand} );
-    }
-    elsif ( $lastupdate + $delay > $now ) {
-        $schedule_time = $lastupdate + $delay + int rand( $plugin_config->{rand} || 0 );
-    }
-    else {
-        $schedule_time = $now;
-    }
-
-    my $diff = $schedule_time - $now;
-    $logger->debug( "Scheduling next run of $plugin in $diff seconds" );
-
-    push @{ $schedule->{$schedule_time} }, $plugin;
-
-    $count++;
+    create_plugin_instance( $plugin );
 }
 
 if ( $count ) {
@@ -177,3 +125,60 @@ $logger->error( "Running..." );
 $end->recv;
 $logger->error( "Ended..." );
 
+
+sub create_plugin_instance {
+    my ( $plugin ) = @_;
+
+    $logger->debug( "Creating check instance for plugin: $plugin" );
+
+    my $plugin_config = $config->get_plugin_config( $plugin );
+
+    if ( exists $plugin_config->{enabled} ) {
+        unless ( $plugin_config->{enabled} ) {
+            $logger->warn( "Plugin disabled: $plugin" );
+            return;
+        }
+    }
+
+    $plugin_objs->{ $plugin }
+        = Wubot::Check->new( { class         => $plugin_config->{plugin},
+                               cache_file    => "$cache_directory/$plugin.yaml",
+                               key           => $plugin,
+                               reactor_queue => $message_store,
+                           } );
+
+    $plugin_objs->{ $plugin }->init( $plugin_config );
+
+    my $now        = time;
+    my $delay      = $plugin_config->{delay} || 1;
+
+    if ( $delay =~ m|\w| ) {
+        $delay = $timelength->get_seconds( $delay );
+        $plugin_config->{delay} = $delay;
+    }
+
+    my $cache = $plugin_objs->{ $plugin }->instance->get_cache;
+
+    my $lastupdate = 0;
+    if ( $cache && $cache->{lastupdate} ) {
+        $lastupdate = $plugin_objs->{ $plugin }->instance->get_cache->{lastupdate};
+    }
+
+    my $schedule_time;
+    if ( ! $lastupdate && $plugin_config->{rand} ) {
+        $schedule_time = $now + int rand( $plugin_config->{rand} );
+    }
+    elsif ( $lastupdate + $delay > $now ) {
+        $schedule_time = $lastupdate + $delay + int rand( $plugin_config->{rand} || 0 );
+    }
+    else {
+        $schedule_time = $now;
+    }
+
+    my $diff = $schedule_time - $now;
+    $logger->debug( "Scheduling next run of $plugin in $diff seconds" );
+
+    push @{ $schedule->{$schedule_time} }, $plugin;
+
+    $count++;
+}

@@ -71,6 +71,63 @@ my $timelength = Wubot::TimeLength->new();
 use Wubot::Util::Tasks;
 my $taskutil   = Wubot::Util::Tasks->new();
 
+get '/graphs' => sub {
+    my $self = shift;
+
+    my $graphs = [
+        { sensors => [
+            "http://wubot/wubot/graphs/Coopduino.now.png",
+            "http://wubot/wubot/graphs/Coopduino.png",
+            "http://wubot/wubot/graphs/Coopduino-week.png",
+            "http://wubot/wubot/graphs/growbot-moisture/growbot-moisture-daily.png",
+        ] },
+        { external => [
+            "http://wubot/wubot/graphs/WebFetch-qwest/WebFetch-qwest-daily.png",
+            "http://wubot/wubot/graphs/FileRegexp-mail-rootbsd/FileRegexp-mail-rootbsd-daily.png",
+            "http://wubot/wubot/graphs/Ping-google-rootbsd/Ping-google-rootbsd-daily.png",
+            "http://wubot/wubot/graphs/Ping-google/Ping-google-daily.png",
+            "http://wubot/wubot/graphs/Ping.png",
+            "http://wubot/wubot/graphs/Ping-router/Ping-router-daily.png",
+        ] },
+        { load => [
+            "http://wubot/wubot/graphs/Uptime-navi/Uptime-navi-daily.png",
+            "http://wubot/wubot/graphs/Uptime-homework/Uptime-homework-daily.png",
+            "http://wubot/wubot/graphs/Uptime-bsd-01/Uptime-bsd-01-daily.png",
+            "http://wubot/wubot/graphs/Uptime-bsd-02/Uptime-bsd-02-daily.png",
+            "http://wubot/wubot/graphs/Uptime-rootbsd/Uptime-rootbsd-daily.png",
+            "http://wubot/wubot/graphs/Uptime-geekfarm/Uptime-geekfarm-daily.png",
+            "http://wubot/wubot/graphs/Uptime-navi2/Uptime-navi2-daily.png",
+        ] },
+        { idle => [
+            "http://wubot/wubot/graphs/OsxIdle-navi/OsxIdle-navi-daily.png",
+            "http://wubot/wubot/graphs/OsxIdle-navi/OsxIdle-navi-weekly.png",
+            "http://wubot/wubot/graphs/WorkHours-navi/WorkHours-navi-daily.png",
+            "http://wubot/wubot/graphs/WorkHours-navi/WorkHours-navi-weekly.png",
+        ] },
+    ];
+
+    my $search_key = $self->param( 'key' );
+
+    my @nav;
+    my @png;
+    for my $graph ( @{ $graphs } ) {
+        my ( $key ) = keys %{ $graph };
+        push @nav, $key;
+
+        if ( $search_key && $search_key eq $key ) {
+            for my $png ( @{ $graph->{$key} } ) {
+                push @png, $png;
+            }
+        }
+    }
+
+    $self->stash( 'nav', \@nav );
+    $self->stash( 'images', \@png );
+
+    $self->render( template => 'graphs' );
+
+};
+
 get '/tasks' => sub {
     my $self = shift;
 

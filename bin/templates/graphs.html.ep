@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>TV Schedule</title>
+  </head>
+  <body bgcolor='black'>
+
+    |
+    <% for my $key ( @$nav ) { %>
+      <a href='?key=<%= $key %>'><%= $key %></a> |
+    <% } %>
+    <hr>
+
+
+    <% for my $graph ( @$images ) { %>
+      <img src="<%= $graph %>">
+    <% } %>
+    
+  </body>
+
+</html>
+

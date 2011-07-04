@@ -12,6 +12,8 @@ use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML::XS;
 
+use Wubot::Reactor;
+
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,
@@ -35,6 +37,9 @@ has 'sqlite'  => ( is => 'ro',
                    default => sub { {} },
                );
 
+has 'reactor' => ( is => 'ro',
+                   default => undef,
+               );
 
 my $schema = { message_queue => { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
                                   date     => 'VARCHAR(32)',
@@ -43,8 +48,37 @@ my $schema = { message_queue => { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT
                                   hostname => 'VARCHAR(32)',
                                   seen     => 'INTEGER',
                               }
-           };;
+           };
 
+sub initialize_db {
+    my ( $self, $directory ) = @_;
+
+    my $dbfile = "$directory/queue.sqlite";
+
+    $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+
+    $self->delete_seen( $directory, 24*60*60 );
+
+    my $length = $self->get_count_seen( $directory );
+
+    if ( $length ) {
+
+        if ( $length > 20000 ) {
+            $self->logger->error( "queue length: $length: $dbfile" );
+        }
+        else {
+            $self->logger->warn( "queue length: $length: $dbfile" );
+        }
+
+        # if ( $self->reactor ) {
+        #     $self->reactor->react( { subject => "seen queue length: $length",
+        #                              file    => $dbfile,
+        #                              length  => $length,
+        #                          } );
+        # }
+    }
+
+}
 
 sub store {
     my ( $self, $message, $directory ) = @_;
@@ -53,7 +87,7 @@ sub store {
 
     # if we don't have a sqlite object for this file, create one now
     unless ( $self->sqlite->{ $dbfile } ) {
-        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+        $self->initialize_db( $directory );
     }
 
     unless ( $message->{checksum} ) {
@@ -104,9 +138,8 @@ sub delete_seen {
        return;
    }
 
-   # if we don't have a sqlite object for this file, create one now
    unless ( $self->sqlite->{ $dbfile } ) {
-       $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+       $self->initialize_db( $directory );
    }
 
    my $time = time;
@@ -129,7 +162,7 @@ sub get {
 
     # if we don't have a sqlite object for this file, create one now
     unless ( $self->sqlite->{ $dbfile } ) {
-        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+        $self->initialize_db( $directory );
     }
 
     my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT * FROM message_queue WHERE seen IS NULL ORDER BY id LIMIT 1" );
@@ -184,7 +217,7 @@ sub get_count_seen {
 
     # if we don't have a sqlite object for this file, create one now
     unless ( $self->sqlite->{ $dbfile } ) {
-        $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+        $self->initialize_db( $directory );
     }
 
     my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT count(*) FROM message_queue WHERE seen IS NOT NULL" );

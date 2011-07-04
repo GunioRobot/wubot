@@ -40,6 +40,7 @@ my $end = AnyEvent->condvar;
 
 my $lastupdate = time;
 my $maxcount   = 50;
+my $loopcounter;
 
 my $timelength = Wubot::TimeLength->new();
 
@@ -48,6 +49,8 @@ my $last_date = strftime( "%Y-%m-%d", localtime() );
 my $timer = AnyEvent->timer( after    => 1,
                              interval => 5,
                              cb       => sub {
+
+                                 $loopcounter++;
 
                                  my $count = 0;
 
@@ -75,13 +78,15 @@ my $timer = AnyEvent->timer( after    => 1,
                                      }
                                  }
 
-                                 my $now = time;
-                                 if ( $now - $lastupdate > 120 ) {
-                                     my $time = $timelength->get_human_readable( $now - $lastupdate );
-                                     react( { subject    => "reactor on $hostname has not received a message in $time",
-                                              key        => 'wubot-reactor',
-                                              lastupdate => $now,
-                                          } );
+                                 if ( $loopcounter % 12 == 0 ) {
+                                     my $now = time;
+                                     if ( $now - $lastupdate > 120 ) {
+                                         my $time = $timelength->get_human_readable( $now - $lastupdate );
+                                         react( { subject    => "reactor on $hostname has not received a message in $time",
+                                                  key        => 'wubot-reactor',
+                                                  lastupdate => $now,
+                                              } );
+                                     }
                                  }
                              },
                          );

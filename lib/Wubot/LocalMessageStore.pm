@@ -59,15 +59,18 @@ sub initialize_db {
 
     $self->delete_seen( $directory, 24*60*60 );
 
-    my $length = $self->get_count_seen( $directory );
+    my ( $seen, $unseen, $total ) = $self->get_counts( $directory );
 
-    if ( $length ) {
+    if ( $total ) {
 
-        if ( $length > 20000 ) {
-            $self->logger->error( "queue length: $length: $dbfile" );
+        if ( $total > 100000 ) {
+            $self->logger->fatal( "queue length: $total ($seen/$unseen): $dbfile" );
+        }
+        elsif ( $total > 30000 ) {
+            $self->logger->error( "queue length: $total ($seen/$unseen): $dbfile" );
         }
         else {
-            $self->logger->warn( "queue length: $length: $dbfile" );
+            $self->logger->warn( "queue length: $total ($seen/$unseen): $dbfile" );
         }
 
         # if ( $self->reactor ) {
@@ -205,7 +208,7 @@ sub get {
     return $message;
 }
 
-sub get_count_seen {
+sub get_counts {
     my ( $self, $directory ) = @_;
 
     my $dbfile = "$directory/queue.sqlite";
@@ -220,9 +223,13 @@ sub get_count_seen {
         $self->initialize_db( $directory );
     }
 
-    my ( $entry ) = $self->sqlite->{ $dbfile }->query( "SELECT count(*) FROM message_queue WHERE seen IS NOT NULL" );
+    my ( $seen   ) = $self->sqlite->{ $dbfile }->query( "SELECT count(*) FROM message_queue WHERE seen IS NOT NULL" );
+    my ( $unseen ) = $self->sqlite->{ $dbfile }->query( "SELECT count(*) FROM message_queue WHERE seen IS NULL" );
 
-    return $entry->{'count(*)'} || 0;
+    my $seen_count   = $seen->{'count(*)'}   || 0;
+    my $unseen_count = $unseen->{'count(*)'} || 0;
+
+    return ( $seen_count, $unseen_count, $seen_count + $unseen_count );
 }
 
 sub checksum {

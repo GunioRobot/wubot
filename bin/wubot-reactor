@@ -43,11 +43,6 @@ my $maxcount   = 50;
 
 my $timelength = Wubot::TimeLength->new();
 
-# todo: send a message on date change, reactor rule to clean sql db
-# clean up seen items more than 24 hours old
-$messenger->delete_seen( $message_directory, 60*60*24 );
-
-
 my $last_date = strftime( "%Y-%m-%d", localtime() );
 
 my $timer = AnyEvent->timer( after    => 1,
@@ -87,14 +82,6 @@ my $timer = AnyEvent->timer( after    => 1,
                                               key        => 'wubot-reactor',
                                               lastupdate => $now,
                                           } );
-                                 }
-
-                                 # daily clean up of seen messages
-                                 my $current_date = strftime( "%Y-%m-%d", localtime() );
-                                 unless ( $last_date eq $current_date ) {
-                                     $logger->info( "Date changed, cleaning out seen messages" );
-                                     $messenger->delete_seen( $message_directory, 60*60*24 );
-                                     $last_date = $current_date;
                                  }
                              },
                          );

@@ -43,10 +43,6 @@ my $timelength = Wubot::TimeLength->new();
 # each create their own
 my $message_store = Wubot::LocalMessageStore->new();
 
-# clean up seen items more than 24 hours old
-my $message_directory = join( "/", $ENV{HOME}, 'wubot', 'reactor' );
-$message_store->delete_seen( $message_directory, 60*60*24 );
-
 my $count;
 
 PLUGIN:
@@ -105,10 +101,6 @@ my $timer = AnyEvent->timer( after    => 1,
                                  my $current_date = strftime( "%Y-%m-%d", localtime() );
                                  unless ( $start_date eq $current_date ) {
                                      $logger->warn( "Date changed" );
-
-                                     # todo: clean up seen items more than 24 hours old
-                                     $logger->warn( "Cleaning up old 'seen' items in message db" );
-                                     $message_store->delete_seen( $message_directory, 60*60*24 );
 
                                      $logger->warn( "Restarting..." );
                                      AnyEvent::Watchdog::Util::restart;

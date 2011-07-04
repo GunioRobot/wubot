@@ -26,7 +26,7 @@ sub check {
 
     my $uptime_output = `$inputs->{config}->{command}`;
 
-    $uptime_output =~ m/load averages?\: ([\d\.]+)\,\s+([\d\.]+),\s+([\d\.]+)/;
+    $uptime_output =~ m/load averages?\: ([\d\.]+)\,?\s+([\d\.]+),?\s+([\d\.]+)/;
 
     my ( $load01, $load05, $load15 ) = ( $1, $2, $3 );
 

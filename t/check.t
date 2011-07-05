@@ -48,14 +48,12 @@ my $cache_file = "$tempdir/storage.yaml";
 }
 
 {
-    my @react;
-
-    my $tempdir1 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
                                          cache_file        => $cache_file,
                                          key               => 'TestCase-testcase',
-                                         reactor_queue_dir => $tempdir1,
+                                         reactor_queue_dir => $tempdir,
                                      } ),
         "Creating a new check instance"
     );
@@ -104,7 +102,7 @@ my $cache_file = "$tempdir/storage.yaml";
          'Checking that param3 exists in cache file'
      );
 
-    my $queue_contents = $check->reactor_queue->get( $tempdir1 );
+    my $queue_contents = $check->reactor_queue->get( $tempdir );
     is( $queue_contents->{param2},
         "value2",
         "Checking that param1 set to value1 in queue"
@@ -122,10 +120,56 @@ my $cache_file = "$tempdir/storage.yaml";
         "Checking key from queue contents"
     );
 
-    # is( $queue_contents->{checksum},
-    #     "d63d6fe72528843017fb99c108239483",
-    #     "Checking key from queue contents"
-    # );
+    ok( exists $queue_contents->{checksum},
+        "Checking that checksum found in message: $queue_contents->{checksum}"
+    );
+
+}
+
+
+
+{
+    my $react = [ { name => 'test reaction',
+                    plugin => 'SetField',
+                    config => {
+                        field => 'abc',
+                        value => 'xyz',
+                    },
+                },
+              ];
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
+                                         cache_file        => $cache_file,
+                                         key               => 'TestCase-testcase',
+                                         reactor_queue_dir => $tempdir,
+                                     } ),
+        "Creating a new check instance"
+    );
+
+    ok( my $results = $check->check( { testparam => 'testvalue',
+                                       react     => $react,
+                                   },  ),
+        "Calling check() method and passing new config"
+    );
+    is( $results->{cache}->{testparam},
+        'testvalue',
+        "Checking that param1 is still set in cache data"
+    );
+    is( $results->{react}->[0]->{testparam},
+        'testvalue',
+        "Checking that testparam set to testvalue"
+    );
+    is( $results->{react}->[0]->{abc},
+        'xyz',
+        "Checking that reactor config set 'abc' to 'xyz'"
+    );
+
+    my $queue_contents = $check->reactor_queue->get( $tempdir );
+    is( $queue_contents->{testparam},
+        "testvalue",
+        "Checking that testparam message added to queue"
+    );
 
 }
 

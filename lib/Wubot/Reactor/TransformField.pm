@@ -3,7 +3,6 @@ use Moose;
 
 # VERSION
 
-use HTML::Strip;
 use YAML;
 
 sub react {
@@ -14,9 +13,17 @@ sub react {
     my $regexp_search = $config->{regexp_search};
     return $message unless $regexp_search;
 
-    my $regexp_replace = $config->{regexp_replace} || "";
+    my $regexp_replace = exists $config->{regexp_replace} ? $config->{regexp_replace} : "";
 
-    $text =~ s|$regexp_search|$regexp_replace|g;
+    my @items = ( $text =~ /$regexp_search/g );
+
+    $text =~ s|$regexp_search|$regexp_replace|eg;
+
+    for( reverse 0 .. $#items ){ 
+        my $n = $_ + 1; 
+        $text =~ s/\\$n/${items[$_]}/g ;
+        $text =~ s/\$$n/${items[$_]}/g ;
+    }
 
     $message->{ $config->{target_field}||$config->{source_field} } = $text;
 

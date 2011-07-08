@@ -58,3 +58,26 @@ is_deeply( $transformer->react( { a => 'abc def ghi def' }, { source_field   => 
            "transforming with multiple replacements"
        );
 
+is_deeply( $transformer->react( { a => '0123' }, { source_field   => 'a',
+                                                   regexp_search  => '^0+',
+                                               } ),
+           { a => '123' },
+           "trimming leading zero"
+       );
+
+is_deeply( $transformer->react( { a => '5' }, { source_field    => 'a',
+                                                regexp_search   => '^',
+                                                regexp_replace  => '0',
+                                            } ),
+           { a => '05' },
+           "add leading zero"
+       );
+
+is_deeply( $transformer->react( { a => '5' }, { source_field    => 'a',
+                                                regexp_search   => '^(.)$',
+                                                regexp_replace  => '0$1',
+                                            } ),
+           { a => '05' },
+           "capture data and reference captured data in replace string"
+       );
+

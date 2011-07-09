@@ -12,71 +12,168 @@ use Wubot::Reactor::State;
 Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
 
-ok( my $state = Wubot::Reactor::State->new(),
-    "Creating new State reactor object"
-);
+{
+    ok( my $state = Wubot::Reactor::State->new(),
+        "Creating new State reactor object"
+    );
 
-is_deeply( $state->react( { key => 'TestCase', a => 5 }, { field => 'a' } ),
-           { key           => 'TestCase',
-             a             => 5,
-             subject       => 'TestCase: a changed: 0 => 5',
-             state_change  => 5,
-             state_init    => 1,
-             state_changed => 1,
-         },
-           "Checking that state change detected and recorded on startup"
-       );
+    is_deeply( $state->react( { key => 'TestCase', a => 5 }, { field => 'a' } ),
+               { key           => 'TestCase',
+                 a             => 5,
+                 state_init    => 1,
+             },
+               "Checking that no state change detected on startup, and state_init flag set"
+           );
+}
 
-is_deeply( $state->react( { key => 'TestCase', a => 5 }, { field => 'a' } ),
-           { key           => 'TestCase',
-             a             => 5,
-         },
-           "Checking that unchanged state not recorded"
-       );
+my $cases = [
+    { desc   => "checking with no state change, 2 times",
+      config => { field => 'a', change => 1 },
+      cases  => [ { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 5 } ],
+      expect => { key           => 'TestCase',
+                  a             => 5,
+              },
+  },
+    { desc   => "checking with no state change, 3 times",
+      config => { field => 'a', change => 1 },
+      cases  => [ { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 5 } ],
+      expect => { key           => 'TestCase',
+                  a             => 5,
+              },
+  },
+    { desc   => "checking state for change on decrease",
+      config => { field => 'a', change => 1 },
+      cases  => [ { key => 'TestCase', a => 8 }, { key => 'TestCase', a => 3 } ],
+      expect => { key           => 'TestCase',
+                  a             => 3,
+                  subject       => 'TestCase: a changed: 8 => 3',
+                  state_change  => -5,
+                  state_changed => 1,
+              },
+  },
+    { desc   => "checking state for change on increase",
+      config => { field => 'a', change => 1 },
+      cases  => [ { key => 'TestCase', a => 3 }, { key => 'TestCase', a => 8 } ],
+      expect => { key           => 'TestCase',
+                  a             => 8,
+                  subject       => 'TestCase: a changed: 3 => 8',
+                  state_change  => 5,
+                  state_changed => 1,
+              },
+  },
+    { desc   => "checking insignificant state change, within threshold 5",
+      config => { field => 'a', change => 5 },
+      cases  => [ { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 3 } ],
+      expect => { key           => 'TestCase',
+                  a             => 3,
+                  state_change  => -2,
+              },
+  },
+    { desc   => "checking insignificant state change, within threshold 5",
+      config => { field => 'a', change => 5 },
+      cases  => [ { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 7 } ],
+      expect => { key           => 'TestCase',
+                  a             => 7,
+                  state_change  => 2,
+              },
+  },
+    { desc   => "checking state for decrease",
+      config => { field => 'a', decrease => 1 },
+      cases  => [ { key => 'TestCase', a => 8 }, { key => 'TestCase', a => 3 } ],
+      expect => { key           => 'TestCase',
+                  a             => 3,
+                  subject       => 'TestCase: a decreased: 8 => 3',
+                  state_change  => -5,
+                  state_changed => 1,
+              },
+  },
+    { desc   => "checking state for decrease when value increased",
+      config => { field => 'a', decrease => 1 },
+      cases  => [ { key => 'TestCase', a => 3 }, { key => 'TestCase', a => 8 } ],
+      expect => { key           => 'TestCase',
+                  a             => 8,
+                  state_change  => 5,
+              },
+  },
 
-is_deeply( $state->react( { key => 'TestCase', a => 6 }, { field => 'a' } ),
-           { key           => 'TestCase',
-             a             => 6,
-             subject       => 'TestCase: a changed: 5 => 6',
-             state_change  => 1,
-             state_changed => 1,
-         },
-           "Checking that state change detected and recorded"
-       );
+    { desc   => "checking state for increase",
+      config => { field => 'a', increase => 1 },
+      cases  => [ { key => 'TestCase', a => 3 }, { key => 'TestCase', a => 8 } ],
+      expect => { key           => 'TestCase',
+                  a             => 8,
+                  subject       => 'TestCase: a increased: 3 => 8',
+                  state_change  => 5,
+                  state_changed => 1,
+              },
+  },
+    { desc   => "checking state for increase when value decreased",
+      config => { field => 'a', increase => 1 },
+      cases  => [ { key => 'TestCase', a => 8 }, { key => 'TestCase', a => 3 } ],
+      expect => { key           => 'TestCase',
+                  a             => 3,
+                  state_change  => -5,
+              },
+  },
 
-is_deeply( $state->react( { key => 'TestCase', a => 8 }, { field => 'a', increase => 1 } ),
-           { key           => 'TestCase',
-             a             => 8,
-             subject       => 'TestCase: a increased: 6 => 8',
-             state_change  => 2,
-             state_changed => 1,
-         },
-           "Checking that state change increase detected and recorded"
-       );
+    { desc   => "increase threshold set to 10, but only increased by 2",
+      config => { field => 'a', increase => 10 },
+      cases  => [ { key => 'TestCase', a => 3 }, { key => 'TestCase', a => 5 } ],
+      expect => { key           => 'TestCase',
+                  a             => 5,
+                  state_change  => 2,
+              },
+  },
+    { desc   => "decrease threshold set to 10, but only decreased by 2",
+      config => { field => 'a', decrease => 10 },
+      cases  => [ { key => 'TestCase', a => 5 }, { key => 'TestCase', a => 3 } ],
+      expect => { key           => 'TestCase',
+                  a             => 3,
+                  state_change  => -2,
+              },
+  },
+];
 
-is_deeply( $state->react( { key => 'TestCase', a => 3 }, { field => 'a', increase => 1 } ),
-           { key           => 'TestCase',
-             a             => 3,
-             state_change  => -5,
-         },
-           "Checking that state change increase not detected on decrease"
-       );
 
-is_deeply( $state->react( { key => 'TestCase', a => 8 }, { field => 'a', decrease => 1 } ),
-           { key           => 'TestCase',
-             a             => 8,
-             state_change  => 5,
-         },
-           "Checking that state change increase detected and recorded"
-       );
+for my $testcase ( @{ $cases } ) {
 
-is_deeply( $state->react( { key => 'TestCase', a => 3 }, { field => 'a', decrease => 1 } ),
-           { key           => 'TestCase',
-             a             => 3,
-             subject       => 'TestCase: a decreased: 8 => 3',
-             state_change  => -5,
-             state_changed => 1,
-         },
-           "Checking that state change increase not detected on decrease"
-       );
+    #print YAML::Dump { testcase => $testcase };
 
+    my $state = Wubot::Reactor::State->new();
+
+    for my $idx ( 0 .. $#{ $testcase->{cases} } - 1 ) {
+        $state->react( $testcase->{cases}->[$idx], $testcase->{config} );
+        #print YAML::Dump { cases => $testcase->{cases} };
+    }
+
+    is_deeply( $state->react( $testcase->{cases}->[-1], $testcase->{config} ),
+               $testcase->{expect},
+               $testcase->{desc}
+           );
+
+}
+
+{
+    my $state = Wubot::Reactor::State->new();
+
+    is_deeply( [ $state->monitor() ],
+               [ ],
+               "Checking that monitor() returns no errors with no data in cache"
+           );
+
+    $state->cache->{testkey}->{testfield}->{lastupdate} = time - 50;
+
+    is_deeply( [ $state->monitor() ],
+               [ ],
+               "Checking that monitor() returns no errors with cache data updated recently"
+           );
+
+    $state->cache->{testkey}->{testfield}->{lastupdate} = time - 2*24*60*60;
+
+    is_deeply( [ $state->monitor() ],
+               [ { subject => "Warning: cache data for testkey:testfield not updated in 2d",
+                   key     => 'wubot-reactor'
+               } ],
+               "Checking that monitor() returns warning with lastupdate time > 5 minues"
+           );
+
+}

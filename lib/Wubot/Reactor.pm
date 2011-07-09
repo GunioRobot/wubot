@@ -24,6 +24,11 @@ has 'plugins' => ( is => 'ro',
                    default => sub { return {} },
                );
 
+has 'monitors' => ( is => 'ro',
+                    isa => 'HashRef',
+                    default => sub { return {} },
+                );
+
 sub react {
     my ( $self, $message, $rules, $depth ) = @_;
 
@@ -132,6 +137,10 @@ sub run_plugin {
         my $reactor_class = join( "::", 'Wubot', 'Reactor', $plugin );
         load_class( $reactor_class );
         $self->{plugins}->{ $plugin } = $reactor_class->new();
+
+        if ( $self->{plugins}->{ $plugin }->can( "monitor" ) ) {
+            $self->monitors->{ $plugin } = 1;
+        }
     }
 
     my $return = $self->{plugins}->{ $plugin }->react( $message, $config );
@@ -144,6 +153,22 @@ sub run_plugin {
     }
 
     return $return;
+}
+
+sub monitor {
+    my ( $self ) = @_;
+
+    $self->logger->debug( "Checking reactor monitors" );
+
+    my @react;
+
+    for my $plugin ( sort keys %{ $self->{monitors} } ) {
+
+        $self->logger->debug( "Checking monitor for $plugin" );
+        push @react, $self->{plugins}->{$plugin}->monitor();
+    }
+
+    return @react;
 }
 
 1;

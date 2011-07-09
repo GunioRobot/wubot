@@ -81,6 +81,14 @@ get '/graphs' => sub {
             "http://wubot/wubot/graphs/Coopduino-week.png",
             "http://wubot/wubot/graphs/growbot-moisture/growbot-moisture-daily.png",
         ] },
+        { 'sensor-monthly' => [
+            "http://wubot/wubot/graphs/outside-temp/outside-temp-monthly.png",
+            "http://wubot/wubot/graphs/livingroom-temp/livingroom-temp-monthly.png",
+            "http://wubot/wubot/graphs/lab-temp/lab-temp-monthly.png",
+            "http://wubot/wubot/graphs/growbot-temp/growbot-temp-monthly.png",
+            "http://wubot/wubot/graphs/growbot-moisture/growbot-moisture-monthly.png",
+            "http://wubot/wubot/graphs/coop-temp/coop-temp-monthly.png",
+        ] },
         { external => [
             "http://wubot/wubot/graphs/WebFetch-qwest/WebFetch-qwest-daily.png",
             "http://wubot/wubot/graphs/FileRegexp-mail-rootbsd/FileRegexp-mail-rootbsd-daily.png",

@@ -30,7 +30,19 @@ sub react {
                          host     => 'localhost',
                      };
 
-    my $date = strftime( "%d/%H:%M", localtime( $message->{lastupdate}||time ) );
+    my $date;
+
+    if ( $message->{lastupdate} ) {
+        if ( time - $message->{lastupdate} > 86400 ) {
+            $date = strftime( "%d/%H:%M", localtime( $message->{lastupdate} ) );
+        }
+        else {
+            $date = strftime( "%H:%M", localtime( $message->{lastupdate} ) );
+        }
+    }
+    else {
+        $date = strftime( "%H:%M", localtime( $message->{lastupdate} ) );
+    }
 
     my $title;
     if ( $message->{growl_title} ) {
@@ -47,11 +59,45 @@ sub react {
     }
     $notification->{title} = $title;
 
-    my $image = $notification->{image} || "wubot.png";
-    $image =~ s|^.*\/||;
     my $image_dir = $config->{image_dir} || "$ENV{HOME}/.icons";
-    $image = join( "/", $image_dir, $image );
-    $notification->{image} = $image;
+
+    my @possible_images;
+    if ( $message->{image}    ) { push @possible_images, $message->{image} }
+    if ( $message->{username} && $message->{username} ne "wubot" ) {
+        push @possible_images, "$message->{username}.png";
+
+        if ( $message->{username} =~ m|\@| ) {
+            $message->{username} =~ m|^(.*)\@|;
+            my $username = $1;
+            $username =~ s|^.*\<||;
+            push @possible_images, "$username.png";
+        }
+        if ( $message->{username} =~ m/\|/ ) {
+            $message->{username} =~ m/^(.*)\|/;
+            my $username = $1;
+            push @possible_images, "$username.png";
+        }
+    }
+    if ( $message->{key} ) {
+        push @possible_images, "$message->{key}.png";
+        my $service = $message->{key};
+        $service =~ s|^.*?\-||;
+        push @possible_images, "$service.png";
+    }
+    push @possible_images, "wubot.png";
+
+  IMAGE:
+    for my $image ( @possible_images ) {
+
+        $image = lc( $image );
+        $image =~ s|^.*\/||;
+        $image = join( "/", $image_dir, $image );
+
+        next IMAGE unless -r $image;
+
+        $notification->{image} = $image;
+        last IMAGE;
+    }
 
     if ( $message->{growl_id} ) {
         $notification->{identifier} = $message->{growl_id};

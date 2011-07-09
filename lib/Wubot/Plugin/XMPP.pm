@@ -58,11 +58,11 @@ sub check {
 
             last unless $message;
 
+            # cancel the forward flag when sending a message
+            delete $message->{forward};
+
             # convert to text
             my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
-
-            # cancel the forward flag when picking up a message
-            delete $message->{forward};
 
             # send the message using YAML
             $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
@@ -107,6 +107,10 @@ sub check {
 
                              eval { # try
                                  $data = YAML::Load( MIME::Base64::decode( Encode::decode( "UTF-8", $body ) ) );
+
+                                 # cancel the forward flag when sending a message
+                                 delete $data->{forward};
+
                                  $self->reactor->( $data );
                                  1;
                              } or do { # catch

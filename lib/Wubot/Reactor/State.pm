@@ -49,16 +49,30 @@ sub react {
     }
 
     my $update_cache = 0;
+    my $changed_flag = 0;
 
     unless ( $field_data == $cache_data ) {
 
         $message->{state_change} = $field_data - $cache_data;
 
+        my $cache_age_string = "";
+
+        if ( $self->cache->{ $key }->{ $field }->{lastchanged} ) {
+
+            $cache_age_string
+                = $self->timelength->get_human_readable(
+                    time - $self->cache->{ $key }->{ $field }->{changed}
+                );
+
+            $cache_age_string = " ($cache_age_string)";
+        }
+
         if ( $config->{increase} ) {
             if ( $message->{state_change} >= $config->{increase} ) {
-                $message->{subject} = "$key: $field increased: $cache_data => $field_data";
+                $message->{subject} = "$key: $field increased: $cache_data => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
+                $changed_flag = 1;
             }
             elsif ( $message->{state_change} < 0 ) {
                 # if we're looking for an increase, and the data
@@ -69,9 +83,10 @@ sub react {
         }
         elsif ( $config->{decrease} ) {
             if ( $message->{state_change} <= -$config->{decrease} ) {
-                $message->{subject} = "$key: $field decreased: $cache_data => $field_data";
+                $message->{subject} = "$key: $field decreased: $cache_data => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
+                $changed_flag = 1;
             }
             elsif ( $message->{state_change} > 0 ) {
                 # if we're looking for a decrease, and the data
@@ -82,15 +97,20 @@ sub react {
         }
         else {
             if ( abs( $message->{state_change} ) > $config->{change} ) {
-                $message->{subject} = "$key: $field changed: $cache_data => $field_data";
+                $message->{subject} = "$key: $field changed: $cache_data => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
+                $changed_flag = 1;
             }
         }
     }
 
     if ( $update_cache ) {
         $self->cache->{ $key }->{ $field }->{value}      = $field_data;
+    }
+
+    if ( $changed_flag ) {
+        $self->cache->{ $key }->{ $field }->{lastchange} = time;
     }
 
     $self->cache->{ $key }->{ $field }->{lastupdate} = time;

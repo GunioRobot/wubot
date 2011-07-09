@@ -145,7 +145,13 @@ for my $testcase ( @{ $cases } ) {
         #print YAML::Dump { cases => $testcase->{cases} };
     }
 
-    is_deeply( $state->react( $testcase->{cases}->[-1], $testcase->{config} ),
+    my $got = $state->react( $testcase->{cases}->[-1], $testcase->{config} );
+
+    if ( $got->{subject} ) {
+        $got->{subject} =~ s|\s\([\d\w]+\)$||;
+    }
+
+    is_deeply( $got,
                $testcase->{expect},
                $testcase->{desc}
            );

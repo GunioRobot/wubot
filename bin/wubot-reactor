@@ -17,7 +17,10 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 
 use Wubot::Config;
 use Wubot::Reactor;
+use Wubot::Reactor::Voice;
 use Wubot::TimeLength;
+
+my $voice = Wubot::Reactor::Voice->new();
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
@@ -40,65 +43,88 @@ my $end = AnyEvent->condvar;
 
 my $lastupdate = time;
 my $maxcount   = 50;
-my $loopcounter;
 
 my $timelength = Wubot::TimeLength->new();
 
 my $last_date = strftime( "%Y-%m-%d", localtime() );
 
-my $timer = AnyEvent->timer( after    => 1,
-                             interval => 5,
-                             cb       => sub {
+my @reactions;
+my @timers;
 
-                                 $loopcounter++;
+push @timers, AnyEvent->timer( after    => 1,
+                               interval => 5,
+                               cb       => sub {
 
-                                 my $count = 0;
+                                   my $count = 0;
 
-                                 while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
-                                     $count++;
+                                   while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
+                                       $count++;
 
-                                     # send message through the reactor
-                                     eval {                          # try
-                                         react( $message );
-                                         1;
-                                     } or do {                       # catch
-                                         my $error = $@;
-                                         warn "ERROR in reaction: $@";
-                                         print YAML::Dump $message;
-                                     };
+                                       # send message through the reactor
+                                       eval { # try
+                                           react( $message );
+                                           1;
+                                       } or do { # catch
+                                           my $error = $@;
+                                           warn "ERROR in reaction: $@";
+                                           print YAML::Dump $message;
+                                       };
 
-                                     # delete the message now that it has been processed
-                                     $callback->();
+                                       # delete the message now that it has been processed
+                                       $callback->();
 
-                                     $lastupdate = time;
-                                     return if $count >= $maxcount;
+                                       $lastupdate = time;
+                                       return if $count >= $maxcount;
 
-                                     if ( $ENV{LIMIT} ) {
-                                         exit if $count == $ENV{LIMIT};
-                                     }
-                                 }
+                                       if ( $ENV{LIMIT} ) {
+                                           exit if $count == $ENV{LIMIT};
+                                       }
+                                   }
+                               },
+                           );
 
-                                 if ( $loopcounter % 12 == 0 ) {
-                                     my $now = time;
-                                     if ( $now - $lastupdate > 120 ) {
-                                         my $time = $timelength->get_human_readable( $now - $lastupdate );
-                                         react( { subject    => "reactor on $hostname has not received a message in $time",
-                                                  key        => 'wubot-reactor',
-                                                  lastupdate => $now,
-                                              } );
-                                     }
-                                 }
-                             },
-                         );
+push @timers, AnyEvent->timer( after => 60,
+                               interval => 60,
+                               cb => sub {
 
-use Wubot::Reactor::Voice;
-my $voice = Wubot::Reactor::Voice->new();
-my $voice_timer = AnyEvent->timer( after    => 1,
-                                   interval => 10,
-                                   cb       => sub {
-                                       $voice->say();
-                                   },
-                               );
+                                   for my $message ( $reactor->monitor() ) {
+                                       next unless $message;
+                                       next unless keys %{ $message };
+
+                                       eval { # try
+                                           react( $message );
+                                           1;
+                                       } or do { # catch
+                                           my $error = $@;
+                                           warn "ERROR in reaction: $@";
+                                           print YAML::Dump $message;
+                                       };
+                                   }
+
+                               },
+                           );
+
+push @timers, AnyEvent->timer( after => 1,
+                               interval => 60,
+                               cb => sub {
+
+                                   my $now = time;
+                                   if ( $now - $lastupdate > 120 ) {
+                                       my $time = $timelength->get_human_readable( $now - $lastupdate );
+                                       react( { subject    => "reactor on $hostname has not received a message in $time",
+                                                key        => 'wubot-reactor',
+                                                lastupdate => $now,
+                                            } );
+                                   }
+                               }
+                           );
+
+push @timers, AnyEvent->timer( after    => 1,
+                               interval => 10,
+                               cb       => sub {
+                                   $voice->say();
+                               },
+                           );
 
 $logger->error( "Running..." );
 $end->recv;

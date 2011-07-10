@@ -6,8 +6,7 @@ use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
 use YAML;
 
-Log::Log4perl->easy_init($INFO);
-
+use Wubot::Logger;
 use Wubot::Reactor::Command;
 
 ok( my $command = Wubot::Reactor::Command->new(),

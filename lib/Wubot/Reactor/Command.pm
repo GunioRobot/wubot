@@ -21,10 +21,12 @@ sub react {
     my $output = "";
 
     if ( $config->{command} ) {
+        $self->logger->debug( "Running configured command: $config->{command}" );
         $output = `$config->{command} 2>&1`;
     }
     elsif ( $config->{command_field} ) {
         my $command = $message->{ $config->{command_field} };
+        $self->logger->debug( "Running command field: $config->{command_field}: $command " );
         $output = `$command 2>&1`;
     }
 

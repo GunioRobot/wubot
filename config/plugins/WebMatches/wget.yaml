@@ -1,0 +1,20 @@
+---
+enable: 1
+delay: 1d
+url: http://ftp.gnu.org/gnu/wget/
+regexp: '\"(wget\-[\d\.]+\.tar\.gz)\"'
+
+react:
+
+  - name: field
+    plugin: SetField
+    config:
+      field: sticky
+      value: 1
+
+  - name: subject
+    plugin: Template
+    config:
+      template: 'New wget release: {$match}'
+      target_field: subject
+

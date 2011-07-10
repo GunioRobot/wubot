@@ -1,0 +1,20 @@
+---
+enable: 1
+delay: 1d
+url: http://mirror.planetunix.net/pub/OpenBSD/OpenSSH/portable/
+regexp: '\"(openssh\-\d+\.[\d\w]+\.tar\.gz)\"'
+
+react:
+
+  - name: field
+    plugin: SetField
+    config:
+      field: sticky
+      value: 1
+
+  - name: subject
+    plugin: Template
+    config:
+      template: 'New openssh release: {$match}'
+      target_field: subject
+

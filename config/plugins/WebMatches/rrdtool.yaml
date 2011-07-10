@@ -1,0 +1,20 @@
+---
+enable: 1
+delay: 1d
+url: http://oss.oetiker.ch/rrdtool/pub/
+regexp: '\"(rrdtool\-[\d\.]+\.tar\.gz)\"'
+
+react:
+
+  - name: field
+    plugin: SetField
+    config:
+      field: sticky
+      value: 1
+
+  - name: subject
+    plugin: Template
+    config:
+      template: 'New rrdtool release: {$match}'
+      target_field: subject
+

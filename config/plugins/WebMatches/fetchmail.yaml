@@ -1,0 +1,20 @@
+---
+enable: 1
+delay: 1d
+url: http://download.berlios.de/fetchmail/
+regexp: '\"(fetchmail\-[\d\.]+\.tar\.bz2)\"'
+
+react:
+
+  - name: field
+    plugin: SetField
+    config:
+      field: sticky
+      value: 1
+
+  - name: subject
+    plugin: Template
+    config:
+      template: 'New fetchmail release: {$match}'
+      target_field: subject
+

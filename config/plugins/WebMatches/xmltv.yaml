@@ -1,0 +1,20 @@
+---
+enable: 1
+delay: 1d
+url: http://sourceforge.net/projects/xmltv/files/xmltv/
+regexp: '(xmltv\-[\d\.]+\.tar\.bz2)/download\"'
+
+react:
+
+  - name: field
+    plugin: SetField
+    config:
+      field: sticky
+      value: 1
+
+  - name: subject
+    plugin: Template
+    config:
+      template: 'New xmltv release: {$match}'
+      target_field: subject
+

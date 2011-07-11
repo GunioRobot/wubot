@@ -3,8 +3,18 @@ use Moose;
 
 # VERSION
 
+use Log::Log4perl;
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
 
 sub validate_config {
     my ( $self, $config ) = @_;
@@ -24,9 +34,16 @@ sub validate_config {
 sub check {
     my ( $self, $inputs ) = @_;
 
-    my $uptime_output = `$inputs->{config}->{command}`;
+    $self->logger->debug( "Check command: $inputs->{config}->{command}" );
 
-    $uptime_output =~ m/load averages?\: ([\d\.]+)\,?\s+([\d\.]+),?\s+([\d\.]+)/;
+    my $uptime_output = `$inputs->{config}->{command}`;
+    chomp $uptime_output;
+
+    unless ( $uptime_output =~ m/load averages?\: ([\d\.]+)\,?\s+([\d\.]+),?\s+([\d\.]+)/ ) {
+        my $subject = $self->key . ": ERROR: unable to parse uptime output: $uptime_output";
+        $self->logger->warn( $subject );
+        return { react => { subject => $subject } };
+    }
 
     my ( $load01, $load05, $load15 ) = ( $1, $2, $3 );
 

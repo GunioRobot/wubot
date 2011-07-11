@@ -61,7 +61,7 @@ sub react {
 
             $cache_age_string
                 = $self->timelength->get_human_readable(
-                    time - $self->cache->{ $key }->{ $field }->{changed}
+                    time - $self->cache->{ $key }->{ $field }->{lastchange}
                 );
 
             $cache_age_string = " ($cache_age_string)";

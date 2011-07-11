@@ -35,7 +35,12 @@ sub react {
     return $message if $message->{no_more_rules};
 
     $depth = $depth || 1;
-    unless ( $rules ) { $rules = $self->config->{rules} }
+    unless ( $rules ) {
+        unless ( $self->config ) {
+            $self->logger->logconfess( "ERROR: no reactor rules found!" );
+        }
+        $rules = $self->config->{rules};
+    }
 
   RULE:
     for my $rule ( @{ $rules } ) {
@@ -58,6 +63,10 @@ sub react {
 
         if ( $rule->{last_rule} ) {
             $message->{no_more_rules} = 1;
+        }
+
+        if ( $message->{no_more_rules} ) {
+            $self->logger->debug( " " x $depth, "- no_more_rules set" );
         }
     }
 

@@ -56,6 +56,8 @@ sub check {
     $message->{sunrise} = sun_rise( $config->{longitude}, $config->{latitude} );
     $message->{sunset}  = sun_set(  $config->{longitude}, $config->{latitude} );
 
+    my $dst_flag = ( localtime() )[-1];
+
     my $time = strftime( "%H:%M", localtime( $now ) );
 
     # if after sunset, get next sunrise time
@@ -66,6 +68,7 @@ sub check {
 
         $message->{next}       = 'sunrise';
         $message->{next_utime} = UnixDate( ParseDate( "tomorrow $message->{sunrise}" ), "%s" );
+        if ( $dst_flag ) { $message->{next_utime} -= 3600 }
         $message->{next_until} = $self->timelength->get_human_readable( $message->{next_utime} - $now );
 
         $message->{subject}    = "$message->{next} in $message->{next_until}";
@@ -75,6 +78,7 @@ sub check {
 
         $message->{next}       = 'sunrise';
         $message->{next_utime} = UnixDate( ParseDate( $message->{sunrise} ), "%s" );
+        if ( $dst_flag ) { $message->{next_utime} -= 3600 }
         $message->{next_until} = $self->timelength->get_human_readable( $message->{next_utime} - $now );
 
         $message->{subject}    = "$message->{next} in $message->{next_until}";
@@ -84,6 +88,7 @@ sub check {
 
         $message->{next}       = 'sunset';
         $message->{next_utime} = UnixDate( ParseDate( $message->{sunset} ), "%s" );
+        if ( $dst_flag ) { $message->{next_utime} -= 3600 }
         $message->{next_until} = $self->timelength->get_human_readable( $message->{next_utime} - $now );
 
         $message->{subject}    = "$message->{next} in $message->{next_until}";

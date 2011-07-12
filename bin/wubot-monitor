@@ -3,6 +3,8 @@ use strict;
 
 use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
+$| = 1;
+
 use AnyEvent;
 use AnyEvent::Watchdog::Util;
 use File::Path;

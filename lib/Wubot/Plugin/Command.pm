@@ -1,32 +1,74 @@
-package Wubot::Plugin::CommandRegex;
+package Wubot::Plugin::Command;
 use Moose;
 
 # VERSION
 
+use Log::Log4perl;
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+sub validate_config {
+    my ( $self, $config ) = @_;
+
+    my @required_params = qw( command );
+
+    for my $param ( @required_params ) {
+        unless ( $config->{$param} ) {
+            die "ERROR: required config param $param not defined for: ", $self->key, "\n";
+        }
+    }
+
+    return 1;
+}
+
 
 sub check {
     my ( $self, $inputs ) = @_;
 
-    $self->logger->debug( "CommandRegex command: $inputs->{config}->{command}");
-    my $command_output = `$inputs->{config}->{command}`;
-    $self->logger->debug( "CommandRegex: $inputs->{config}->{command} $command_output");
-    my $regex = $inputs->{config}->{regex};
-    $self->logger->debug( "CommandRegex regex: $inputs->{config}->{regex}");
-    my $subject;
-	if ($command_output =~ m|$regex|) {
-		$subject = $1;
-	    $self->logger->info( "CommandRegex: $inputs->{config}->{command} $command_output $regex $subject");
-	}
-    my $status = "ok";
-    my $results = { status  => $status, };
+    my $command = $inputs->{config}->{command};
 
-    if ( $subject ) {
-        $results->{subject} = $subject;
+    $self->logger->debug( $self->key, ": command: $command" );
+
+    my $message;
+
+    my $field = $inputs->{config}->{field} || "command_output";
+
+    my @output;
+
+    # run command capturing output
+    open my $run, "-|", "$command 2>&1" or die "Unable to execute $command: $!";
+    while ( my $line = <$run> ) {
+      chomp $line;
+      push @output, $line;
+    }
+    close $run;
+
+    # check exit status
+    if ( $? eq 0 ) {
+        $message->{exit_status} = 0;
+        $message->{signal}      = 0;
+    }
+    else {
+        $message->{exit_status} = $? >> 8;
+        $message->{signal}      = $? & 127;
     }
 
-    return { react => $results };
+    my $output = join( "\n", @output );
+    $self->logger->trace( "Output: $output" );
+
+    $message->{ $field } = $output;
+
+    return { react => $message };
+
 }
 
 1;

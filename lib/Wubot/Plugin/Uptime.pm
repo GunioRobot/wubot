@@ -39,13 +39,13 @@ sub check {
     my $uptime_output = `$inputs->{config}->{command}`;
     chomp $uptime_output;
 
-    unless ( $uptime_output =~ m/load averages?\: ([\d\.]+)\,?\s+([\d\.]+),?\s+([\d\.]+)/ ) {
+    my ( $load01, $load05, $load15 ) = $self->parse_uptime( $uptime_output );
+
+    unless ( defined $load01 && defined $load05 && defined $load15 ) {
         my $subject = $self->key . ": ERROR: unable to parse uptime output: $uptime_output";
         $self->logger->warn( $subject );
         return { react => { subject => $subject } };
     }
-
-    my ( $load01, $load05, $load15 ) = ( $1, $2, $3 );
 
     $self->logger->debug( "load: $load01 => $load05 => $load15" );
 
@@ -70,6 +70,18 @@ sub check {
     }
 
     return { react => $results };
+}
+
+sub parse_uptime {
+    my ( $self, $string ) = @_;
+
+    unless ( $string =~ m/load averages?\: ([\d\.]+)\,?\s+([\d\.]+),?\s+([\d\.]+)/ ) {
+        return;
+    }
+
+    my ( $load01, $load05, $load15 ) = ( $1, $2, $3 );
+
+    return ( $load01, $load05, $load15 );
 }
 
 1;

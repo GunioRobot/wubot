@@ -211,6 +211,18 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "Checking 'foo matches test' when foo = asdf"
     );
 
+    ok( ! $reactor->condition( "foo matches test", { foo => 'TEST' } ),
+        "Checking 'foo does not match test' when foo = TEST"
+    );
+
+    ok( $reactor->condition( "foo imatches test", { foo => 'test' } ),
+        "Checking 'foo imatches test' when foo = test"
+    );
+
+    ok( $reactor->condition( "foo imatches test", { foo => 'TEST' } ),
+        "Checking 'foo imatches test' when foo = TEST"
+    );
+
     ok( $reactor->condition( "foo equals test", { foo => 'test' } ),
         "Checking 'foo equals test' when foo = test"
     );

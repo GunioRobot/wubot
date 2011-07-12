@@ -104,6 +104,12 @@ sub condition {
         return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/;
         return;
     }
+    elsif ( $condition =~ m|^([\w\.]+)\s+imatches\s+(.*)$| ) {
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/i;
+        return;
+    }
     elsif ( $condition =~ m|^contains ([\w\.]+)$| ) {
         my $field = $1;
 

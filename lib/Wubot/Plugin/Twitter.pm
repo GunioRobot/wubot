@@ -70,7 +70,8 @@ sub check {
 
         push @react, { subject  => join( ": ", $status->{user}->{screen_name}, $status->{text} ),
                        text     => $status->{text},
-                       username => $status->{user}->{screen_name},
+                       username => lc($status->{user}->{screen_name}),
+                       profile_image_url => $status->{user}->{profile_image_url},
                    };
     }
 

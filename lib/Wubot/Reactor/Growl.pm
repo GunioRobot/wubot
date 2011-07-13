@@ -81,8 +81,10 @@ sub react {
     if ( $message->{key} ) {
         push @possible_images, "$message->{key}.png";
         my $service = $message->{key};
-        $service =~ s|^.*?\-||;
-        push @possible_images, "$service.png";
+        if ( $service =~ s|^(.*?)\-|| ) {
+            push @possible_images, "$service.png";
+            push @possible_images, "$1.png";
+        }
     }
     push @possible_images, "wubot.png";
 

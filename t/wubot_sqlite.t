@@ -402,6 +402,57 @@ ok( -r $sqldb,
 
 }
 
+
+{
+    my $table = "test_table_11";
+    my $schema = { column1 => 'INT',
+                   column2 => 'VARCHAR(16)',
+                   constraints => [ 'UNIQUE( column1 )' ],
+               };
+
+    $sql->create_table( $table, $schema );
+
+    ok( $sql->insert( $table, { column1 => 123, column2 => "foo1" }, $schema ),
+        "Inserting first row into table"
+    );
+
+    ok( ! $sql->insert( $table, { column1 => 123, column2 => "foo2" }, $schema ),
+        "failing to insert row that violates constraint"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ { column1 => 123, column2 => "foo1" } ],
+               "Checking that only one row left in the table"
+           );
+
+}
+
+{
+    my $table = "test_table_12";
+    my $schema = { column1 => 'INT',
+                   column2 => 'VARCHAR(16)',
+                   constraints => [ 'UNIQUE( column1 ) ON CONFLICT REPLACE' ],
+               };
+
+    ok( $sql->create_table( $table, $schema ),
+        "Creating table with UNIQUE constraint and ON CONFLICT REPLACE"
+    );
+
+    ok( $sql->insert( $table, { column1 => 123, column2 => "foo1" }, $schema ),
+        "Inserting first row into table"
+    );
+
+    ok( $sql->insert( $table, { column1 => 123, column2 => "foo2" }, $schema ),
+        "inserting row that should replace first row due to constraint"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ { column1 => 123, column2 => "foo2" } ],
+               "Checking that second row replaced first table due to ON CONFLICT REPLACE constraint"
+           );
+
+}
+
 # schemas yaml file
 {
     is( $sql->schema_file(),

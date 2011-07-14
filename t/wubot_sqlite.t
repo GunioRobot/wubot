@@ -7,15 +7,20 @@ use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
+use Wubot::Logger;
 use Wubot::SQLite;
-
-Log::Log4perl->easy_init($ERROR);
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 my $sqldb = "$tempdir/test.sql";
 
-ok( my $sql = Wubot::SQLite->new( { file => $sqldb } ),
+my $schema_file = "$tempdir/test.yaml";
+my $test_schema = { xyz => { abc => 'INT',
+                             def => 'TEXT',
+                         } };
+YAML::DumpFile( $schema_file, $test_schema );
+
+ok( my $sql = Wubot::SQLite->new( { file => $sqldb, schema_file => $schema_file } ),
     "Creating new Wubot::SQLite object"
 );
 
@@ -239,7 +244,7 @@ ok( -r $sqldb,
            );
 
     throws_ok( sub { $sql->update( $table, { column1 => 7 }, { column1 => 0 } ) },
-               qr/schema required for update\(\) but not provided/,
+               qr/no schema specified, and global schema not found for table: $table/,
                "Checking that exception thrown when running a sql update without providing schema",
            );
 
@@ -394,6 +399,36 @@ ok( -r $sqldb,
                [ { column1 => 123, column2 => "foo1" } ],
                "Checking that only one row left in the table"
            );
+
+}
+
+# schemas yaml file
+{
+    is( $sql->schema_file(),
+        $schema_file,
+        "Checking that schema file configured on sql object"
+    );
+
+    is_deeply( $sql->sql_schemas(),
+               $test_schema,
+               "Checking that test schemas were read in from schema YAML file"
+           );
+
+    my $table = "xyz";
+
+    ok( $sql->create_table( $table ),
+        "Creating table, using schema from schema file"
+    );
+
+    ok( $sql->insert( $table, { abc => 123, def => 456, ghi => 789 } ),
+        "Inserting data, using schema in schema file"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ { abc => 123, def => 456 } ],
+               "Checking that defined columns inserted into table"
+           );
+
 
 }
 

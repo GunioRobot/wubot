@@ -7,6 +7,7 @@ use DBI;
 use DBD::SQLite;
 use Log::Log4perl;
 use SQL::Abstract;
+use YAML;
 
 has 'file'         => ( is       => 'ro',
                         isa      => 'Str',
@@ -30,6 +31,32 @@ has 'sql_abstract' => ( is       => 'ro',
                         },
                     );
 
+has 'schema_file' => ( is       => 'ro',
+                        isa      => 'Str',
+                        lazy     => 1,
+                        default  => sub {
+                            my $self = shift;
+                            my $schema_file = join( "/", $ENV{HOME}, "wubot", "conf", "schemas.yaml" );
+                            $self->logger->debug( "schema file: $schema_file" );
+                            return $schema_file;
+                        },
+                    );
+
+has 'sql_schemas'  => ( is       => 'ro',
+                        isa      => 'HashRef',
+                        lazy     => 1,
+                        default  => sub {
+                            my $self = shift;
+                            my $schema_file = $self->schema_file;
+                            unless ( -r $schema_file ) {
+                                $self->logger->warn( "Schema file not found: $schema_file" );
+                                return {};
+                            }
+                            $self->logger->info( "Loading schema file: $schema_file" );
+                            return YAML::LoadFile( $schema_file );
+                        },
+                    );
+
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,
@@ -46,10 +73,7 @@ sub create_table {
     unless ( $table ) {
         $self->logger->logcroak( "Error: table not specified" );
     }
-
-    unless ( $schema_h ) {
-        $self->logger->logcroak( "Error: schema not specified" );
-    }
+    $schema_h = $self->check_schema( $table, $schema_h );
 
     my $command = "CREATE TABLE $table (\n";
 
@@ -89,6 +113,27 @@ sub get_tables {
     return @tables;
 }
 
+sub check_schema {
+    my ( $self, $table, $schema_h ) = @_;
+
+    unless ( $schema_h ) {
+        unless ( $self->sql_schemas->{ $table } ) {
+            $self->logger->logcroak( "ERROR: no schema specified, and global schema not found for table: $table" );
+        }
+        $schema_h = $self->sql_schemas->{ $table };
+    }
+
+    unless ( $schema_h ) {
+        $self->logger->logcroak( "Error: no schema specified or found for table: $table" );
+    }
+
+    unless ( ref $schema_h eq "HASH" ) {
+        $self->logger->logcroak( "ERROR: schema for table $table is invalid: not a hash ref" );
+    }
+
+    return $schema_h;
+}
+
 sub insert {
     my ( $self, $table, $entry, $schema_h ) = @_;
 
@@ -98,9 +143,7 @@ sub insert {
     unless ( $table && $table =~ m|^\w+$| ) {
         $self->logger->logcroak( "ERROR: insert: table name does not look valid" );
     }
-    unless ( $schema_h && ref $schema_h eq "HASH" ) {
-        $self->logger->logcroak( "ERROR: no schema specified to insert command!" );
-    }
+    $schema_h = $self->check_schema( $table, $schema_h );
 
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
@@ -125,9 +168,7 @@ sub insert {
 sub update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
 
-    unless ( $schema_h ) {
-        die "ERROR: schema required for update() but not provided"
-    }
+    $schema_h = $self->check_schema( $table, $schema_h );
 
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
@@ -152,6 +193,8 @@ sub update {
 
 sub insert_or_update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
+
+    $schema_h = $self->check_schema( $table, $schema_h );
 
     my $count;
     # wrap select() in an eval, this could fail, e.g. if the table does not already exist

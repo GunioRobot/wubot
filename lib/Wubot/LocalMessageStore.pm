@@ -6,13 +6,14 @@ use Moose;
 # todo - warn if queue length above a certain size
 
 use Digest::MD5 qw( md5_hex );
-use Wubot::SQLite;
+use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML::XS;
 
 use Wubot::Reactor;
+use Wubot::SQLite;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -53,9 +54,13 @@ my $schema = { message_queue => { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT
 sub initialize_db {
     my ( $self, $directory ) = @_;
 
+    unless ( -d $directory ) {
+        mkpath( $directory );
+    }
+
     my $dbfile = "$directory/queue.sqlite";
 
-    $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => "$dbfile" } );
+    $self->sqlite->{ $dbfile } = Wubot::SQLite->new( { file => $dbfile } );
 
     $self->delete_seen( $directory, 24*60*60 );
 
@@ -85,6 +90,10 @@ sub initialize_db {
 
 sub store {
     my ( $self, $message, $directory ) = @_;
+
+    unless ( -d $directory ) {
+        mkpath( $directory );
+    }
 
     my $dbfile = "$directory/queue.sqlite";
 

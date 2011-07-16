@@ -27,17 +27,15 @@ sub react {
 
     my $image_dir = $config->{image_dir} || $self->icon_dir;
 
-    my @possible_images;
-
     if ( $message->{image} ) {
-        if ( my $icon = $self->check_for_image( $image_dir, $message->{image} ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $message->{image}, $config, 'image' ) ) {
             $message->{icon} = $icon;
             return $message;
         }
     }
 
     if ( $message->{username} && $message->{username} ne "wubot" ) {
-        if ( my $icon = $self->check_for_image( $image_dir, "$message->{username}.png" ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $message->{username}, $config, 'username' ) ) {
             $message->{icon} = $icon;
             return $message;
         }
@@ -47,7 +45,7 @@ sub react {
             my $username = $1;
             $username =~ s|^.*\<||;
 
-            if ( my $icon = $self->check_for_image( $image_dir, "$username.png" ) ) {
+            if ( my $icon = $self->check_for_image( $image_dir, $username, $config, 'username' ) ) {
                 $message->{icon} = $icon;
                 return $message;
             }
@@ -58,7 +56,7 @@ sub react {
             $message->{username} =~ m/^(.*)\|/;
             my $username = $1;
 
-            if ( my $icon = $self->check_for_image( $image_dir, "$username.png" ) ) {
+            if ( my $icon = $self->check_for_image( $image_dir, $username, $config, 'username' ) ) {
                 $message->{icon} = $icon;
                 return $message;
             }
@@ -67,7 +65,7 @@ sub react {
 
     if ( $message->{key} ) {
 
-        if ( my $icon = $self->check_for_image( $image_dir, "$message->{key}.png" ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $message->{key}, $config, 'key' ) ) {
             $message->{icon} = $icon;
             return $message;
         }
@@ -75,33 +73,48 @@ sub react {
         $message->{key} =~ m|^(.*?)\-(.*)$|;
         my ( $plugin, $instance ) = ( $1, $2 );
 
-        if ( my $icon = $self->check_for_image( $image_dir, "$plugin.png" ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $plugin, $config, 'plugin', ) ) {
             $message->{icon} = $icon;
             return $message;
         }
 
-        if ( my $icon = $self->check_for_image( $image_dir, "$instance.png" ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $instance, $config, 'instance' ) ) {
             $message->{icon} = $icon;
             return $message;
         }
     }
 
     # last chance
-    $message->{icon} = $self->check_for_image( $image_dir, "wubot.png" );
+    $message->{icon} = $self->check_for_image( $image_dir, "wubot", $config, 'wubot' );
     return $message;
 }
 
 sub check_for_image {
-    my ( $self, $image_dir, $image ) = @_;
+    my ( $self, $image_dir, $image, $config, $key ) = @_;
+
+    if ( $config ) {
+        if ( $config->{custom}->{$key} ) {
+            if ( $config->{custom}->{$key}->{$image} ) {
+                $image = $config->{custom}->{$key}->{$image};
+                $self->logger->debug( "Image custom for $key: $image" );
+            }
+        }
+    }
+
+    unless ( $image =~ m/\.(png|jpg|gif)$/ ) {
+        $image .= ".png";
+    }
 
     $image = lc( $image );
     $image =~ s|^.*\/||;
 
-    $self->logger->trace( "looking for $image" );
+    $self->logger->trace( "Looking for icon: $image" );
 
     $image = join( "/", $image_dir, $image );
 
     return unless -r $image;
+
+    $self->logger->debug( "Found image: $image" );
 
     return $image;
 }

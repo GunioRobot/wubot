@@ -12,7 +12,10 @@ use Wubot::Logger;
 use Wubot::Reactor::Command;
 
 my $tempdir  = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+$tempdir .= "/tmp";
+
 my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+$queuedir .= "/queue";
 
 {
     ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir } ),
@@ -225,8 +228,9 @@ my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 # }
 
 
+# TODO: duplicate command suppression
 # TODO: get exit status for forked and non-forked commands
 # TODO: get results after command completes - exit status
 # TODO: test background command failure
 # TODO: parent process exits and child keeps running and is picked up by next process
-
+# TODO: start time, run time

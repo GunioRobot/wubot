@@ -68,11 +68,4 @@ is( $growl->react( { subject => 'sticky', sticky => 1 } )->{growl}->{sticky},
     "Checking that 'sticky' enabed when message 'sticky' flag set"
 );
 
-my $test_icon = "$ENV{HOME}/.icons/wubot.png";
-if ( -r $test_icon ) {
-    is( $growl->react( { subject => 'image test' } )->{growl}->{image},
-        "$test_icon",
-        "Checking for default growl image",
-    );
-}
 

@@ -41,7 +41,7 @@ sub react {
         }
     }
     else {
-        $date = strftime( "%H:%M", localtime( $message->{lastupdate} ) );
+        $date = strftime( "%H:%M", localtime( time ) );
     }
 
     my $title;

@@ -253,10 +253,10 @@ $hostname =~ s|\..*$||;
 
     }
 
-    is( $messenger->get_count_seen( $directory ),
-        0,
-        "Checking that no messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 0, 19, 19 ],
+               "Checking message counts"
+           );
 
     for my $message_number ( 1 .. 10 ) {
         my ( $message, $callback ) = $messenger->get( $directory );
@@ -264,10 +264,10 @@ $hostname =~ s|\..*$||;
         $callback->();
     }
 
-    is( $messenger->get_count_seen( $directory ),
-        10,
-        "Checking that 10 messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 10, 9, 19 ],
+               "Checking message counts"
+           );
 
     sleep 1;
 
@@ -275,19 +275,19 @@ $hostname =~ s|\..*$||;
         "Deleting messages marked seen that are older than 24 hours old"
     );
 
-    is( $messenger->get_count_seen( $directory ),
-        10,
-        "Checking that there are still 10 messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 10, 9, 19 ],
+               "Checking that there are still 10 messages marked 'seen' in the queue"
+           );
 
     ok( $messenger->delete_seen( $directory ),
         "Deleting messages marked seen older than now"
     );
 
-    is( $messenger->get_count_seen( $directory ),
-        0,
-        "Checking that there are no messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 0, 9, 9 ],
+               "Checking that there are no messages marked 'seen' in the queue"
+           );
 
     for my $message_number ( 1 .. 9 ) {
         my ( $message, $callback ) = $messenger->get( $directory );
@@ -295,10 +295,10 @@ $hostname =~ s|\..*$||;
         $callback->();
     }
 
-    is( $messenger->get_count_seen( $directory ),
-        9,
-        "Checking that last 9 messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 9, 0, 9 ],
+               "Checking that last 9 messages marked 'seen' in the queue"
+           );
 
     sleep 1;
 
@@ -306,9 +306,9 @@ $hostname =~ s|\..*$||;
         "Deleting messages marked seen"
     );
 
-    is( $messenger->get_count_seen( $directory ),
-        0,
-        "Checking that there are no messages marked 'seen' in the queue"
-    );
+    is_deeply( [ $messenger->get_counts( $directory ) ],
+               [ 0, 0, 0 ],
+               "Checking that there are no messages marked 'seen' in the queue"
+           );
 
 }

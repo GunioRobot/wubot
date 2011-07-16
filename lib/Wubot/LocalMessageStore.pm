@@ -42,12 +42,13 @@ has 'reactor' => ( is => 'ro',
                    default => undef,
                );
 
-my $schema = { message_queue => { id       => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                                  date     => 'VARCHAR(32)',
-                                  subject  => 'VARCHAR(256)',
-                                  data     => 'TEXT',
-                                  hostname => 'VARCHAR(32)',
-                                  seen     => 'INTEGER',
+my $schema = { message_queue => { id         => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                                  date       => 'VARCHAR(32)',
+                                  subject    => 'VARCHAR(256)',
+                                  data       => 'TEXT',
+                                  hostname   => 'VARCHAR(32)',
+                                  seen       => 'INTEGER',
+                                  lastupdate => 'INTEGER',
                               }
            };
 

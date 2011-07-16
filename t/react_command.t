@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 25;
 
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
@@ -173,6 +173,39 @@ my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 }
 
 
+{
+    my $id = 'killer';
+
+    my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedir => $queuedir } );
+
+    my $results1_h = $command->react( { foo => 'abc' }, { command => 'sleep 100 && echo finished1', fork => $id } );
+
+    sleep 1;
+
+    my $results2_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished2', fork => $id } );
+
+    kill 9 => $results1_h->{command_pid};
+
+    sleep 1;
+
+    is_deeply( $command->monitor(),
+               [],
+               "Checking second background command results received when monitor() called"
+           );
+
+    sleep 3;
+
+    is_deeply( $command->monitor(),
+               [
+                   { command_output => 'finished2' },
+               ],
+               "Checking second background command results received when monitor() called"
+           );
+
+}
+
+
+
 # {
 #     my $id = 'multi';
 
@@ -194,8 +227,6 @@ my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 # TODO: get exit status for forked and non-forked commands
 # TODO: get results after command completes - exit status
-# TODO: fork when pid file exists but pid is not active
-# TODO: get results when pid file exists but pid is not active
 # TODO: test background command failure
 # TODO: parent process exits and child keeps running and is picked up by next process
-# TODO: waitpid
+

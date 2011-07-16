@@ -116,7 +116,7 @@ sub monitor {
         my $id = $entry;
         $id =~ s|\.log$||;
 
-        next if -r "$id.pid";
+        next if $self->check_process( $id );
 
         my $logfile = "$directory/$id.log";
 
@@ -182,7 +182,7 @@ sub fork_or_enqueue {
     my $logfile = join( "/", $self->logdir, "$id.log" );
     my $pidfile = join( "/", $self->logdir, "$id.pid" );
 
-    if ( -r $pidfile ) {
+    if ( $self->check_process( $id ) ) {
 
         my $queue = { logfile    => $logfile,
                       pidfile    => $pidfile,
@@ -249,6 +249,33 @@ sub try_fork {
     close STDERR;
 
     exit;
+}
+
+sub check_process {
+    my ( $self, $id ) = @_;
+
+    my $pidfile = join( "/", $self->logdir, "$id.pid" );
+
+    unless ( -r $pidfile ) {
+        $self->logger->info( "Pidfile not found: $pidfile" );
+        return;
+    }
+
+    open(my $fh, "<", $pidfile)
+        or die "Couldn't open $pidfile for reading: $!\n";
+    my $pid = <$fh>;
+    close $fh or die "Error closing file: $!\n";
+    return unless $pid;
+
+    if ( kill 0 => $pid ) {
+        $self->logger->info( "Process responded to kill 0: $pid" );
+        return 1;
+    }
+
+    $self->logger->info( "Pidfile exists but pid not active: $pid" );
+    unlink( $pidfile );
+
+    return;
 }
 
 1;

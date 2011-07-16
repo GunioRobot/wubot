@@ -40,7 +40,7 @@ has 'queuedir'  => ( is       => 'ro',
                      lazy     => 1,
                      default  => sub {
                          my $self = shift;
-                         return join( "/", $ENV{HOME}, "wubot", "sql", "command" );
+                         return join( "/", $ENV{HOME}, "wubot", "sqlite", "command" );
                      },
                  );
 
@@ -159,7 +159,8 @@ sub monitor {
 
         if ( my $message = $self->try_fork( $message ) ) {
 
-            # TODO: reacto to message
+            # TODO: react to message
+            #push @messages, $message;
 
             # delete the message from the queue
             $callback->();

@@ -19,8 +19,8 @@ BEGIN {
         log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
         log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
         log4perl.appender.Screen.Threshold   = $log_level
-        log4perl.appender.Screen.color.trace = cyan
-        log4perl.appender.Screen.color.debug = blue
+        log4perl.appender.Screen.color.trace = blue
+        log4perl.appender.Screen.color.debug = cyan
         log4perl.appender.Screen.color.info  = green
         log4perl.appender.Screen.color.warn  = magenta
         log4perl.appender.Screen.color.error = yellow

@@ -269,3 +269,62 @@ my $cache_file = "$tempdir/storage.yaml";
     }
 }
 
+{
+
+    my $reaction = [];
+    ok( my $check = Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
+                                                        class      => 'Wubot::Plugin::EmacsOrgMode',
+                                                        cache_file => "/dev/null",
+                                                    } ),
+        "Creating a new Emacs Org Mode check instance"
+    );
+
+    ok( my $results = $check->check( { config => { directory => 't/org/2' } } ),
+        "Calling check() method again with new directory"
+    );
+
+    is( $results->{react}->[1]->{scheduled_text},
+        "2011-06-17 Fri",
+        "Checking SCHEDULE when DEADLINE listed first"
+    );
+
+    is( $results->{react}->[1]->{deadline_text},
+        "2011-06-20 Mon",
+        "Checking DEADLINE when DEADLINE listed first"
+    );
+
+    is( $results->{react}->[2]->{scheduled_text},
+        "2011-06-17 Fri",
+        "Checking SCHEDULED when SCHEDULED listed first"
+    );
+
+    is( $results->{react}->[2]->{deadline_text},
+        "2011-06-20 Mon",
+        "Checking DEADLINE when SCHEDULED listed first"
+    );
+
+
+
+}
+
+
+{
+
+    my $reaction = [];
+    ok( my $check = Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
+                                                        class      => 'Wubot::Plugin::EmacsOrgMode',
+                                                        cache_file => "/dev/null",
+                                                    } ),
+        "Creating a new Emacs Org Mode check instance"
+    );
+
+    ok( my $results = $check->check( { config => { directory => 't/org/3' } } ),
+        "Calling check() method again with new directory"
+    );
+
+    is( $results->{react}->[1]->{taskid},
+        "first_task.first line in file is task with two bullet points",
+        "checking first line in file is task with two bullet points"
+    );
+
+}

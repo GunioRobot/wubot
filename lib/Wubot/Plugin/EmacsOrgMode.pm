@@ -71,7 +71,7 @@ sub check {
 
         my @tasks;
 
-        for my $block ( split /\n\*+\s/, $content ) {
+        for my $block ( split /(?:^|\n)\*+\s/, $content ) {
 
             $block =~ s|^\s*\*\s+||mg;
 
@@ -119,6 +119,8 @@ sub check {
 
                 $task->{taskid} = join( ".", $task->{file}, $task->{title} );
 
+                # deadline may be listed before or after schedule.
+                # this is an ugly solution that gets it either way
                 if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
                     $task->{deadline_text} = $1;
                     $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" );
@@ -128,6 +130,11 @@ sub check {
                     $task->{scheduled_text} = $1;
                     $task->{scheduled}      = UnixDate( ParseDate( $1 ), "%s" );
                     $task->{scheduled_recurrence}     = $2;
+                }
+                if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
+                    $task->{deadline_text} = $1;
+                    $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" );
+                    $task->{deadline_recurrence}    = $2;
                 }
 
                 $block =~ s|^\s+\- State "DONE"\s+from "TODO"\s+\[.*$||mg;

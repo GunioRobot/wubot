@@ -44,10 +44,11 @@ sub check {
             mac   => $config->{key},
         );
 
+      FOLDER:
         for my $folder ($tivo->folders()) {
 
             my $folder_string = $folder->as_string();
-            print "TIVO FOLDER: $folder_string\n";
+            $self->logger->debug( "TIVO FOLDER: $folder_string" );
 
             next if $folder_string =~ m|^HD Recordings|;
 

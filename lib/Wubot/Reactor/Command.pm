@@ -10,7 +10,6 @@ use POSIX qw(strftime setsid :sys_wait_h);
 use Term::ANSIColor;
 use YAML::XS;
 
-use Wubot::LocalMessageStore;
 use Wubot::SQLite;
 
 has 'logger'   => ( is       => 'ro',
@@ -73,10 +72,6 @@ has 'sqlite'    => ( is       => 'ro',
 
 my $is_null = "IS NULL";
 my $is_not_null = "IS NOT NULL";
-
-
-# for use by child processes only
-my $child;
 
 
 sub react {
@@ -418,10 +413,6 @@ sub try_fork {
         print "$line\n";
     }
     close $run;
-
-    $child->{id}       = $process->{id};
-    $child->{status}   = 0;
-    $child->{signal}   = 0;
 
     # check exit status
     my $status = 0;

@@ -111,7 +111,7 @@ sub monitor {
         next if -d $entry;
 
         next unless $entry =~ m|\.log$|;
-        $self->logger->info( "Found entry: $entry" );
+        $self->logger->debug( "Command: found running entry: $entry" );
 
         my $id = $entry;
         $id =~ s|\.log$||;
@@ -151,10 +151,11 @@ sub monitor {
 
         if ( -r $message->{pidfile} ) {
             $self->logger->debug( "Previous process not yet cleaned up: $message->{pidfile}" );
-            next QUEUE;
+            last QUEUE;
         }
         if ( -r $message->{logfile} ) {
             $self->logger->debug( "Previous logfile not yet cleaned up: $message->{logfile}" );
+            last QUEUE;
         }
 
         if ( my $message = $self->try_fork( $message ) ) {
@@ -242,7 +243,24 @@ sub try_fork {
 
     setsid or die "Can't start a new session: $!";
 
-    system( $process->{command} );
+    $self->logger->debug( "Launching process: $process->{id}: $process->{command}" );
+
+    # run command capturing output
+    open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
+    while ( my $line = <$run> ) {
+        chomp $line;
+        print "$line\n";
+    }
+    close $run;
+
+    # check exit status
+    unless ( $? eq 0 ) {
+        my $status = $? >> 8;
+        my $signal = $? & 127;
+        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$status\n\tsignal=$signal" );
+    }
+
+    $self->logger->debug( "Process exited: $process->{id}" );
 
     unlink( $process->{pidfile} );
 
@@ -269,7 +287,7 @@ sub check_process {
     return unless $pid;
 
     if ( kill 0 => $pid ) {
-        $self->logger->info( "Process responded to kill 0: $pid" );
+        $self->logger->debug( "Process $id responded to kill 0: $pid" );
         return 1;
     }
 

@@ -66,7 +66,6 @@ sub react {
         }
 
         $self->logger->debug( "Running command field: $config->{command_field}: $command " );
-        $output = `$command 2>&1`;
     }
     else {
         $self->logger->error( "Command reactor error: no command or command_field specified in config" );
@@ -150,7 +149,7 @@ sub monitor {
     while ( my ( $message, $callback ) = $self->queue->get( $self->queuedir ) ) {
 
         if ( -r $message->{pidfile} ) {
-            $self->logger->debug( "Previous process not yet cleaned up: $message->{pidfile}" );
+            $self->logger->debug( "Previous process still running: $message->{pidfile}" );
             last QUEUE;
         }
         if ( -r $message->{logfile} ) {
@@ -158,7 +157,7 @@ sub monitor {
             last QUEUE;
         }
 
-        if ( my $message = $self->try_fork( $message ) ) {
+        if ( my $results = $self->try_fork( $message ) ) {
 
             # TODO: react to message
             #push @messages, $message;
@@ -186,11 +185,13 @@ sub fork_or_enqueue {
 
     if ( $self->check_process( $id ) ) {
 
+        $self->logger->info( "Process already active, queueing command for $id" );
         my $queue = { logfile    => $logfile,
                       pidfile    => $pidfile,
                       command    => $command,
                       id         => $id,
                       lastupdate => time,
+                      message    => $message,
                   };
         $self->queue->store( $queue, $self->queuedir );
 
@@ -209,6 +210,7 @@ sub fork_or_enqueue {
 sub try_fork {
     my ( $self, $process ) = @_;
 
+    $self->logger->info( "Forking new process for: $process->{id}" );
     $self->logger->debug( "TRYING FORK: ", YAML::Dump $process );
 
     my $message = $process->{message} || {};

@@ -8,6 +8,7 @@ use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime setsid :sys_wait_h);
 use Term::ANSIColor;
+use YAML::XS;
 
 use Wubot::LocalMessageStore;
 
@@ -156,7 +157,7 @@ sub monitor {
         my $statusfile = "$directory/$id.status";
         if ( -r $statusfile ) {
             $self->logger->info( "Loading status file: $statusfile" );
-            my $status = YAML::LoadFile( $statusfile );
+            my $status = YAML::XS::LoadFile( $statusfile );
 
             for my $key ( keys %{ $status } ) {
                 $message->{$key} = $status->{$key};
@@ -335,11 +336,11 @@ sub child_done {
     my $directory  = $child->{logdir};
     my $statusfile = "$directory/$child->{id}.status";
 
-    YAML::DumpFile( $statusfile,
-                    { command_status => $child->{status},
-                      command_signal => $child->{signal},
-                      message        => $child->{message},
-                  } );
+    YAML::XS::DumpFile( $statusfile,
+                        { command_status => $child->{status},
+                          command_signal => $child->{signal},
+                          message        => $child->{message},
+                      } );
 
     exit;
 }

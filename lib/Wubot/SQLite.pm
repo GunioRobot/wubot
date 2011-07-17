@@ -232,9 +232,6 @@ sub select {
     my $limit     = $options->{limit};
 
     my $callback  = $options->{callback};
-    unless ( $callback ) {
-        $self->logger->logcroak( "ERROR: select called with no callback" );
-    }
 
     my( $statement, @bind ) = $self->sql_abstract->select( $tablename, $fields, $where, $order );
 
@@ -242,7 +239,13 @@ sub select {
 
     #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 
-    my $sth = $self->dbh->prepare($statement) or confess "Can't prepare $statement\n";
+    my $sth;
+    eval {
+        $sth = $self->dbh->prepare($statement);
+        1;
+    } or do {
+        $self->logger->logcroak( "Can't prepare $statement: $@" );
+    };
 
     my $rv;
     eval {
@@ -252,11 +255,24 @@ sub select {
         $self->logger->logcroak( "can't execute the query: $statement: $@" );
     };
 
+    my @entries;
+
     while ( my $entry = $sth->fetchrow_hashref ) {
-        $callback->( $entry );
+
+        if ( $callback ) {
+            $callback->( $entry );
+        }
+        else {
+            push @entries, $entry;
+        }
     }
 
-    return 1;
+    if ( $callback ) {
+        return 1;
+    }
+    else {
+        return @entries;
+    }
 }
 
 sub query {

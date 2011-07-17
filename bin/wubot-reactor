@@ -89,18 +89,28 @@ push @timers, AnyEvent->timer( after => 60,
                                interval => 60,
                                cb => sub {
 
-                                   for my $message ( $reactor->monitor() ) {
-                                       next unless $message;
-                                       next unless keys %{ $message };
+                                   for my $results ( $reactor->monitor() ) {
+                                       next unless $results;
 
-                                       eval { # try
-                                           react( $message );
-                                           1;
-                                       } or do { # catch
-                                           my $error = $@;
-                                           warn "ERROR in reaction: $@";
-                                           print YAML::Dump $message;
-                                       };
+                                       my @messages;
+                                       if ( ref $results eq "ARRAY" ) {
+                                           @messages = @{ $results };
+                                       }
+                                       elsif ( ref $results eq "HASH" ) {
+                                           push @messages, $results;
+                                       }
+
+                                       for my $message ( @messages ) {
+
+                                           eval { # try
+                                               react( $message );
+                                               1;
+                                           } or do { # catch
+                                               my $error = $@;
+                                               warn "ERROR in reaction: $@";
+                                               print YAML::Dump $message;
+                                           };
+                                       }
                                    }
 
                                },
@@ -135,6 +145,10 @@ $logger->error( "Ended..." );
 
 sub react {
     my ( $message ) = @_;
+
+    unless ( $message->{key} ) {
+        $message->{key} = "wubot-reactor";
+    }
 
     $logger->debug( "Message received from: $message->{key}" );
     $reactor->react( $message );

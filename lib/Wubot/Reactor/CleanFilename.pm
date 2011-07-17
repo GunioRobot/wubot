@@ -16,16 +16,32 @@ has 'logger'  => ( is => 'ro',
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    my $filename = $message->{ $config->{filename_field} };
+    unless ( $config->{field} ) {
+        $self->logger->error( "ERROR: CleanFilename: field not defined in config", YAML::Dump $config );
+        return $message;
+    }
+
+    my $filename = $message->{ $config->{field} };
+
+    unless ( $filename ) {
+        $self->logger->error( "ERROR: CleanFilename: message field $config->{field} not defined" );
+        return $message;
+    }
 
     # anything that isn't a specifically allowed character is replaced
     # with an underscore
-    $filename =~ s|[^\w\d\_\-\.]+|_|g;
+    if ( $config->{directory} ) {
+        $filename =~ s|[^\w\d\_\-\.\/]+|_|g;
+    }
+    else {
+        $filename =~ s|[^\w\d\_\-\.]+|_|g;
+    }
+
 
     # replace multiple underscores with a single underscore
     $filename =~ s|\_+|_|g;
 
-    $message->{ $config->{filename_field} } = $filename;
+    $message->{ $config->{field} } = $filename;
 
     return $message;
 }

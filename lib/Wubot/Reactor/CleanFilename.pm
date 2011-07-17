@@ -37,6 +37,9 @@ sub react {
         $filename =~ s|[^\w\d\_\-\.]+|_|g;
     }
 
+    if ( $config->{lc} ) {
+        $filename = lc( $filename );
+    }
 
     # replace multiple underscores with a single underscore
     $filename =~ s|\_+|_|g;

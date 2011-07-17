@@ -7,9 +7,7 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-Log::Log4perl->easy_init($WARN);
-my $logger = get_logger( 'default' );
-
+use Wubot::Logger;
 use Wubot::Plugin::EmacsOrgMode;
 use Wubot::Reactor;
 

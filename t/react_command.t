@@ -26,8 +26,8 @@ $queuedir .= "/queue";
     my $pwd = `pwd`;
     chomp $pwd;
 
-    eq_or_diff( $command->react( { }, { command => 'pwd' } ),
-               { command_output => $pwd, command_signal => 0, command_status => 0 },
+    eq_or_diff( $command->react( { abc => 'xyz' }, { command => 'pwd' } ),
+               { command_output => $pwd, command_signal => 0, command_status => 0, abc => 'xyz' },
                "Checking react() run with a configured command"
            );
 
@@ -49,8 +49,8 @@ $queuedir .= "/queue";
         "Creating new command reactor object"
     );
 
-    eq_or_diff( $command->react( { }, { command => 'false' } ),
-               { command_output => '', command_signal => 0, command_status => 1 },
+    eq_or_diff( $command->react( { abc => 'xyz' }, { command => 'false' } ),
+               { command_output => '', command_signal => 0, command_status => 1, abc => 'xyz' },
                "Checking react() run with a command that fails"
            );
 }
@@ -97,7 +97,7 @@ $queuedir .= "/queue";
     );
 
     eq_or_diff( $command->monitor(),
-               [ { command_output => 'finished', command_signal => 0, command_status => 0 } ],
+               [ { command_output => 'finished', command_signal => 0, command_status => 0, foo => 'abc' } ],
                "Checking background command results"
            );
 
@@ -136,8 +136,8 @@ $queuedir .= "/queue";
 
     eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished1', command_signal => 0, command_status => 0 },
-                   { command_output => 'finished2', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished1', command_signal => 0, command_status => 0, foo => 'abc' },
+                   { command_output => 'finished2', command_signal => 0, command_status => 0, foo => 'def' },
                ],
                "Checking background command results"
            );
@@ -172,7 +172,7 @@ $queuedir .= "/queue";
     sleep 3;
     eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished1', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished1', command_signal => 0, command_status => 0, foo => 'abc' },
                ],
                "Checking first background command results received when monitor() called"
            );
@@ -180,7 +180,7 @@ $queuedir .= "/queue";
     sleep 3;
     eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished2', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished2', command_signal => 0, command_status => 0, foo => 'def' },
                ],
                "Checking second background command results received when monitor() called"
            );
@@ -188,7 +188,7 @@ $queuedir .= "/queue";
     sleep 3;
     eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished3', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished3', command_signal => 0, command_status => 0, foo => 'def' },
                ],
                "Checking third background command results received when monitor() called"
            );
@@ -196,7 +196,7 @@ $queuedir .= "/queue";
     sleep 3;
     eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished4', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished4', command_signal => 0, command_status => 0, foo => 'def' },
                ],
                "Checking fourth background command results received when monitor() called"
            );

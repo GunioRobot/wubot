@@ -161,6 +161,12 @@ sub monitor {
             for my $key ( keys %{ $status } ) {
                 $message->{$key} = $status->{$key};
             }
+            for my $key ( keys %{ $status->{message} } ) {
+                unless ( $message->{$key} ) {
+                    $message->{$key} = $status->{message}->{$key};
+                }
+            }
+            delete $message->{message};
 
             unlink $statusfile;
         }
@@ -289,6 +295,7 @@ sub try_fork {
     }
     close $run;
 
+    $child->{message}  = $message;
     $child->{id}       = $process->{id};
     $child->{status}   = 0;
     $child->{signal}   = 0;
@@ -328,11 +335,10 @@ sub child_done {
     my $directory  = $child->{logdir};
     my $statusfile = "$directory/$child->{id}.status";
 
-    print "WRITING STATUS FILE: $statusfile\n";
-
     YAML::DumpFile( $statusfile,
                     { command_status => $child->{status},
                       command_signal => $child->{signal},
+                      message        => $child->{message},
                   } );
 
     exit;

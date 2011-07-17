@@ -284,7 +284,7 @@ sub try_fork {
 
     setsid or die "Can't start a new session: $!";
 
-    $self->logger->debug( "Launching process: $process->{id}: $process->{command}" );
+    $self->logger->trace( "Launching process: $process->{id}: $process->{command}" );
 
     # run command capturing output
     my $pid = open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
@@ -315,7 +315,7 @@ sub try_fork {
         $self->logger->error( "Error running command:$process->{id}\n\tstatus=$child->{status}\n\tsignal=$child->{signal}" );
     }
 
-    $self->logger->debug( "Process exited: $process->{id}" );
+    $self->logger->trace( "Process exited: $process->{id}" );
 
     unlink( $process->{pidfile} );
 

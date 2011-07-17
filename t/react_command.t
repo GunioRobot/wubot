@@ -2,7 +2,8 @@
 use strict;
 use warnings;
 
-use Test::More tests => 25;
+use Test::Differences;
+use Test::More tests => 27;
 
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
@@ -25,8 +26,8 @@ $queuedir .= "/queue";
     my $pwd = `pwd`;
     chomp $pwd;
 
-    is_deeply( $command->react( { }, { command => 'pwd' } ),
-               { command_output => $pwd },
+    eq_or_diff( $command->react( { }, { command => 'pwd' } ),
+               { command_output => $pwd, command_signal => 0, command_status => 0 },
                "Checking react() run with a configured command"
            );
 
@@ -43,6 +44,16 @@ $queuedir .= "/queue";
     );
 }
 
+{
+    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir } ),
+        "Creating new command reactor object"
+    );
+
+    eq_or_diff( $command->react( { }, { command => 'false' } ),
+               { command_output => '', command_signal => 0, command_status => 1 },
+               "Checking react() run with a command that fails"
+           );
+}
 
 {
     my $id = 'forker';
@@ -85,8 +96,8 @@ $queuedir .= "/queue";
         "Checking that logfile was created"
     );
 
-    is_deeply( $command->monitor(),
-               [ { command_output => 'finished' } ],
+    eq_or_diff( $command->monitor(),
+               [ { command_output => 'finished', command_signal => 0, command_status => 0 } ],
                "Checking background command results"
            );
 
@@ -123,22 +134,24 @@ $queuedir .= "/queue";
 
     sleep 3;
 
-    is_deeply( $command->monitor(),
+    eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished1' },
-                   { command_output => 'finished2' },
+                   { command_output => 'finished1', command_signal => 0, command_status => 0 },
+                   { command_output => 'finished2', command_signal => 0, command_status => 0 },
                ],
                "Checking background command results"
            );
 }
 
 {
-    my $id = 'double';
+    my $id = 'multi';
 
     my $command = Wubot::Reactor::Command->new( { logdir => $tempdir } );
 
     my $results1_h = $command->react( { foo => 'abc' }, { command => 'sleep 1 && echo finished1', fork => $id } );
     my $results2_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished2', fork => $id } );
+    my $results3_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished3', fork => $id } );
+    my $results4_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished4', fork => $id } );
 
     ok( $results1_h->{command_pid},
         "Checking react() returned command_pid of forked process"
@@ -157,54 +170,36 @@ $queuedir .= "/queue";
     );
 
     sleep 3;
-
-    is_deeply( $command->monitor(),
+    eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished1' },
+                   { command_output => 'finished1', command_signal => 0, command_status => 0 },
                ],
                "Checking first background command results received when monitor() called"
            );
 
     sleep 3;
-
-    is_deeply( $command->monitor(),
+    eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished2' },
+                   { command_output => 'finished2', command_signal => 0, command_status => 0 },
                ],
-               "Checking second background command results received when monitor() called"
-           );
-}
-
-
-{
-    my $id = 'killer';
-
-    my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedir => $queuedir } );
-
-    my $results1_h = $command->react( { foo => 'abc' }, { command => 'sleep 100 && echo finished1', fork => $id } );
-
-    sleep 1;
-
-    my $results2_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished2', fork => $id } );
-
-    kill 9 => $results1_h->{command_pid};
-
-    sleep 1;
-
-    is_deeply( $command->monitor(),
-               [],
                "Checking second background command results received when monitor() called"
            );
 
     sleep 3;
-
-    is_deeply( $command->monitor(),
+    eq_or_diff( $command->monitor(),
                [
-                   { command_output => 'finished2' },
+                   { command_output => 'finished3', command_signal => 0, command_status => 0 },
                ],
-               "Checking second background command results received when monitor() called"
+               "Checking third background command results received when monitor() called"
            );
 
+    sleep 3;
+    eq_or_diff( $command->monitor(),
+               [
+                   { command_output => 'finished4', command_signal => 0, command_status => 0 },
+               ],
+               "Checking fourth background command results received when monitor() called"
+           );
 }
 
 
@@ -229,8 +224,6 @@ $queuedir .= "/queue";
 
 
 # TODO: duplicate command suppression
-# TODO: get exit status for forked and non-forked commands
-# TODO: get results after command completes - exit status
 # TODO: test background command failure
 # TODO: parent process exits and child keeps running and is picked up by next process
 # TODO: start time, run time

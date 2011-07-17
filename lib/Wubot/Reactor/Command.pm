@@ -3,6 +3,7 @@ use Moose;
 
 # VERSION
 
+use FileHandle;
 use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime setsid :sys_wait_h);
@@ -44,7 +45,8 @@ has 'queuedir'  => ( is       => 'ro',
                      },
                  );
 
-
+# for use by child processes only
+my $child;
 
 
 sub react {
@@ -75,11 +77,22 @@ sub react {
     if ( $config->{fork} ) {
         return $self->fork_or_enqueue( $command, $message, $config );
     }
-    else {
-        $output = `$command 2>&1`;
+
+    $output = `$command 2>&1`;
+    chomp $output;
+
+    my $results = $?;
+
+    # check exit status
+    my $status = 0;
+    my $signal = 0;
+
+    unless ( $? eq 0 ) {
+        $status = $? >> 8;
+        $signal = $? & 127;
+        $self->logger->error( "Error running command: $command\n\tstatus=$status\n\tsignal=$signal" );
     }
 
-    chomp $output;
 
     if ( $config->{output_field} ) {
         $message->{ $config->{output_field} } = $output;
@@ -88,6 +101,9 @@ sub react {
         $message->{command_output} = $output;
     }
 
+    $message->{command_signal} = $signal;
+    $message->{command_status} = $status;
+
     return $message;
 }
 
@@ -95,6 +111,7 @@ sub monitor {
     my ( $self ) = @_;
 
     # clean up any child processes that have exited
+    $self->logger->trace( "Command: killing zombies" );
     waitpid(-1, WNOHANG);
 
     my @messages;
@@ -102,7 +119,7 @@ sub monitor {
     my $directory = $self->logdir;
 
     my $dir_h;
-    opendir( $dir_h, $directory ) or die "Can't opendir $directory: $!";
+    opendir( $dir_h, $directory ) or $self->logger->logdie( "Can't opendir $directory: $!" );
 
     FILE:
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
@@ -117,23 +134,36 @@ sub monitor {
 
         next if $self->check_process( $id );
 
+        $self->logger->info( "Command: collecting finish process info for $id" );
+
         my $logfile = "$directory/$id.log";
 
-        open(my $fh, "<", $logfile)
-            or die "Couldn't open $logfile for reading: $!\n";
         my $output = "";
-
-        while ( my $line = <$fh> ) {
-            $output .= $line;
+        if ( -r $logfile ) {
+            $self->logger->info( "Reading command output from logfile: $logfile" );
+            open(my $fh, "<", $logfile)
+                or die "Couldn't open $logfile for reading: $!\n";
+            while ( my $line = <$fh> ) {
+                $output .= $line;
+            }
+            close $fh or die "Error closing file: $!\n";
+            chomp $output;
         }
-        close $fh or die "Error closing file: $!\n";
-
-        next FILE unless $output;
-
-        chomp $output;
 
         my $message;
         $message->{command_output} = $output;
+
+        my $statusfile = "$directory/$id.status";
+        if ( -r $statusfile ) {
+            $self->logger->info( "Loading status file: $statusfile" );
+            my $status = YAML::LoadFile( $statusfile );
+
+            for my $key ( keys %{ $status } ) {
+                $message->{$key} = $status->{$key};
+            }
+
+            unlink $statusfile;
+        }
 
         push @messages, $message;
 
@@ -144,7 +174,7 @@ sub monitor {
 
     closedir( $dir_h );
 
-    # start commands
+    $self->logger->debug( "Searching for processes in queue to be started" );
   QUEUE:
     while ( my ( $message, $callback ) = $self->queue->get( $self->queuedir ) ) {
 
@@ -185,7 +215,7 @@ sub fork_or_enqueue {
 
     if ( $self->check_process( $id ) ) {
 
-        $self->logger->info( "Process already active, queueing command for $id" );
+        $self->logger->info( "Process already active, queueing command for queue: $id" );
         my $queue = { logfile    => $logfile,
                       pidfile    => $pidfile,
                       command    => $command,
@@ -216,6 +246,8 @@ sub try_fork {
     my $message = $process->{message} || {};
 
     if ( my $pid = fork() ) {
+        $self->logger->info( "Fork succeeded, creating pidfile: $process->{pidfile}" );
+
         open(my $fh, ">", $process->{pidfile})
             or die "Couldn't open $process->{pidfile} for writing: $!\n";
         print $fh $pid;
@@ -228,8 +260,6 @@ sub try_fork {
         return $message;
     }
 
-    $self->logger->info( "Pidfile: $process->{pidfile}" );
-
     # wu - ugly bug fix - when closing STDIN, it becomes free and
     # may later get reused when calling open (resulting in error
     # 'Filehandle STDIN reopened as $fh only for output'). :/ So
@@ -241,33 +271,69 @@ sub try_fork {
     }
 
     open STDOUT, '>>', $process->{logfile} or die "Can't write stdout to $process->{logfile}: $!";
+    STDOUT->autoflush(1);
+
     open STDERR, '>>', $process->{logfile} or die "Can't write stderr to $process->{logfile}: $!";
+    STDERR->autoflush(1);
 
     setsid or die "Can't start a new session: $!";
 
     $self->logger->debug( "Launching process: $process->{id}: $process->{command}" );
 
     # run command capturing output
-    open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
+    my $pid = open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
+
     while ( my $line = <$run> ) {
         chomp $line;
         print "$line\n";
     }
     close $run;
 
+    $child->{id}       = $process->{id};
+    $child->{status}   = 0;
+    $child->{signal}   = 0;
+    $child->{pidfile}  = $process->{pidfile};
+    $child->{logdir}   = $self->logdir;
+    $child->{childpid} = $pid;
+
+    $SIG{'INT'} = 'INT_handler';
+
     # check exit status
+    my $status = 0;
+    my $signal = 0;
+
     unless ( $? eq 0 ) {
-        my $status = $? >> 8;
-        my $signal = $? & 127;
-        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$status\n\tsignal=$signal" );
+        $child->{status} = $? >> 8;
+        $child->{signal} = $? & 127;
+        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$child->{status}\n\tsignal=$child->{signal}" );
     }
 
     $self->logger->debug( "Process exited: $process->{id}" );
 
     unlink( $process->{pidfile} );
 
+    child_done();
+}
+
+sub INT_handler {
+    $child->{signal} = 1;
+}
+
+sub child_done {
+    my $id = $child->{id};
+
     close STDOUT;
     close STDERR;
+
+    my $directory  = $child->{logdir};
+    my $statusfile = "$directory/$child->{id}.status";
+
+    print "WRITING STATUS FILE: $statusfile\n";
+
+    YAML::DumpFile( $statusfile,
+                    { command_status => $child->{status},
+                      command_signal => $child->{signal},
+                  } );
 
     exit;
 }
@@ -290,7 +356,7 @@ sub check_process {
 
     if ( kill 0 => $pid ) {
         $self->logger->debug( "Process $id responded to kill 0: $pid" );
-        return 1;
+        return $pid;
     }
 
     $self->logger->info( "Pidfile exists but pid not active: $pid" );

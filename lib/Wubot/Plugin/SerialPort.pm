@@ -90,7 +90,7 @@ sub check {
         last READ unless $string;
 
         $string =~ s|\s$||;
-        push @react, { line => $string };
+        push @react, { line => $string, lastupdate => time };
     }
 
     return { react => \@react };

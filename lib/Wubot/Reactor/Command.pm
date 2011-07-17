@@ -11,6 +11,7 @@ use Term::ANSIColor;
 use YAML::XS;
 
 use Wubot::LocalMessageStore;
+use Wubot::SQLite;
 
 has 'logger'   => ( is       => 'ro',
                     isa      => 'Log::Log4perl::Logger',
@@ -29,22 +30,50 @@ has 'logdir'   => ( is       => 'ro',
                     },
                 );
 
-has 'queue'   => ( is      => 'ro',
-                     isa     => 'Wubot::LocalMessageStore',
-                     lazy    => 1,
-                     default => sub {
-                         return Wubot::LocalMessageStore->new();
-                     },
-                 );
-
-has 'queuedir'  => ( is       => 'ro',
+has 'queuedb'   => ( is       => 'ro',
                      isa      => 'Str',
                      lazy     => 1,
                      default  => sub {
                          my $self = shift;
-                         return join( "/", $ENV{HOME}, "wubot", "sqlite", "command" );
+                         return join( "/", $ENV{HOME}, "wubot", "sqlite", "command.sql" );
                      },
                  );
+
+has 'qschema'   => ( is       => 'ro',
+                     isa      => 'HashRef',
+                     lazy     => 1,
+                     default  => sub {
+                         return { command    => 'text',
+                                  message    => 'text',
+                                  queueid    => 'varchar(32)',
+                                  started    => 'int',
+                                  pid        => 'int',
+                                  status     => 'int',
+                                  signal     => 'int',
+                                  pidfile    => 'varchar(128)',
+                                  logfile    => 'varchar(128)',
+                                  childpid   => 'int',
+                                  lastupdate => 'int',
+                                  output     => 'text',
+                                  id         => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                                  seen       => 'int',
+                              };
+                     },
+                 );
+
+has 'sqlite'    => ( is       => 'ro',
+                     isa      => 'Wubot::SQLite',
+                     lazy     => 1,
+                     default  => sub {
+                         my $self = shift;
+                         $self->logger->error( "CREATING sqlite db with file: ", $self->queuedb );
+                         return Wubot::SQLite->new( { file => $self->queuedb } );
+                     },
+               );
+
+my $is_null = "IS NULL";
+my $is_not_null = "IS NOT NULL";
+
 
 # for use by child processes only
 my $child;
@@ -122,7 +151,7 @@ sub monitor {
     my $dir_h;
     opendir( $dir_h, $directory ) or $self->logger->logdie( "Can't opendir $directory: $!" );
 
-    FILE:
+  FILE:
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
         next unless $entry;
         next if -d $entry;
@@ -141,7 +170,7 @@ sub monitor {
 
         my $output = "";
         if ( -r $logfile ) {
-            $self->logger->info( "Reading command output from logfile: $logfile" );
+            $self->logger->info( "Command: Reading command output from logfile: $logfile" );
             open(my $fh, "<", $logfile)
                 or die "Couldn't open $logfile for reading: $!\n";
             while ( my $line = <$fh> ) {
@@ -154,14 +183,23 @@ sub monitor {
         my $message;
         $message->{command_output} = $output;
 
-        my $statusfile = "$directory/$id.status";
-        if ( -r $statusfile ) {
-            $self->logger->info( "Loading status file: $statusfile" );
-            my $status = YAML::XS::LoadFile( $statusfile );
+        my ( $status ) = $self->sqlite->select( { tablename => 'queue',
+                                                  where     => { queueid => $id, seen => \$is_null, started => \$is_not_null },
+                                                  order     => 'lastupdate DESC',
+                                              } );
 
-            for my $key ( keys %{ $status } ) {
-                $message->{$key} = $status->{$key};
+        if ( $status ) {
+            # deserialize the message data
+            if ( $status->{message} ) {
+                $status->{message} = Load $status->{message};
             }
+            else {
+                $self->logger->error( "ERROR: queue entry has no message", YAML::Dump $status );
+            }
+
+            $message->{command_status} = $status->{status};
+            $message->{command_signal} = $status->{signal};
+
             for my $key ( keys %{ $status->{message} } ) {
                 unless ( $message->{$key} ) {
                     $message->{$key} = $status->{message}->{$key};
@@ -169,38 +207,96 @@ sub monitor {
             }
             delete $message->{message};
 
-            unlink $statusfile;
+            $self->sqlite->update( 'queue',
+                                   { seen     => time,
+                                 },
+                                   { id       => $status->{id} },
+                                   $self->qschema,
+                               );
+
+        }
+        else {
+            $self->logger->error( "ERROR: no status information found about finished process!" );
         }
 
+
+
+        if ( $message->{status} || $message->{signal} ) {
+            $message->{subject} = "Command failed: $id [$message->{status}:$message->{signal}]";
+        }
+        else {
+            $message->{subject} = "Command succeeded: $id";
+        }
+
+        $self->logger->info( "Command: collected information about process $id" );
         push @messages, $message;
 
         # TODO: hole here where message could be lost after the log is deleted!
 
-        unlink( $logfile );;
+        $self->logger->info( "Unlinking logfile: $logfile" );
+        unlink( $logfile );
     }
 
     closedir( $dir_h );
 
     $self->logger->debug( "Searching for processes in queue to be started" );
+
+    my @queues;
+    eval {                          # try
+        @queues = $self->sqlite->select( { tablename => 'queue',
+                                           column    => 'DISTINCT queueid'
+                                       } );
+        1;
+    } or do {                       # catch
+        $self->logger->debug( "Command: No queue data found" );
+        $self->logger->trace( $@ );
+    };
+
   QUEUE:
-    while ( my ( $message, $callback ) = $self->queue->get( $self->queuedir ) ) {
+    for my $queue ( @queues ) {
 
-        if ( -r $message->{pidfile} ) {
-            $self->logger->debug( "Previous process still running: $message->{pidfile}" );
-            last QUEUE;
-        }
-        if ( -r $message->{logfile} ) {
-            $self->logger->debug( "Previous logfile not yet cleaned up: $message->{logfile}" );
-            last QUEUE;
-        }
+        my $id = $queue->{queueid};
 
-        if ( my $results = $self->try_fork( $message ) ) {
+        $self->logger->info( "Checking queue: $queue->{queueid}" );
 
-            # TODO: react to message
-            #push @messages, $message;
+        my $pidfile = join( "/", $self->logdir, "$id.pid" );
+        my $logfile = join( "/", $self->logdir, "$id.log" );
 
-            # delete the message from the queue
-            $callback->();
+         if ( -r $pidfile ) {
+             $self->logger->debug( "Previous process still running: $pidfile" );
+             last QUEUE;
+         }
+         if ( -r $logfile ) {
+             $self->logger->debug( "Previous logfile not yet cleaned up: $logfile" );
+             last QUEUE;
+         }
+
+        my $is_null = "IS NULL";
+        my ( $entry ) = $self->sqlite->select( { tablename => 'queue',
+                                                 where     => { queueid => $id, started => \$is_null, seen => \$is_null },
+                                                 order     => 'lastupdate DESC',
+                                             },
+                                           );
+
+        if ( $entry ) {
+
+            $entry->{sqlid} = $entry->{id};
+            $entry->{id} = $entry->{queueid};
+
+            # de-serialize the original message data
+            if ( $entry->{message} ) {
+                $entry->{message} = Load $entry->{message};
+            }
+            else {
+                $self->logger->error( "Warning, no serialized message data for command: queue=$id id=$entry->{sqlid}" );
+            }
+
+            if ( my $results = $self->try_fork( $entry ) ) {
+
+                # TODO: react to message
+                #push @messages, { subject => "forked process for queue $id" };
+
+            }
         }
 
     }
@@ -220,18 +316,22 @@ sub fork_or_enqueue {
     my $logfile = join( "/", $self->logdir, "$id.log" );
     my $pidfile = join( "/", $self->logdir, "$id.pid" );
 
+    my $sqlid = $self->sqlite->insert( 'queue',
+                                       { command    => $command,
+                                         pidfile    => $pidfile,
+                                         logfile    => $logfile,
+                                         queueid    => $id,
+                                         lastupdate => time,
+                                         message    => Dump( $message ),
+                                     },
+                                       $self->qschema,
+                                   );
+
     if ( $self->check_process( $id ) ) {
 
         $self->logger->info( "Process already active, queueing command for queue: $id" );
-        my $queue = { logfile    => $logfile,
-                      pidfile    => $pidfile,
-                      command    => $command,
-                      id         => $id,
-                      lastupdate => time,
-                      message    => $message,
-                  };
-        $self->queue->store( $queue, $self->queuedir );
 
+        $message->{sqlid}          = $sqlid;
         $message->{command_queued} = 1;
         return $message;
     }
@@ -241,6 +341,7 @@ sub fork_or_enqueue {
                               command => $command,
                               logfile => $logfile,
                               pidfile => $pidfile,
+                              sqlid   => $sqlid,
                           } );
 }
 
@@ -253,12 +354,24 @@ sub try_fork {
     my $message = $process->{message} || {};
 
     if ( my $pid = fork() ) {
-        $self->logger->info( "Fork succeeded, creating pidfile: $process->{pidfile}" );
+        $self->logger->info( "Fork succeeded, creating pidfile: $process->{pidfile} [$process->{sqlid}]" );
 
         open(my $fh, ">", $process->{pidfile})
             or die "Couldn't open $process->{pidfile} for writing: $!\n";
         print $fh $pid;
         close $fh or die "Error closing file: $!\n";
+
+        $self->sqlite->update( 'queue',
+                               { logfile  => $process->{logfile},
+                                 logdir   => $self->{logdir},
+                                 pidfile  => $process->{pidfile},
+                                 started  => time,
+                                 pid      => $pid,
+                             },
+                               { id       => $process->{sqlid} },
+                               $self->qschema,
+                           );
+
 
         $message->{pidfile}     = $process->{pidfile};
         $message->{logfile}     = $process->{logfile};
@@ -290,57 +403,50 @@ sub try_fork {
     # run command capturing output
     my $pid = open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
 
+    $self->sqlite->update( 'queue',
+                           { childpid => $pid,
+                             logfile  => $process->{logfile},
+                             logdir   => $self->{logdir},
+                             pidfile  => $process->{pidfile},
+                         },
+                           { id       => $process->{sqlid} },
+                           $self->qschema,
+                       );
+
     while ( my $line = <$run> ) {
         chomp $line;
         print "$line\n";
     }
     close $run;
 
-    $child->{message}  = $message;
     $child->{id}       = $process->{id};
     $child->{status}   = 0;
     $child->{signal}   = 0;
-    $child->{pidfile}  = $process->{pidfile};
-    $child->{logdir}   = $self->logdir;
-    $child->{childpid} = $pid;
-
-    $SIG{'INT'} = 'INT_handler';
 
     # check exit status
     my $status = 0;
     my $signal = 0;
 
     unless ( $? eq 0 ) {
-        $child->{status} = $? >> 8;
-        $child->{signal} = $? & 127;
-        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$child->{status}\n\tsignal=$child->{signal}" );
+        $status = $? >> 8;
+        $signal = $? & 127;
+        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$status\n\tsignal=$signal" );
     }
 
     $self->logger->trace( "Process exited: $process->{id}" );
 
     unlink( $process->{pidfile} );
 
-    child_done();
-}
-
-sub INT_handler {
-    $child->{signal} = 1;
-}
-
-sub child_done {
-    my $id = $child->{id};
+    $self->sqlite->update( 'queue',
+                           { status   => $status,
+                             signal   => $signal,
+                         },
+                           { id       => $process->{sqlid} },
+                           $self->qschema,
+                       );
 
     close STDOUT;
     close STDERR;
-
-    my $directory  = $child->{logdir};
-    my $statusfile = "$directory/$child->{id}.status";
-
-    YAML::XS::DumpFile( $statusfile,
-                        { command_status => $child->{status},
-                          command_signal => $child->{signal},
-                          message        => $child->{message},
-                      } );
 
     exit;
 }

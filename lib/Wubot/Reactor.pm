@@ -137,6 +137,23 @@ sub condition {
     return;
 }
 
+sub initialize_plugin {
+    my ( $self, $plugin ) = @_;
+
+    return if $self->{plugins}->{ $plugin };
+
+    $self->logger->info( "Creating instance of reactor plugin $plugin" );
+    my $reactor_class = join( "::", 'Wubot', 'Reactor', $plugin );
+    load_class( $reactor_class );
+    $self->{plugins}->{ $plugin } = $reactor_class->new();
+
+    if ( $self->{plugins}->{ $plugin }->can( "monitor" ) ) {
+        $self->monitors->{ $plugin } = 1;
+    }
+
+    return 1;
+}
+
 sub run_plugin {
     my ( $self, $rule, $message, $plugin, $config ) = @_;
 
@@ -148,14 +165,8 @@ sub run_plugin {
     }
 
     unless ( $self->{plugins}->{ $plugin } ) {
-        $self->logger->info( "Creating instance of reactor plugin $plugin" );
-        my $reactor_class = join( "::", 'Wubot', 'Reactor', $plugin );
-        load_class( $reactor_class );
-        $self->{plugins}->{ $plugin } = $reactor_class->new();
 
-        if ( $self->{plugins}->{ $plugin }->can( "monitor" ) ) {
-            $self->monitors->{ $plugin } = 1;
-        }
+        $self->initialize_plugin( $plugin );
     }
 
     my $return = $self->{plugins}->{ $plugin }->react( $message, $config );
@@ -170,10 +181,46 @@ sub run_plugin {
     return $return;
 }
 
+# walk through rules tree recursively looking for a list of the
+# plugins that are used
+sub find_plugins {
+    my ( $self, $rules ) = @_;
+
+    my %plugins;
+
+    for my $rule ( @{ $rules } ) {
+        if ( $rule->{plugin} ) {
+            $self->logger->debug( "Found rule: $rule->{name}: $rule->{plugin}" );
+            $plugins{ $rule->{plugin} } = 1;
+        }
+
+        if ( $rule->{rules} ) {
+            for my $plugin ( $self->find_plugins( $rule->{rules} ) ) {
+                $plugins{ $plugin } = 1;
+            }
+        }
+    }
+
+    return sort keys %plugins;
+
+}
+
 sub monitor {
     my ( $self ) = @_;
 
     $self->logger->debug( "Checking reactor monitors" );
+
+    unless ( $self->{initialized_monitors} ) {
+        $self->logger->warn( "Initializing monitors" );
+
+        my @plugins = $self->find_plugins( $self->{config}->{rules} );
+
+        for my $plugin ( @plugins ) {
+            $self->initialize_plugin( $plugin );
+        }
+
+        $self->{initialized_monitors} = 1;
+    }
 
     my @react;
 

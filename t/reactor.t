@@ -4,9 +4,7 @@ use strict;
 use Test::More 'no_plan';
 use YAML;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($INFO);
-
+use Wubot::Logger;
 use Wubot::Reactor;
 
 my $config_src = <<"EOF";
@@ -365,3 +363,31 @@ my $reactor = Wubot::Reactor->new( config => $config );
     );
 
 }
+
+is_deeply( [ $reactor->find_plugins( $config->{rules} ) ],
+           [ 'SetField' ],
+           "Checking that SetField plugin was found"
+       );
+
+my $test_config =<<EOF;
+
+---
+rules:
+  - name: abc rule
+    plugin: ABC
+    rules:
+      - name: def rule
+        plugin: DEF
+        rules:
+          - name: ghi rule
+            plugin: GHI
+
+
+EOF
+
+
+is_deeply( [ $reactor->find_plugins( YAML::Load( $test_config )->{rules} ) ],
+           [ qw( ABC DEF GHI ) ],
+           "Checking that plugins were found in rule tree"
+       );
+

@@ -180,7 +180,7 @@ sub monitor {
 
         my ( $status ) = $self->sqlite->select( { tablename => 'queue',
                                                   where     => { queueid => $id, seen => \$is_null, started => \$is_not_null },
-                                                  order     => 'lastupdate DESC',
+                                                  order     => 'id',
                                               } );
 
         if ( $status ) {
@@ -214,10 +214,8 @@ sub monitor {
             $self->logger->error( "ERROR: no status information found about finished process!" );
         }
 
-
-
-        if ( $message->{status} || $message->{signal} ) {
-            $message->{subject} = "Command failed: $id [$message->{status}:$message->{signal}]";
+        if ( $message->{command_status} || $message->{command_signal} ) {
+            $message->{subject} = "Command failed: $id [$message->{command_status}:$message->{command_signal}]";
         }
         else {
             $message->{subject} = "Command succeeded: $id";

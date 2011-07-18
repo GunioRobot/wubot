@@ -264,10 +264,9 @@ sub monitor {
              last QUEUE;
          }
 
-        my $is_null = "IS NULL";
         my ( $entry ) = $self->sqlite->select( { tablename => 'queue',
                                                  where     => { queueid => $id, started => \$is_null, seen => \$is_null },
-                                                 order     => 'lastupdate DESC',
+                                                 order     => 'id',
                                              },
                                            );
 

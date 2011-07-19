@@ -115,7 +115,7 @@ sub react {
     unless ( $? eq 0 ) {
         $status = $? >> 8;
         $signal = $? & 127;
-        $self->logger->error( "Error running command: $command\n\tstatus=$status\n\tsignal=$signal" );
+        $self->logger->error( "Error running command: $command\n\tstatus=$status\n\tsignal=$signal\nOUTPUT:\n$output" );
     }
 
 
@@ -194,6 +194,7 @@ sub monitor {
 
             $message->{command_status} = $status->{status};
             $message->{command_signal} = $status->{signal};
+            $message->{command_queue}  = $id;
 
             for my $key ( keys %{ $status->{message} } ) {
                 unless ( $message->{$key} ) {
@@ -237,7 +238,7 @@ sub monitor {
     my @queues;
     eval {                          # try
         @queues = $self->sqlite->select( { tablename => 'queue',
-                                           column    => 'DISTINCT queueid'
+                                           fields    => 'DISTINCT queueid'
                                        } );
         1;
     } or do {                       # catch
@@ -250,7 +251,7 @@ sub monitor {
 
         my $id = $queue->{queueid};
 
-        $self->logger->info( "Checking queue: $queue->{queueid}" );
+        $self->logger->debug( "Checking queue: $queue->{queueid}" );
 
         my $pidfile = join( "/", $self->logdir, "$id.pid" );
         my $logfile = join( "/", $self->logdir, "$id.log" );

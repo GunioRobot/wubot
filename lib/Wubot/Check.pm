@@ -288,7 +288,7 @@ sub _react_results {
     my $skip = { react => 1 };
     for my $key ( keys %{ $config } ) {
         next if $skip->{ $key };
-        $react->{config}->{$key} = $config->{$key};
+        $react->{"config.$key"} = $config->{$key};
     }
 
     unless ( ref $react eq "HASH" ) {

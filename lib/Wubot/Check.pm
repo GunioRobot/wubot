@@ -77,7 +77,6 @@ has 'reactor_queue' => ( is => 'ro',
                          isa => 'Wubot::LocalMessageStore',
                          lazy => 1,
                          default => sub {
-                             my $self = shift;
                              return Wubot::LocalMessageStore->new();
                          }
                      );
@@ -283,6 +282,13 @@ sub _react_results {
             $self->_react_results( $results_h, $config );
         }
         return;
+    }
+
+    # set the monitor config in the message
+    my $skip = { react => 1 };
+    for my $key ( keys %{ $config } ) {
+        next if $skip->{ $key };
+        $react->{config}->{$key} = $config->{$key};
     }
 
     unless ( ref $react eq "HASH" ) {

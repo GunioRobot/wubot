@@ -320,29 +320,29 @@ sub fork_or_enqueue {
                                        $self->qschema,
                                    );
 
-    if ( $self->check_process( $id ) ) {
+    #if ( $self->check_process( $id ) ) {
 
-        $self->logger->info( "Process already active, queueing command for queue: $id" );
+        $self->logger->info( "Command: queueing for: $id" );
 
         $message->{sqlid}          = $sqlid;
         $message->{command_queued} = 1;
         return $message;
-    }
+    #}
 
-    return $self->try_fork( { id      => $id,
-                              message => $message,
-                              command => $command,
-                              logfile => $logfile,
-                              pidfile => $pidfile,
-                              sqlid   => $sqlid,
-                          } );
+    # return $self->try_fork( { id      => $id,
+    #                           message => $message,
+    #                           command => $command,
+    #                           logfile => $logfile,
+    #                           pidfile => $pidfile,
+    #                           sqlid   => $sqlid,
+    #                       } );
 }
 
 sub try_fork {
     my ( $self, $process ) = @_;
 
     $self->logger->info( "Forking new process for: $process->{id}" );
-    $self->logger->debug( "TRYING FORK: ", YAML::Dump $process );
+    $self->logger->info( "\tCommand: $process->{command}" );
 
     my $message = $process->{message} || {};
 

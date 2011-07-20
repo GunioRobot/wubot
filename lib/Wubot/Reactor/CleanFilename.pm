@@ -44,6 +44,9 @@ sub react {
     # replace multiple underscores with a single underscore
     $filename =~ s|\_+|_|g;
 
+    # other cleanup
+    $filename =~ s|\_\-\_|-|g;
+
     $message->{ $config->{field} } = $filename;
 
     return $message;

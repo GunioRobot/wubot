@@ -65,7 +65,7 @@ has 'sqlite'    => ( is       => 'ro',
                      lazy     => 1,
                      default  => sub {
                          my $self = shift;
-                         $self->logger->error( "CREATING sqlite db with file: ", $self->queuedb );
+                         $self->logger->warn( "Command: connecting to sqlite db: ", $self->queuedb );
                          return Wubot::SQLite->new( { file => $self->queuedb } );
                      },
                );
@@ -165,7 +165,7 @@ sub monitor {
 
         my $output = "";
         if ( -r $logfile ) {
-            $self->logger->info( "Command: Reading command output from logfile: $logfile" );
+            $self->logger->debug( "Command: Reading command output from logfile: $logfile" );
             open(my $fh, "<", $logfile)
                 or die "Couldn't open $logfile for reading: $!\n";
             while ( my $line = <$fh> ) {
@@ -177,6 +177,8 @@ sub monitor {
 
         my $message;
         $message->{command_output} = $output;
+        $message->{command_status} = 0;
+        $message->{command_signal} = 0;
 
         my ( $status ) = $self->sqlite->select( { tablename => 'queue',
                                                   where     => { queueid => $id, seen => \$is_null, started => \$is_not_null },
@@ -216,18 +218,36 @@ sub monitor {
         }
 
         if ( $message->{command_status} || $message->{command_signal} ) {
-            $message->{subject} = "Command failed: $id [$message->{command_status}:$message->{command_signal}]";
+            my $subject = "Command failed: $id";
+            if ( $message->{command_status} ) {
+                $subject .= " status=$message->{command_status}";
+            }
+            if ( $message->{command_signal} ) {
+                $subject .= " signal=$message->{command_signal}";
+            }
+            if ( $message->{command_name} ) {
+                $subject .= " => $message->{command_name}";
+            }
+            $message->{subject} = $subject;
+            $self->logger->error( $subject );
+            $self->logger->error( $output );
         }
         else {
-            $message->{subject} = "Command succeeded: $id";
+            my $subject = "Command succeeded: $id";
+            if ( $message->{command_name} ) {
+                $subject .= " => $message->{command_name}";
+            }
+            $message->{subject} = $subject;
+            $self->logger->warn( $subject );
         }
+
 
         $self->logger->info( "Command: collected information about process $id" );
         push @messages, $message;
 
         # TODO: hole here where message could be lost after the log is deleted!
 
-        $self->logger->info( "Unlinking logfile: $logfile" );
+        $self->logger->debug( "Unlinking logfile: $logfile" );
         unlink( $logfile );
     }
 
@@ -258,11 +278,11 @@ sub monitor {
 
          if ( -r $pidfile ) {
              $self->logger->debug( "Previous process still running: $pidfile" );
-             last QUEUE;
+             next QUEUE;
          }
          if ( -r $logfile ) {
              $self->logger->debug( "Previous logfile not yet cleaned up: $logfile" );
-             last QUEUE;
+             next QUEUE;
          }
 
         my ( $entry ) = $self->sqlite->select( { tablename => 'queue',
@@ -322,7 +342,7 @@ sub fork_or_enqueue {
 
     #if ( $self->check_process( $id ) ) {
 
-        $self->logger->info( "Command: queueing for: $id" );
+        $self->logger->info( "Command: queueing for: $id [$sqlid]" );
 
         $message->{sqlid}          = $sqlid;
         $message->{command_queued} = 1;
@@ -342,12 +362,12 @@ sub try_fork {
     my ( $self, $process ) = @_;
 
     $self->logger->info( "Forking new process for: $process->{id}" );
-    $self->logger->info( "\tCommand: $process->{command}" );
+    $self->logger->info( "Command: $process->{command}" );
 
     my $message = $process->{message} || {};
 
     if ( my $pid = fork() ) {
-        $self->logger->info( "Fork succeeded, creating pidfile: $process->{pidfile} [$process->{sqlid}]" );
+        $self->logger->debug( "Fork succeeded, creating pidfile: $process->{pidfile} [$process->{sqlid}]" );
 
         open(my $fh, ">", $process->{pidfile})
             or die "Couldn't open $process->{pidfile} for writing: $!\n";
@@ -389,6 +409,7 @@ sub try_fork {
     open STDERR, '>>', $process->{logfile} or die "Can't write stderr to $process->{logfile}: $!";
     STDERR->autoflush(1);
 
+    #setpgrp or die "Can't start a new session: $!";
     setsid or die "Can't start a new session: $!";
 
     $self->logger->trace( "Launching process: $process->{id}: $process->{command}" );
@@ -419,7 +440,7 @@ sub try_fork {
     unless ( $? eq 0 ) {
         $status = $? >> 8;
         $signal = $? & 127;
-        $self->logger->error( "Error running command:$process->{id}\n\tstatus=$status\n\tsignal=$signal" );
+        warn "Error running command: $process->{id}: status=$status signal=$signal\n";
     }
 
     $self->logger->trace( "Process exited: $process->{id}" );

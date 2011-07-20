@@ -1,0 +1,46 @@
+An overview of the reactor plugins.
+
+  - modify a field
+    - SetField - set a field to a configured value
+    - CopyField - copy one field on the message to another field
+    - DeleteField - remove a field and it's value from the message
+    - CaptureData - use a regexp to capture data from a field and store it in another field
+    - TransformField - capture data and reference that data in a value stored in another field
+    - Split - split a field into multiple values and store the results in other fields
+    - Template - reference message fields in a template to generate another field
+    - HashLookup - look up the value of a field in a configured hash to populate another field
+    - HTMLStrip - strip the HTML from a field
+    - ImageStrip - strip image tags from a field
+    - GreaterThan - set one or more fields if another field exceeds a value
+    - LessThan - set one or more fields if another field is below a value
+    - False - set one or more fields if another field is false
+
+
+  - files and directories
+    - CleanFilename - use the contents of a field to generate a safe and clean file or directory name
+    - MakeDirectory - create a directory using a field on the message as the directory name
+    - WriteFile - write the contents of a field to a file
+
+  - export message data
+    - RRD - store fields from the message in an RRD database and generate graphs
+    - SQLite - insert or update fields from the message in a SQL table using a configured schema
+    - SQLiteDelete - delete items in a sqlte table matching conditions defined in the message
+    - Maildir - store the entire message in a maildir
+    - MessageQueue - store the entire message in a wubot FIFO queue, implemented in SQLite
+
+  - commands
+    - Command - execute a command and capture the output and status, with named fork queues
+
+  - notifications
+    - Console - send a colorized console notification of the message subject
+    - Growl - send a growl notification of the message subject
+    - Icon - look for a suitable icon based on some common fields in the message
+    - Dumper - dump the entire message using YAML::Dump, generally for debugging
+    - IRC - send a message to a channel or a user on IRC
+    - Voice - speak a message 'subject' field on OS X
+
+  - data variation
+    - State - send a notification any time a field's value changes by more than a configured amount
+
+
+Each plugin has its own configuration schema.  More information coming on this soon.

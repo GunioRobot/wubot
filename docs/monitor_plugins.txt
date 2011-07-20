@@ -1,0 +1,53 @@
+An overview of the monitor plugins.
+
+  - web
+    - RSS - monitor RSS/Atom feeds
+    - WebFetch - fetch data from a web page
+    - WebMatches - watch for new matches of a regexp on a web page
+    - Twitter - monitor for new tweets
+
+  - system
+    - DiskSpace - check disk space and send warnings if disk space exceeds a threshold
+    - Arp - monitor the ARP table
+    - Ping - monitor ping times to remote hosts
+    - Uptime - monitor system load
+    - Command - run an external command and send a message with the output
+
+  - files and directories
+    - FileTail - monitor a file (think: tail -f) and send a message for each new line
+    - Directory - monitor a directory for newly added files
+    - FileRegexp - monitor a file and count the number of matches of a regexp over time
+    - PathLastUpdate - warn if a directory hasn't been updated in a certain amount of time
+
+  - idle time
+    - OsxIdle - monitor idle/active time on OS X
+    - WorkHours - keep track of your active/idle time over the last 7 days
+
+  - instant messaging
+    - IRC - monitor IRC, send notifications for joins, parts, and public and private messages
+    - XMPP - send/receive data over XMPP, useful for sending messages between wubot instances
+
+  - mail
+    - Mbox - send a message any time a new email shows up in an mbox
+    - OsxMailApp - monitor an OS X mailbox directory for new emails
+    - Outlook - monitor outlook web and report the count of messages in the inbox
+
+  - database
+    - SQLite - run a query on a SQLite database and send the resulting messages with the matching rows
+
+  - tv
+    - TiVo - monitor for newly recorded shows on your tivo
+    - XMLTV - fetch xmltv data and store it in SQLite, requires paid subscription to xmltv data
+
+  - misc
+    - SerialPort - monitor data from serial port, useful for monitoring data from arduino sensors
+    - OsxVolume - notify if volume is low or muted on OS X
+    - SunRise - notify time remaining until sunrise and sunset
+    - MoonPhase - notify time remaining until next full/new moon
+
+  - emacs org mode tasks
+    - EmacsOrgMode - monitor your emacs org files for tasks
+    - TaskDB - send notification about the highest priority task in your queue
+    - TaskNotify - send notifications about tasks as they reach their schedule/deadline
+
+Each plugin has its own configuration schema.  More information coming on this soon.

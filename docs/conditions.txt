@@ -1,0 +1,65 @@
+* Conditions
+
+There are a number of conditions that are available for the rules:
+
+  - {fieldname} equals {value}
+    - values of field {fieldname} on the message equals the specified value
+
+  - {fieldname} matches {regexp}
+    - value of field {fieldname} matches specified regexp
+
+  - {fieldname} imatches {regexp}
+    - case insensitve regexp match match
+
+  - contains {fieldname}
+    - the message contains the field, the value of the field may be undefined or 0
+
+  - {fieldname} is false
+    - the field has a value that is false according to perl, i.e. undef, 0, or ""
+
+  - {fieldname} is true
+    - the field has a value which is true according to perl, i.e. not undef, 0, or ""
+
+Any rule can be prefixed by NOT, as in:
+
+  - NOT title matches foo
+    - true unless the title contains 'foo'
+
+You can string together multiple rules using AND and OR, e.g.:
+
+  - subject is true AND body is true
+    - true if the subject and body are populated
+
+  - title matches foo OR body matches foo
+    - true if the title or body contains the string 'foo'
+
+  - NOT title matches foo AND NOT body matches foo
+    - true as long as 'foo' does not occur in either the title or body
+
+Unfortunately you can not (yet) use parens within conditions.
+Conditions are evaluated from left to right in order, e.g.
+
+  - x is true AND y is true OR z is true
+    - evaluates as: x is true AND ( y is true OR z is true )
+
+The main mechanism for nesting conditions is to use rule trees.  Child
+rules are only evaluated if the parent rule matches, so parent and
+child rules can be though of being combined by AND.  So, for example,
+set the field 'foo' to the value '1' based on the following logic:
+
+  ( x is true OR y is true ) AND ( a is true OR b is true )
+
+You could create the following rule tree:
+
+  rules:
+    - name: check x and y
+      condition: x is true OR y is true
+      rules:
+        - name: check a and b
+          condition: a is true OR b is true
+          plugin: SetField
+          config:
+            field: foo
+            value: 1
+
+

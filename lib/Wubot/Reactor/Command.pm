@@ -199,7 +199,7 @@ sub monitor {
             $message->{command_queue}  = $id;
 
             for my $key ( keys %{ $status->{message} } ) {
-                unless ( $message->{$key} ) {
+                unless ( exists $message->{$key} ) {
                     $message->{$key} = $status->{message}->{$key};
                 }
             }

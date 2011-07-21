@@ -45,6 +45,11 @@ sub react {
 
     my $template = Text::Template->new(TYPE => 'STRING', SOURCE => $template_contents );
 
+    unless ( $config->{target_field} ) {
+        $self->logger->error( "ERROR: template reactor: no target_field specified" );
+        return $message;
+    }
+
     $message->{ $config->{target_field} } = $template->fill_in( HASH => $message );
 
     return $message;

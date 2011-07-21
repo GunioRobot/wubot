@@ -4,6 +4,7 @@ use Moose;
 # VERSION
 
 use Log::Log4perl;
+use YAML;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -16,16 +17,30 @@ has 'logger'  => ( is => 'ro',
 sub react {
     my ( $self, $message, $config ) = @_;
 
-    if ( $config->{no_override} ) {
-        return $message if $message->{ $config->{field} };
+    if ( $config->{field} ) {
+
+        if ( $config->{no_override} ) {
+            return $message if $message->{ $config->{field} };
+        }
+
+        $message->{ $config->{field} } = $config->{value};
+    }
+    elsif ( $config->{set} ) {
+
+      KEY:
+        for my $key ( keys %{ $config->{set} } ) {
+
+            next KEY if $config->{no_override} && $message->{ $key };
+
+            $message->{ $key } = $config->{set}->{ $key };
+
+        }
+
+    }
+    else {
+        $self->logger->warn( "ERROR: No 'field' or 'set' in SetField config: ", YAML::Dump $config );
     }
 
-    unless ( $config->{field} ) {
-        $self->logger->warn( "ERROR: No field in SetField config: ", YAML::Dump $config );
-        return $message;
-    }
-
-    $message->{ $config->{field} } = $config->{value};
 
     return $message;
 }

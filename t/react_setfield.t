@@ -1,0 +1,49 @@
+#!/perl
+use strict;
+use warnings;
+
+use File::Temp qw/ tempdir /;
+use Log::Log4perl qw(:easy);
+use Test::More 'no_plan';
+
+use Wubot::Logger;
+use Wubot::Reactor::SetField;
+
+Log::Log4perl->easy_init($INFO);
+my $logger = get_logger( 'default' );
+
+ok( my $setter = Wubot::Reactor::SetField->new(),
+    "Creating new SetField reactor object"
+);
+
+is_deeply( $setter->react( { a => 'abc' }, { field => 'b',
+                                             value => 'xyz',
+                                         } ),
+           { a => 'abc', b => 'xyz' },
+           "setting field 'b' to value 'xyz'"
+       );
+
+is_deeply( $setter->react( { a => 'abc' }, { field => 'a',
+                                             value => 'xyz',
+                                         } ),
+           { a => 'xyz' },
+           "overriding field 'a'"
+       );
+
+is_deeply( $setter->react( { a => 'abc' }, { field => 'a',
+                                             value => 'xyz',
+                                             no_override => 1,
+                                         } ),
+           { a => 'abc' },
+           "no_override on field 'a'"
+       );
+
+is_deeply( $setter->react( { a => 'abc' }, { set => { x => 'y', foo => 'bar' } } ),
+           { a => 'abc', x => 'y', foo => 'bar' },
+           "set x =y and foo = bar"
+       );
+
+is_deeply( $setter->react( { a => 'abc' }, { no_override => 1, set => { a => 'xyz', foo => 'bar' } } ),
+           { a => 'abc', foo => 'bar' },
+           "set with no_override"
+       );

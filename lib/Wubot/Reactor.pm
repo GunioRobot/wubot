@@ -5,6 +5,7 @@ use Moose;
 
 use Class::Load qw/load_class/;
 use Log::Log4perl;
+use Scalar::Util qw/looks_like_number/;
 use YAML;
 
 has 'config' => ( is => 'ro',
@@ -130,6 +131,44 @@ sub condition {
 
         return 1 unless $message->{$field};
         return 1 if $message->{ $field } eq "false";
+        return;
+    }
+    elsif ( $condition =~ m/^([\w\d\.\_]+) ((?:>|<)=?) ([\w\d\.\_]+)$/ ) {
+        my ( $left, $op, $right ) = ( $1, $2, $3 );
+
+        my $first;
+        if ( looks_like_number( $left ) ) {
+            $first = $left;
+        }
+        else {
+            return unless exists $message->{$left};
+            $first = $message->{$left};
+            return unless looks_like_number( $first )
+        }
+
+        my $second;
+        if ( looks_like_number( $right ) ) {
+            $second = $right;
+        }
+        else {
+            return unless exists $message->{$right};
+            $second = $message->{$right};
+            return unless looks_like_number( $second )
+        }
+
+        if ( $op eq ">" ) {
+            return 1 if $first > $second;
+        }
+        elsif ( $op eq ">=" ) {
+            return 1 if $first >= $second;
+        }
+        elsif ( $op eq "<" ) {
+            return 1 if $first < $second;
+        }
+        elsif ( $op eq "<=" ) {
+            return 1 if $first <= $second;
+        }
+
         return;
     }
 

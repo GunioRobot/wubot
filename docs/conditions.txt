@@ -20,6 +20,17 @@ There are a number of conditions that are available for the rules:
   - {fieldname} is true
     - the field has a value which is true according to perl, i.e. not undef, 0, or ""
 
+You can also make numeric comparisons between fields and values or
+fields and other fields.
+
+  - operators: <, <=, >, >=,
+  - {fieldname} {operator} {value}
+  - {fieldname} {operator} {fieldname}
+
+  - examples:
+    - size > 300
+    - heatindex > temperature
+
 Any rule can be prefixed by NOT, as in:
 
   - NOT title matches foo

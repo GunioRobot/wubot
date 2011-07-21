@@ -1,7 +1,7 @@
 An overview of the reactor plugins.
 
   - modify a field
-    - SetField - set a field to a configured value
+    - SetField - set one or more fields to a configured value
     - CopyField - copy one field on the message to another field
     - DeleteField - remove a field and it's value from the message
     - CaptureData - use a regexp to capture data from a field and store it in another field
@@ -11,9 +11,6 @@ An overview of the reactor plugins.
     - HashLookup - look up the value of a field in a configured hash to populate another field
     - HTMLStrip - strip the HTML from a field
     - ImageStrip - strip image tags from a field
-    - GreaterThan - set one or more fields if another field exceeds a value
-    - LessThan - set one or more fields if another field is below a value
-    - False - set one or more fields if another field is false
 
 
   - files and directories

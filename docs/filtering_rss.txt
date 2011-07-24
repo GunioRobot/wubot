@@ -48,7 +48,7 @@ look something like this:
 Notice that the original config params are available in the message
 under config.*.  The 'key' is unique for every monitor instance, it
 contains the plugin directory and filename joined with a dash.  The
-full plugin name is availabe in 'plugin'.  The 'lastupdate' field
+full plugin name is available in 'plugin'.  The 'lastupdate' field
 contains the time the message was generated.  These are standard
 message fields which will be set in every message by wubot-monitor.
 The 'subject' field is an optional field that the notification plugins

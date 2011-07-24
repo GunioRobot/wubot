@@ -49,6 +49,8 @@ controlled by configuration.  So it is not necessary to write any perl
 code to use the rules.  In the future there will be a user interface
 for configuring the rules.
 
+  - http://github.com/wu/wubot/blob/master/docs/rules.txt
+
 Rules can be nested, so that when a rule matches, it can cause
 additional sub-rules to run.  Nesting rules makes the rules processing
 much more efficient so that not every rule needs to be run on every

@@ -32,3 +32,27 @@ sub react {
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::CaptureData - capture data from a field using a regexp
+
+
+=head1 SYNOPSIS
+
+  - name: capture data from 'title' field and store captured data in 'size' field
+    plugin: CaptureData
+    config:
+      source_field: title
+      regexp: '^M ([\d\.]+),'
+      target_field: size
+
+  - name: capture data from 'title' field, get there regexp from 'somefield', and store results in 'foo'
+    plugin: CaptureData
+    config:
+      source_field: abc
+      regexp_field: somefield
+      target_field: foo

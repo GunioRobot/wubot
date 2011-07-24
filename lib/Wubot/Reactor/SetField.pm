@@ -46,3 +46,28 @@ sub react {
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::SetField - set one or more fields on the message to a configured value
+
+
+=head1 SYNOPSIS
+
+  - name: set x to 123
+    plugin: SetField
+    config:
+      field: x
+      value: 123
+
+
+  - name: set x to 123, y to 456, and z to 789
+    plugin: SetField
+    config:
+      set:
+        x: 123
+        y: 456
+        z: 789

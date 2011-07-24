@@ -1,0 +1,106 @@
+* debugging
+
+The following document attempts to describe some steps you can take to
+create a new reaction or debug a reaction that isn't working properly.
+
+
+** wubot-check
+
+The wubot-check script lives in the bin directory.  It can be used to
+run a single check of an instance of a monitor.  Simply pass in
+the name of the plugin and the name of the instance config file, e.g.:
+
+  wubot-check RSS usgs-m5
+
+This would attempt to read a file:
+
+  ~/wubot/config/plugins/RSS/usgs-m5.yaml
+
+It will actually search for any file in the RSS directory that begins
+with usgs-m5.yaml, so even if you have disabled the plugin instance by
+renaming the .yaml file to .yaml.disabled, it will still be loaded.
+
+The check instance's cache file will be read and the check will be
+executed once, and any reactor messages generated will be dumped to
+stdout.  So if you have previously run this instance of the monitor,
+it's cache data may prevent it from re-sending any messages.  To
+re-send all the feed data through for debugging, it may help to remove
+the cache file or temporarily rename it while you are using
+wubot-check:
+
+  ~/wubot/cache/RSS-usgs-m5.yaml
+
+Any reactions defined directly in the monitor config will be executed,
+so this can be a great way to debug simple reactions like setting or
+modifying fields on the message.
+
+If deleting the cache file sends too much data to see what is
+happening, then you could edit the cache file, remove a single entry,
+and then re-run the wubot-check script to trigger that item to get
+re-processed.
+
+
+** Dumper reactor plugin
+
+When the trouble is occurring in the reactor config, sometimes seeing
+the raw monitor data using wubot-check isn't so helpful.  In such
+cases you can use the Dumper reactor plugin to dump out the entire
+message contents.  At the point of confusion, simply insert a rule
+like this:
+
+  - name: dump message contents
+    plugin: Dumper
+
+
+
+** Logging
+
+Both wubot-monitor and wubot-reactor write logs to ~/logs.  The logs
+are rotated a midnight each night.  Only the last 10 days of logs are
+stored.  Both processes default to the 'info' level logging on stdout
+and 'debug' level logging to the log files.
+
+To enable debug logging to stdout, export the environment variable
+LOG_DEBUG.  For even more debugging info, export LOG_TRACE.  For
+example:
+
+  LOG_DEBUG=1 bin/wubot-monitor
+  LOG_TRACE=1 bin/wubot-reactor
+
+
+
+** wubot queue
+
+Message queues in wubot are implemented using a SQLite database.  The
+contents of the message is serialized using YAML::XS and stored in the
+SQLite db.
+
+After a message has been processed successfully, the row will not
+immediately be deleted.  Instead, wubot will update the row to set the
+'seen' column to the time the message was processed.  So you generally
+have at least a 24 hour window where you can go back an inspect the
+message data that was sent to the reactor in the event of a problem.
+You can even re-send the message through the queue by hunting down the
+id and setting 'seen' back to null.  This will cause the reactor to
+immediately pick the message back up from the queue.  For example:
+
+  # open the default reactor queue
+  sqlite3 ~/wubot/reactor/queue.sqlite
+
+  # find the most recent message from the USGS rss feed
+  SELECT * FROM message_queue WHERE data LIKE '%RSS-usgs-m5%' ORDER BY lastupdate DESC LIMIT 1;
+
+  # that gets the one we want, so get the id
+  SELECT id FROM message_queue WHERE data LIKE '%RSS-usgs-m5%' ORDER BY lastupdate DESC LIMIT 1;
+
+  # now set 'seen' back to null
+  UPDATE message_queue SET seen = NULL WHERE id = 21991;
+
+Each time wubot opens a new connection to the database, it will purge
+all 'seen' messages that were marked seen more than 24 hours ago.
+This ensures the message queue will not get too long, as very long
+message queues will significantly degrade performance.  The
+performance seems to start to degrade at around 50k messages, and may
+use significantly more system resources if the queue grows beyond 100k
+messages.  Your mileage may vary.  After purging old seen messages, it
+will log the number of seen and unseen messages left in the queue.

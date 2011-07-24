@@ -75,12 +75,24 @@ Lots more to come...
 
 INSTALLATION
 
-To install this module, run the following commands:
+I'm still in the process of creating the documentation before pushing
+this to CPAN.  Until it has been moved to CPAN, there is no convenient
+way to install all the prereqs (at least not as far as I know).  So
+unfortunately you will probably have to manaully install the very
+lengthy list of prereqs for now.  Note that many of the prereqs will
+be optional depending on which monitors or reactors you have enabled.
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+Also not all test cases are guaranteed to pass on all operating
+systems at the moment.  Again the 'important' tests will vary
+depending on which monitors and reactors you have enabled.  All of
+this will hopefully be worked out much better before the CPAN release.
+
+For the time being, you may want to just check out the source to a
+directory of your choosing (I use ~/projects/wubot), and set into that
+directory and run the scripts directly.
+
+Note that you will probably have to create a ~/wubot and ~/logs
+directory.  In the future these directories should be configurable.
 
 
 COPYRIGHT AND LICENCE

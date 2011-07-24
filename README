@@ -8,21 +8,18 @@ filters.  Most email clients allow you to set rules to perform actions
 when a new email arrives.
 
 This project allows you to have a set of monitors that collect data
-from sources including:
+from a variety of sources, including:
 
   - email boxes
   - RSS/Atom feeds
-  - IRC
-  - XMPP
+  - IM
   - log files
   - system monitors
-  - xmltv
-  - tivo
   - OS X idle time
   - local sunrise/sunset times
-  - moon phases
   - monitors running on remote hosts
   - your own custom monitor plugin written in perl
+  - see: http://github.com/wu/wubot/blob/master/docs/monitor_plugins.txt
 
 Data collected from each monitor is sent through a set of rules that
 can perform actions such as:
@@ -36,6 +33,7 @@ can perform actions such as:
   - send a private or public message to IRC
   - forward the message to another host for further processing
   - your own custom action written in perl
+  - see: http://github.com/wu/wubot/blob/master/docs/reactor_plugins.txt
 
 Beyond just doing something with the message or portions of the
 message, you also have the option to modify the message, e.g.:
@@ -55,7 +53,9 @@ Rules can be nested, so that when a rule matches, it can cause
 additional sub-rules to run.  Nesting rules makes the rules processing
 much more efficient so that not every rule needs to be run on every
 message.  Rules processing is recursive so rules can be nested
-arbitrarily deep.
+arbitrarily deep.  For more information on rule conditions, see:
+
+  - http://github.com/wu/wubot/blob/master/docs/conditions.txt
 
 Distributed operation currently relies on XMPP.  Using XMPP, messages
 can be sent between wubot instances on multiple hosts.  Monitors
@@ -63,6 +63,10 @@ generate messages that may be reacted upon locally, and/or may be
 forwarded to other hosts for further reaction.
 
 This project is still under construction.
+
+To get started document, see:
+
+  - https://github.com/wu/wubot/blob/master/docs/conditions.txt
 
 Lots more to come...
 

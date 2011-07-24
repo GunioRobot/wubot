@@ -1,0 +1,355 @@
+* filtering RSS feeds
+
+This recipe downloads worldwide earthquake data from the USGS RSS
+feed.  The feed gives all earthquakes 5.0 and greater.  The recipe
+below filters out earthquakes that are less than 6.0, and sends them
+as console and growl notifications.  Earthquakes of 7 or greater get a
+colorized growl notification.  Earthquakes of 8 or greater get a
+sticky growl notification.  The filtered feed is then stored in a
+SQLite database and fed back out again to your favorite RSS reader.
+
+
+** RSS Monitor
+
+Start by defining an RSS monitor config.
+
+The RSS plugin config files live here:
+
+ ~/wubot/config/plugins/RSS/
+
+Start by creating a file named usgs-m5.yaml in that directory.  Here
+is an example of a minimalist RSS monitor config:
+
+  ---
+  delay: 15m
+  url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
+
+
+The 'delay' param tells wubot-monitor how frequently to run the check,
+and the 'url' tag is the URL of the RSS/Atom feed.
+
+After creating this config file, run wubot-monitor.  It will find the
+new config file and will schedule an immediate check of the RSS feed.
+For each entry in the feed, it will send a message (a data structure)
+containing the RSS feed data that will, by default, get serialized and
+stored in the queue to go to the reactor process.  The message will
+look something like this:
+
+  - body: ~
+    config.delay: 300
+    config.url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
+    key: RSS-usgs-m5
+    lastupdate: 1311212434
+    link: http://earthquake.usgs.gov/earthquakes/recenteqsww/Quakes/usc00051ms.php
+    plugin: Wubot::Plugin::RSS
+    subject: 'M 6.0, Solomon Islands'
+    title: 'M 6.0, Solomon Islands'
+
+Notice that the original config params are available in the message
+under config.*.  The 'key' is unique for every monitor instance, it
+contains the plugin directory and filename joined with a dash.  The
+full plugin name is availabe in 'plugin'.  The 'lastupdate' field
+contains the time the message was generated.  These are standard
+message fields which will be set in every message by wubot-monitor.
+The 'subject' field is an optional field that the notification plugins
+make use of.  If the message has a subject, that subject will be sent
+in a notification.
+
+Other fields in the message are initially set by the message plugins
+and vary from plugin to plugin.  For the RSS plugin, the custom fields
+available in this feed are 'body', 'link', and 'title'.  The body has
+no content in this example.
+
+After the monitor runs and successfully delivers it's messages to the
+reactor queue, it will write a cache file here:
+
+  ~/wubot/cache/RSS-usgs-m5.yaml
+
+The cache file contains a list of the subjects that have previously
+been seen, so that the next time the monitor runs (15 minutes later
+per the 'delay' config param), it will only send any new items that
+show up in the feed.  If you remove the cache file and restart
+wubot-monitor, it will schedule another immediate check and will
+re-send all the data from the feed.
+
+
+
+** Rules
+
+Now that the messages have been delivered to the reactor queue, you
+need a reactor config to determine what action to take when the
+message arrives.
+
+The reactor is configured with a series of rules.  For a list of the
+properties of a rule, have a peak at [[rules.txt]].  For an overview
+of the available reactor plugins, see [[reactor_plugins.txt]].
+
+Let's start with the individual rules and work up to the full rule
+tree.
+
+The first thing we need is a rule that captures the magnitude of the
+earthquake.  The title of the feed contains the magnitude, e.g.:
+
+  M 6.0, Solomon Islands
+
+The following rule will use the CaptureData plugin to capture the
+number from the 'title' field of the RSS message and store it in a new
+field called 'size':
+
+  - name: size
+    plugin: CaptureData
+    config:
+      source_field: title
+      regexp: '^M ([\d\.]+),'
+      target_field: size
+
+After this rule runs, the message will have a new field named 'size'.
+
+  - body: ~
+    config.delay: 300
+    config.url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
+    key: RSS-usgs-m5
+    lastupdate: 1311212434
+    link: http://earthquake.usgs.gov/earthquakes/recenteqsww/Quakes/usc00051ms.php
+    plugin: Wubot::Plugin::RSS
+    size: 6.0
+    subject: 'M 6.0, Solomon Islands'
+    title: 'M 6.0, Solomon Islands'
+
+
+The next step is to ignore earthquakes in the 5.x range.  According to
+the USGS, there are an average of 1319 earthquakes in this range every
+year.  That will add up to a lot of notifications.  We're just
+watching for the bigger ones here, so we need to select those that are
+less than 6, and then set the magical 'last_rule' rule, which prevents
+any further rules from running.  This is the equivalent of routing the
+message out /dev/null.
+
+  - name: suppress less than 6.0
+    condition: size < 6
+    plugin: SetField
+    config:
+      field: last_rule
+      value: 1
+
+There are only an average of 134 earthquakes in the 6 to 7 range, so
+we'll let those through so we'll get notification for earthquakes in
+that range.  But there are only an average of 16 earthquakes per year
+that are over 7.0.  We want to make the notifications for these events
+to stand out.  This is pretty similar to the previous rule, but we'll
+set the 'sticky' and 'yellow' properties on the rule.
+
+  - name: sticky greater than 7.0
+    condition: size >= 7
+    plugin: SetField
+    config:
+      set:
+        sticky: 1
+        color: yellow
+
+To enable the notifications, see [[notifications.txt]].
+
+After enabling the notifications, go to images.google.com and find a
+.png file that you would like to use for this feed (try searching for
+usgs).  Save the file as:
+
+  ~/.icons/usgs-m5.png
+
+Note that this matches the filename that was created in ~/wubot/config/plugins/RSS.
+
+
+*** final config
+
+So now let's put it all together.  The reactor config lives here:
+
+  ~/wubot/config/reactor.yaml
+
+Here are the final contents of the reactor config, including some
+notifications rules discussed in [[notifications.txt]].
+
+Warning: if you are not familiar with YAML, it is extremely sensitive
+to whitespace!
+
+---
+rules:
+
+  - name: earthquakes
+    condition: key matches ^RSS-usgs-m5
+    rules:
+
+      - name: size
+        plugin: CaptureData
+        config:
+          source_field: title
+          regexp: '^M ([\d\.]+),'
+          target_field: size
+
+      - name: suppress less than 6.0
+        condition: size < 6
+        plugin: SetField
+        config:
+          field: last_rule
+          value: 1
+
+      - name: sticky greater than 7.0
+        condition: size >= 7
+        plugin: SetField
+        config:
+          set:
+            sticky: 1
+            color: yellow
+
+  - name: notifications
+    condition: subject is true
+    rules:
+
+      - name: console
+        plugin: Console
+
+      - name: growl color
+        plugin: HashLookup
+        config:
+          source_field: color
+          target_field: growl_priority
+          lookup:
+            red: 2
+            yellow: 1
+            orange: 1
+            grey: 0
+            bold black: 0
+            green: -1
+            magenta: -2
+            purple: -2
+            blue: -2
+            cyan: -2
+    
+      - name: growl icon
+        plugin: Icon
+        config:
+          image:dir: /Users/your_id/.icons
+
+      - name: growl notify
+        plugin: Growl
+
+
+** Web UI
+
+The wubot-webui is the least developed component of the wubot project,
+but there are a few things it can do.  One of them is provide an RSS
+feed of any of the data you received.  You can take data from one or
+more feeds, filter it, modify it (e.g. strip html or images), and so
+forth.  You can combine multiple feeds together into a single RSS feed
+or you can take a single RSS feed and split it out into multiple
+feeds.  You can even take data from other sources (e.g. an mbox, irc),
+use some rules to adapt the schema, and then send it out as an RSS
+feed.
+
+The Web UI reads the data out of the rss SQLite database, so before we
+can use the Web UI, we need to go back to the reactor and add some
+rules to store the message.  You can easily stick any data from the
+monitors into a SQLite database using the SQLite reactor plugin.  You
+just need to give it the path to a SQLite database, the name of the
+table, and the schema to be used for the table.  Here is a rule that
+would add the SQLite data to the RSS database, along with a schema
+that is appropriate for the webui.
+
+
+    - name: rss sqlite
+      condition: key matches ^RSS
+      plugin: SQLite
+      config:
+        file: /home/myuserid/wubot/sqlite/rss.sql
+        tablename: feeds
+        schema:
+          id: INTEGER PRIMARY KEY AUTOINCREMENT
+          subject: varchar(256)
+          title: varchar(256)
+          body: text
+          link: varchar(256)
+          lastupdate: int
+          mailbox: varchar(16)
+          key: varchar(32)
+
+The SQLite plugin will look at the schema to determine which message
+fields you are interested in, and will then attempt to insert a new
+row into the database.  If SQLite throws and error that the table does
+not exist, the SQLite reactor will catch the error and use the schema
+above to create the table and then insert the message again.  Also you
+can add a new column to the schema at any time (a restart of wubot may
+be required to read the new schema from the config).  When the SQLite
+plugin goes to insert the data, it will catch the error that the
+column does not exist, and will then attempt to alter the table and
+add the row.  Note that it will not change the type on a column that
+has already been created in the table, or remove a column that was
+previously added.
+
+If you already ran the wubot-monitor after defining the RSS monitor
+but before adding this rule, then the monitor has already pulled all
+the items from the RSS feed and cached them.  So when you add this
+rule to the reactor, your database will not even get created until the
+first new entry shows up in the feed.  You could remove the monitor
+cache file (see above in the monitor section) and restart the monitor,
+and it will send all the items back through the feed again.  Thus your
+database will contain all the items that are currently available in
+the feed.
+
+Note that one of the fields on the sqlite table is the 'mailbox'.
+This is very important for outgoing RSS feed, since it determines the
+name of the outgoing feed.  For example, if you set the 'mailbox'
+field in your message to be 'news', then once the wubot-webui process
+has been started, you could access your feed in an RSS reader here:
+
+  http://localhost:3000/rss/news.xml
+
+If you don't give your data a mailbox, then you won't be able to
+access it through the Web UI!
+
+You could easily add a rule in the reactor to select the RSS-usgs-m5
+key and then add a 'mailbox' field.  But this is a good opportunity to
+point out that you can also define a reaction that will run directly
+in the wubot-monitor process.  When you do this, the monitor will
+process the rules before ever storing the message to the reactor
+queue.  The advantage here is that the rule is defined close to the
+monitoring config, so you can edit all the custom config specific to
+that feed in one place.  Start with the monitor config we used
+earlier:
+
+  ---
+  delay: 15m
+  url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
+
+
+And add a 'react' section to define your rules.  We'll use the
+'SetField' plugin to manually set the mailbox for this feed:
+
+  ---
+  delay: 15m
+  url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
+
+  react:
+    - name: set mailbox
+      plugin: SetField
+      config:
+        field: mailbox
+        value: earthquake
+
+The monitor config is a great place to define simple reactions for a
+monitor, e.g. adding or modifying fields on the message.  But there
+are some limitations to be aware of.  First, you can only define
+reactions that are specific to a single instance of a monitor.  If you
+have a rule that you wanted to apply to all RSS feeds, then you would
+have to duplicate that rule in every file in the RSS directory.  So
+reactions that cross across many plugins (e.g. the notifications)
+should always be defined in the reactor.  Second, not all reactor
+plugins work in the wubot-monitor process.  For example, the 'State'
+and 'Command' plugins will not work properly or fully in the
+wubot-monitor process.  Third, the reason that the monitor and the
+reactor are separate processes is by design.  This ensures that the
+monitors can continually gather data on schedule and won't get hung up
+waiting for a reaction to occur.
+
+To start the webui process, run the script wubot-webui.  Once the
+process is started up, point your RSS reader here, and enjoy your
+filtered feed:
+
+  http://localhost:3000/rss/earthquake.xml

@@ -1,0 +1,155 @@
+* Notifications
+
+This document describes how to enable notifications.  You probably
+should not start at this document, as there will be no notifications
+unless you have figured out how to use the monitor and reactor.  A
+good place to start is probably [[filtering_rss.txt]].
+
+
+** Notification reactors
+
+There are currently three notification reactors:
+
+  - Console
+  - Growl
+  - Voice
+
+The 'Growl' and 'Voice' reactors currently only work on OS X.  These
+plugins could easily be adapated to use pop-up and voice notifications
+on other operating systems, but that has not yet been done.
+
+All three reactors look for a 'subject' field on a message, and use
+that for the notification.  Messages that do not have a 'subject'
+field are ignored.  Many monitors will set the 'subject' field to
+something useful.  For example, the RSS plugin will set the 'subject'
+field of RSS feed items to be the RSS title.  You can easily use the
+reactor to remove the subject from messages when you want to suppress
+notifications.
+
+To enable the notifications, start with a rule tree that selects
+messages that contain subjects.  For the complete config, skip to the
+bottom.
+
+  - name: notifications
+    condition: subject is true
+    rules:
+
+
+** Console
+
+Begin by enabing the 'Console' plugin.  This will send all subjects to
+stdout in the terminal that is running wubot-reactor.  If the message
+contains a 'color' field, the Console plugin will attempt to display
+the message in the closest ANSI color.
+
+      - name: console
+        plugin: Console
+
+
+** Growl
+
+If you have 'Growl' installed on OS X, and you have the 'growlnotify'
+command line tool installed, and the Growl::Tiny perl library
+installed, then wubot can send a growl notification.  Enabling the
+growl notifications is easy, just add a 'Growl' rule.
+        
+      - name: growl notify
+        plugin: Growl
+
+*** Growl Icons
+
+It would be nice to have an icon for the growl notifications, so we'll
+use the Icon plugin to find one.  This plugin looks at a series of
+fields on the message (e.g. the username, the key, the plugin, the
+instance name) and tries to find a custom .png file in your icons
+directory that is appropriate.
+
+      - name: growl icon
+        plugin: Icon
+        config:
+          image:dir: /Users/your_id/.icons
+
+*** Growl Colors
+
+It is also nice to have colorized growl messages.  Unfortunately you
+can't just pass a color into growl.  One trick I've found here is to
+use the 'smoke' theme and then configure a different color for each
+priority.  For very low, I use blue, moderate is green, normal is
+black, high is orange, and emergency is red.  Then I have a rule in
+the reactor which maps the name of a color to the growl priority:
+
+      - name: growl color
+        plugin: HashLookup
+        config:
+          source_field: color
+          target_field: growl_priority
+          lookup:
+            red: 2
+            yellow: 1
+            orange: 1
+            grey: 0
+            bold black: 0
+            green: -1
+            magenta: -2
+            purple: -2
+            blue: -2
+            cyan: -2
+
+Now if I have a rule that runs before this rule that sets the 'color'
+field to blue, this rule will set a field called 'growl_priority' in
+the message which will have the priority that corresponds to the color
+i set for that priority in the growl preferences.
+
+
+** Reactor Config
+
+So now let's put it all together.  The reactor config lives here:
+
+  ~/wubot/config/reactor.yaml
+
+Here are the final contents of the reactor config.
+
+Warning: if you are not familiar with YAML, it is extremely sensitive
+to whitespace!
+
+
+
+---
+rules:
+
+  - name: notifications
+    condition: subject is true
+    rules:
+
+      - name: console
+        plugin: Console
+
+      - name: growl color
+        plugin: HashLookup
+        config:
+          source_field: color
+          target_field: growl_priority
+          lookup:
+            red: 2
+            yellow: 1
+            orange: 1
+            grey: 0
+            bold black: 0
+            green: -1
+            magenta: -2
+            purple: -2
+            blue: -2
+            cyan: -2
+    
+      - name: growl icon
+        plugin: Icon
+        config:
+          image:dir: /Users/your_id/.icons
+
+      - name: growl notify
+        plugin: Growl
+
+      - name: voice
+        plugin: Voice
+
+

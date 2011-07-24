@@ -1,0 +1,48 @@
+* Building rules
+
+Rules may contain the following fields:
+
+  - name:
+    - required
+    - description: a human-friendly name assinged by you
+    - hints: you should be able to recognize in the logs to determine if your rule fired or not
+
+  - condition:
+    - optional
+    - description: conditions that must be satisfied in order for the rule to fire
+    - hints:
+      - if condition is not defined in the rule, the rule will always run
+      - for more information, see [[conditions.txt]]
+
+  - plugin:
+    - optional
+    - description: the name of a package in the Wubot::Reactor namespace
+    - hints:
+      - most plugins require 'config' to determine what to do with the message
+      - for an overview of plugins, see [[reactor_plugins.txt]]
+
+  - config:
+    - optional
+    - description: configuration data used by the plugin to process the message
+    - hints: some config is required for most plugins
+
+  - last_rule
+    - optional
+    - description: once set, no more rules will be run on the message
+    - hints: think of this as routing the message to /dev/null
+
+  - rules
+    - optional
+    - description: an array of child rules that will be run if the current rule runs
+    - hints:
+      - will get run if the current rule contains no condition
+      - will get run if the current rule contains a condition that evaluated true
+      - rules may be deeply nested
+      - nesting rules makes the reactor more efficient, since not every rule needs to run on every message
+
+
+* See Also
+
+  - [[conditions.txt]]
+  - [[reactor_plugins.txt]]
+

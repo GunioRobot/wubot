@@ -107,8 +107,46 @@ field to blue, this rule will set a field called 'growl_priority' in
 the message which will have the priority that corresponds to the color
 i set for that priority in the growl preferences.
 
+*** Growl identifier
 
-** Notifications
+Growl has a feature called 'coalescing'.  This allows multiple
+notifications to re-use a sigle bubble for notifications, with the
+latest notification taking precedence.
+
+By default, wubot will set the growl identifier for each growl
+notification to be the message key.  This helps prevent message
+floods, especially when starting up wubot if there are a lot of
+notifications waiting in the queue.  Without a growl identifier,
+dozens (or even hundreds) of notification menus could queue up and
+prevent you from being able to work.
+
+In some cases this may work against you.  For example, if you use the
+Twitter plugin, if multiple tweets come through quickly from different
+users, they will re-use the same notification bubble and you may only
+get a chance to read the last one.  So in these situations, you can
+override the default behavior by setting 'growl_id'.  For example:
+
+  - name: twitter growl id
+    condition: username is true
+    plugin: Template
+    config:
+      template: 'Twitter-{$username}'
+      target_field: key
+
+This would give each person you follow on twitter a separate
+notification bubble.
+
+When overiding the default growl id, one thing to note is that if you
+send a sticky notification, and then you send a non-sticky
+notification with the same growl id, the non-sticky notification will
+replace the sticky notification (since it will use the same bubble),
+and will time out and go away like a normal non-sticky notification.
+This means that your sticky window will get cleared.  Wubot tries to
+prevent this sort of thing by using separate id for sticky
+notifications and non-sticky notifications.  That way a sticky window
+can nevery be cleared by a non-sticky window.
+
+** IRC
 
 The IRC notification lets you send a public IRC message to a channel
 or a private message to a user.  For more information, see

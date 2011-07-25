@@ -13,6 +13,7 @@ There are currently three notification reactors:
   - Console
   - Growl
   - Voice
+  - IRC
 
 The 'Growl' and 'Voice' reactors currently only work on OS X.  These
 plugins could easily be adapated to use pop-up and voice notifications
@@ -25,6 +26,12 @@ something useful.  For example, the RSS plugin will set the 'subject'
 field of RSS feed items to be the RSS title.  You can easily use the
 reactor to remove the subject from messages when you want to suppress
 notifications.
+
+In addition to the 'subject' field, the message key will be prefixed
+with the 'key' of the original monitor that generated the message, and
+a timestamp of when the message was originally generated.  If the
+message contains a 'username' that is also included in the
+notification.
 
 To enable the notifications, start with a rule tree that selects
 messages that contain subjects.  For the complete config, skip to the
@@ -67,7 +74,7 @@ directory that is appropriate.
       - name: growl icon
         plugin: Icon
         config:
-          image:dir: /Users/your_id/.icons
+          image_dir: /Users/your_id/.icons
 
 *** Growl Colors
 
@@ -100,6 +107,12 @@ field to blue, this rule will set a field called 'growl_priority' in
 the message which will have the priority that corresponds to the color
 i set for that priority in the growl preferences.
 
+
+** Notifications
+
+The IRC notification lets you send a public IRC message to a channel
+or a private message to a user.  For more information, see
+[[irc.txt]].
 
 ** Reactor Config
 
@@ -144,7 +157,7 @@ rules:
       - name: growl icon
         plugin: Icon
         config:
-          image:dir: /Users/your_id/.icons
+          image_dir: /Users/your_id/.icons
 
       - name: growl notify
         plugin: Growl

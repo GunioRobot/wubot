@@ -1,0 +1,186 @@
+* Multiple bots
+
+This document describes how to set up bots on multiple servers and
+forward data between them.
+
+** overview
+
+wubot is designed to be able to run on multiple hosts, and to be able
+to send messages between bots.
+
+It is not necessary to run every component of wubot (monitor, reactor,
+webui) on every host.  In most multi-host configurations, it's likely
+that the reactor and/or the web ui may only run on a single host.
+Every host being monitored would run a wubot-monitor process, and all
+messages would be forwarded to one or more hosts for processing.
+Complex networks can be created by forwarding messages through a
+series of reactors.
+
+It is also possible to run a local wubot-reactor and to have the
+wubot-reactor forward some or all of the messages on to other hosts
+for further processing.
+
+It is expected that a user would not want to run more than one
+monitor, reactor, or webui on a given host.  If you want to run more
+than one wubot on a single host, either run each as a different user,
+or else run them in virtual hosts.
+
+To give an example, I have wubot-monitor running on several servers at
+home, and they all forward their messages to an old server running the
+reactor and webui.  But I also run a wubot-monitor and wubot-reactor
+on my laptop, and sometimes my laptop goes off of the network.  When I
+connect back up to the XMPP server, I get any notifications that
+occurred when I was offline forwarded to me by the wubot server.  Also
+any monitoring data such as load and idle time get forward back to the
+wubot server.  I have duplicated a few rule trees between the hosts so
+that I can get to my load and idle graphs locally even while I'm
+offline, but then I can also see those stats from another workstation
+on the wubot server.
+
+** XMPP
+
+The mechanism for sending messages between wubot instances on separate
+hosts is XMPP.  This is not provided with wubot, nor is any
+information about how to set up a server.  I can highly recommend
+ejabberd.
+
+You will definitely want to use an XMPP server that supports offline
+message queueing.  That way, the server will queue messages for any
+wubot instance that is offline if other wubots are trying to send it
+messages.  Without offline messaging, messages that are sent while a
+target wubot instance is down will be lost.
+
+If a host goes offline and is unable to connect to the XMPP server, it
+will queue up messages until the connection can been re-established.
+When the connection comes back up, the host will transmit all messages
+in the queue in order.  Reactor plugins use the 'lastupdate' time on
+the message to determine when the message was originally generated.
+
+
+
+** wubot-monitor
+
+XMPP messages is implemented as a plugin for wubot-monitor, not as
+part of the reactor.  So every host that wishes to participate in
+inter-host messaging must run a wubot-monitor process with the XMPP
+monitor enabled.
+
+XMPP messaging is implemented as a queue, and works exactly like the
+message queue for the reactor (i.e. it is a Wubot::LocalMessageQueue).
+So if you aren't running a wubot-reactor process on a host, you could
+just point the XMPP monitor at the default reactor queue, and it would
+forward the reactor messages to a remote host for processing.
+
+The monitor config could live here:
+
+  ~/wubot/config/plugins/XMPP/myhost.yaml
+
+Here is an example config for a host that is not running the reactor:
+
+  ---
+  account: wubot-hostname@myserver
+  password: mypassword
+  host: 192.168.1.2
+  port: 5222
+  directory: /home/wu/wubot/reactor
+  user: wubot-reactor@hostname/myserver
+  delay: 5s
+
+The 'account' and 'password' fields should contain the information
+used to log into the XMPP server.  I use a separate account for each
+host, and the hostname is included in that host's account.  That way I
+know which host each message is coming from by simply looking at the
+sender's username.
+
+The 'host' and 'port' are obviously the host on which the XMPP server
+is running.  If you forward the XMPP traffic over ssh, then 'host'
+would be 'localhost', and 'port' would be the local port you are
+forwarding.
+
+The 'directory' is the path to the wubot queue.  By default, the
+wubot-monitor process saves its data to ~/wubot/reactor, so if you are
+not running a wubot-reactor process on the host, point the XMPP
+monitor there.  For any host running the wubot-reactor process, then
+don't point them at the same place, or they will both by trying to
+pick up messages from the same queue.
+
+** wubot-reactor
+
+The reactor cannot send a message over XMPP directly as there is no
+XMPP plugin for the reactor.  Instead, the reactor can save messages
+to a queue where the wubot-monitor process will pick them up and
+forward them.
+
+The reactor can save a message to the queue using the MessageQueue
+plugin.  Here is an example reactor rule that can be used to store all
+messages in a separate queue to be forwarded:
+
+  - Name: forward
+    plugin: MessageQueue
+    config:
+      directory: /home/wu/wubot/forward
+
+Then configure the 'directory' param in the XMPP monitor to point to
+that same directory.
+
+
+** Avoiding infinite loops
+
+When deciding which hosts forward messages to other hosts, care must
+be taken not to create an infinite routing loop.  For example, if host
+A is set up to forward its messages to host B and host B is set up to
+forward its messages back to host A, then every message generated
+would get continually routed back and forth between the two hosts.
+This is obvious when there are two hosts, but may be less obvious when
+you have multiple routes involving several hosts.  For example, hosts
+A, B, C, and D forward to host E, and host E forwards to host F.  Then
+some day you realize that you would like to forward some of the
+messages from host F to host A and then BLAM, you have created a
+routing loop.
+
+To help prevent this from happening, the XMPP monitor sets a field
+named 'noforward' any time it sends or receives a message.  You could
+make use of this by checking for the 'noforward' flag before adding a
+message to the XMPP message queue, e.g.:
+
+  - name: forward
+    condition: noforward is false
+    plugin: MessageQueue
+    config:
+      directory: /home/wu/wubot/forward
+
+If you want for a bot to forward messages it received from other bots,
+simply add a rule to delete the 'noforward' field before your
+MessageQueue rule is reached.  I usually have my 'forward' rule as the
+very last rule in my list.
+
+Important Note: This must be handled entirely in your rules, as the
+XMPP monitor will send any message in its queue whether the noforward
+flag is set or not.
+
+
+** managing config files
+
+It may be a pain to manage your config files on each host separately.
+I prefer to manage all my wubot config files on my laptop.  You can
+keep the wubot config files for multiple hosts in the same directory
+tree by using the short hostname on the end of the file.  For example,
+the following config file would be loaded on a host named
+'somehostname', but will be ignored by all other hosts.
+
+  ~/wubot/config/plugins/RSS/perl.org.yaml.somehostname
+
+If the filename does not end in a hostname, that config file will get
+loaded on all hosts.
+
+A simple rsync of the config tree out to each of the remote hosts that
+run wubot will do the trick.
+
+Config files may contain usernames, passwords, or other private
+information.  So you may want to go a step further and ensure that you
+only push out config files for each host that are relevant to that
+host.  An rsync command such as this will make that easy, just replace
+{remotehost} with the remote hostname:
+
+  rsync -rav --delete --exclude='*.git' --include="*.{remotehost}" --exclude='*.yaml.*' --exclude='*.yaml' --delete-excluded ~/wubot/config/ {remotehost}:wubot/config/
+

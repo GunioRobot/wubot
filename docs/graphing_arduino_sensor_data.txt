@@ -1,0 +1,399 @@
+This document describes how to read temperature, humidity, or other
+sensor data from an Arduino and feed it into wubot.  We are notified
+in the event of a significant change in the sensor data or when the
+sensor data gets outside of some configured thresholds.  The data is
+stored in a round-robin database (RRD) and daily, weekly, and monthly
+graphs are generated from the data.  Custom graphs are also
+illustrated.  There is also some discussion of monitoring a wireless
+sensor network built with XBee.
+
+-----------------------------------------------------------------------------
+* Arduino sensor data
+
+I won't discuss the process of wiring up a temperature sensor or
+programming an arduino here, as that is already covered in great
+detail elsewhere.
+
+Here are some temperature sensors I can recommend:
+
+  - http://shop.moderndevice.com/products/tmp421-temperature-sensor
+  - http://www.sparkfun.com/products/9569
+  - http://vegetronix.com/Products/VG400/
+
+Any sensor that will work with the arduino will work fine.  wubot
+actually reads the sensor data over the serial port, so if the
+ardunino can read the data and send it over the serial port, then
+wubot can handle it.
+
+The format of the data used here is CSV with four fields:
+
+  ^source, type, value, units
+
+Here are a few examples.
+
+  ^office, temp, 75, F
+  ^outside, humidity, 80, percent
+  ^garden, moisture, 60, percent
+
+Note that there is a carrot, '^', here at the beginning of the line to
+indicate 'beginning of a new record.  When an arduino is reset, a bit
+of junk often comes through at the beginning.  The beginning-of-line
+field allows us to filter out any junk at the beginning of the line.
+
+You can really use any format that you want for the data, but the
+reactor rules below assume that it will start in this format.
+
+You will probably want to send the sensor information every 1 to 5
+minutes.  It is not recommended that you send it more often than once
+every 15 seconds.
+
+I am still learning arduino programming, but you might be able to find
+some useful examples in my farmbot project here:
+
+  http://github.com/wu/farmbot
+
+
+-----------------------------------------------------------------------------
+* SerialPort monitor
+
+By the time you get to this point, you should have the arduino hooked
+up to the sensors and should be sending the data over the serial port
+in the format:
+
+  ^source, type, value, units
+
+To get the data into wubot, start by setting up an instance of the
+SerialPort monitor to read from your serial port.  The config file
+would live here:
+
+  ~/wubot/config/plugins/SerialPort/labduino.yaml
+
+And here is an example:
+
+  ---
+  delay: 5s
+  device: /dev/tty.usbmodem3b11
+
+This will check the configured device every 5 seconds for sensor data.
+Each line of data will be put into a message.  The 'line' field will
+contain the string that was read.
+
+-----------------------------------------------------------------------------
+* parsing the message
+
+Now that you have the sensor data coming in, the next step is to parse
+it.  To do that we need to define some rules.  See also: [[rules.txt]]
+
+Remember that 'beginning-of-record' character I mentioned above?  This
+rule makes use of that.  Start by cleaning everything from the
+beginning of the line up until the beginning-of-record character:
+
+
+  - name: clean to beginning of line
+    plugin: TransformField
+    config:
+      source_field: line
+      regexp_search: '^.*\^'
+
+At this point I find it useful to display the line that was read to
+stdout:
+
+  - name: dump line
+    plugin: Dumper
+    config:
+      field: line
+
+Next, assuming the format above is being used for the data, we can
+split the CSV data into the four fields:
+
+  - name: split
+    plugin: Split
+    config:
+      source_field: line
+      target_fields:
+        - source
+        - type
+        - value
+        - units
+
+Now that the data is split, let's check that we have a valid record,
+i.e. all the fields got parsed.  Any that don't get routed to the bit
+bucket using the 'last_rule' flag.
+
+      - name: get rid of invalid fields
+        condition: source is false OR type is false OR value is false OR units is false
+        last_rule: 1
+
+This rule is just a bit trickier.  Right now we have the data in four
+fields.  For example:
+
+    source: office
+    type: temp
+    value: 78.3
+    units: F
+
+It would really be more convenient at this point to have a
+'temp' field on the message that was set to '78.3'.  That will
+make creating some of the later rules a bit simpler.  So here we can
+use the CopyField plugin to take the value (78.3) and store it in a
+field that is named in the 'type' field (temp).  Here is the
+rule:
+
+  - name: map key and value names
+    plugin: CopyField
+    config:
+      source_field: value
+      target_field_name: type
+
+And after this rule, the message will contain the new field:
+
+
+    source: office
+    type: temp
+    value: 78.3
+    units: F
+    temp: 78.3
+
+Since all of this is really simple stuff that just involves shuffling
+around some data on the message, we'll do all of this directly in the
+monitor config.  Here is the resulting config:
+
+---
+delay: 5s
+device: /dev/tty.usbmodem3b11
+
+react:
+
+  - name: lines
+    condition: line is true
+
+    rules:
+
+      - name: clean to beginning of line
+        plugin: TransformField
+        config:
+          source_field: line
+          regexp_search: '^.*\^'
+
+      - name: dump line
+        plugin: Dumper
+        config:
+          field: line
+
+      - name: split
+        plugin: Split
+        config:
+          source_field: line
+          target_fields:
+            - source
+            - type
+            - value
+            - units
+
+      - name: get rid of invalid fields
+        condition: source is false OR type is false OR value is false OR units is false
+        last_rule: 1
+
+      - name: map key and value names
+        plugin: CopyField
+        config:
+          source_field: value
+          target_field_name: type
+
+-----------------------------------------------------------------------------
+* Alerts
+
+Up until this point we've just been focused on getting the data into
+the system.  Now it's time to set up the reactor config.
+
+Start building a rule tree where the parent rule looks for messages
+coming form the serial port that have sensor data.
+
+  - name: arduino
+    condition: key matches SerialPort AND source is true
+    rules:
+
+We'll start by doing something a bit unusual.  We'll create a custom
+'key' for this sensor reading.  Normally the 'key' message is set to
+the name of the plugin and the name of the instance config file.  This
+is great if you have a separate config file for each feed.  But there
+is only one serial port and there may be many different sensors.  So
+we're going to start by creating a custom key that contains the sensor
+source and type, e.g. 'office-temp'.  This just makes it a lot easier
+for later plugins keep track of the office temp and the outside temp
+as two separate values.  Note that this change to the 'key' field is
+permanent!  So any later rules in the reactor that look for 'key
+matches SerialPort' will not find these messages again!
+
+
+      - name: key
+        plugin: Template
+        config:
+          template: '{$source}-{$type}'
+          target_field: key
+
+
+Let's start with a simple warning.  If the temp gets above 85 degrees
+in the office, then generate an alert message.  There are computers in
+the office, so if the temerature starts to get too high, the one of
+them could overheat.  So let's look for any message that indicates a
+temperature of greater than 85 and set a few fields on the message.
+The 'subject' field will be used by notification plugins such as Growl
+and Console.  The 'sticky' field is used by Growl to cause the message
+to stick on the screen until it is dismissed.  The 'color' field can
+be used to colorize the notifications.  As long as we're in there,
+we'll set a 'heat_warning' field in case we want to use this in a
+future reaction.
+
+          - name: temp high
+            condition: temp > 85
+            plugin: SetField
+            config:
+              set:
+                heat_warning: 1
+                color: yellow
+                sticky: 1
+                subject: warning: temp is high
+
+Thanks to the 'subject' field, we can get a notification that the
+temperature is high.  But the message will simply say 'warning: temp
+is high', it won't actually tell us what the temperature is.  For that
+we can use the 'Template' plugin, which creates a field using a
+template.  Any params in the template are filled from other fields on
+the message.  So here is a heat warning notification that will
+actually inclue the temperature sensor reading:
+
+          - name: heat warning
+            condition: heat_warning is true
+            plugin: Template
+            config:
+              target_field: subject
+              template: warning: temperature is high: {$temp}
+                
+
+Now when the temperature is above 85 degrees in the office, I'll get a
+sticky notification telling me the current temperature.  Then I'll go
+upstairs and open the windows or possibly turn on the fan.
+
+Beyond just tracking when the sensor reading goes outside of a
+configured threshold, we also want to track the change in sensor
+readings over time.  For that there is a 'State' plugin, which caches
+the previously seen sensor readings and can send an alert when the
+value changes by more than a certain threshold.  You can specify that
+you want to be notified if the value changes in either directory, or
+only if it increases or decreases.
+
+For example, suppose we want to get a notification any time the soil
+moisture drops more than 10 percent.  The following rule tree would
+select messages that have a 'moisture' field, and then use the 'State'
+plugin to track the 'moisture' field and send a notification if the
+value decreases by more than 10.  The 'State' plugin will set a
+'subject' on the message that will indicate the current moisture
+level, amount of time since the last sensor change, and the highest
+value during that time period.  It will also set the 'state_changed'
+flag on the message.  This is pretty important (it usually means the
+garden is starting to get dry), so we'll make sure the alert gets the
+'sticky' flag so it will stay on the screen and get my attention.
+
+      - name: moisture
+        condition: contains moisture
+        rules:
+
+          - name: moisture drop
+            plugin: State
+            config:
+              field: moisture
+              decrease: 10
+
+          - name: moisture drop sticky
+            condition: state_changed is true
+            plugin: SetField
+            config:
+              field: sticky
+              value: 1
+
+We also want to monitor for temperature changes, just to have an idea
+about how the temperature is changing.  These aren't as important, so
+there's no sticky flag here:
+
+      - name: temp
+        condition: contains temp
+        rules:
+          - name: temp change
+            plugin: State
+            config:
+              field: temp
+              change: 5
+
+The State plugin will send a warning if you stop receiving data for
+any of the tracked datasets.
+
+
+-----------------------------------------------------------------------------
+* RRD and graphs
+
+It's nice to get alerts when the values change or get outside of safe
+thresholds, but we also want to preserve historical data and generate
+some graphs.  This is where the RRD plugin comes in hand.  Here's an
+example RRD plugin that will take the 'value' and jam it into an RRD
+file and generate a daily, weekly, and monthly graph:
+          
+      - name: rrd
+        condition: source is true AND type is true AND value is true AND units is true
+        plugin: RRD
+        config:
+          base_dir: /home/wu/wubot/rrd
+          fields:
+            value: GAUGE
+          step: 60
+          period:
+            - day
+            - week
+            - month
+          graph_options:
+            right-axis: 1:0
+            width: 375
+
+The RRD file will get written to:
+
+  ~/wubot/rrd/rrd/{key}
+
+and the graphs will be generated to:
+
+  ~wubot/rrd/graphs/{key}
+
+
+-----------------------------------------------------------------------------
+* Graphs with multiple sources
+
+
+
+
+
+-----------------------------------------------------------------------------
+* SQLite
+
+Perhaps you have some other ideas for analyzing the sensor data.
+Well, just drop it in a SQLite database:
+
+      - name: sqlite
+        condition: value is true
+        plugin: SQLite
+        config:
+          file: /home/wu/wubot/sqlite/arduino.sql
+          tablename: sensors
+          schema:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            source: int
+            type: int
+            value: int
+            units: int
+            lastupdate: int
+
+
+
+
+-----------------------------------------------------------------------------
+* XBee and wireless sensor networks
+
+

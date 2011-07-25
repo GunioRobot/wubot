@@ -127,7 +127,7 @@ get a chance to read the last one.  So in these situations, you can
 override the default behavior by setting 'growl_id'.  For example:
 
   - name: twitter growl id
-    condition: username is true
+    condition: key matches ^Twitter and username is true
     plugin: Template
     config:
       template: 'Twitter-{$username}'

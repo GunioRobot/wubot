@@ -117,21 +117,23 @@ By default, wubot will set the growl identifier for each growl
 notification to be the message key.  This helps prevent message
 floods, especially when starting up wubot if there are a lot of
 notifications waiting in the queue.  Without a growl identifier,
-dozens (or even hundreds) of notification menus could queue up and
+dozens (or even hundreds) of notification bubbles could queue up and
 prevent you from being able to work.
 
 In some cases this may work against you.  For example, if you use the
-Twitter plugin, if multiple tweets come through quickly from different
-users, they will re-use the same notification bubble and you may only
-get a chance to read the last one.  So in these situations, you can
-override the default behavior by setting 'growl_id'.  For example:
+Twitter plugin, then all notifications for a given twitter account use
+the same key.  So, if multiple tweets come through quickly from
+different users, they will re-use the same notification bubble--and
+you may only get a chance to read the last one.  So in these
+situations, you can override the default behavior by setting
+'growl_id'.  For example:
 
   - name: twitter growl id
     condition: key matches ^Twitter and username is true
     plugin: Template
     config:
       template: 'Twitter-{$username}'
-      target_field: key
+      target_field: growl_id
 
 This would give each person you follow on twitter a separate
 notification bubble.

@@ -83,6 +83,11 @@ has 'score_colors' => ( is => 'ro',
 sub fetch_process_data {
     my ( $self, $tmpfile ) = @_;
 
+    $self->logger->info( "Deleting schedule data older than 4 weeks" );
+    my $oldest_date = time - 60*60*24*7*4;
+    $self->db->delete( "schedule", { start => { "<" => $oldest_date } } );
+    $self->logger->info( "Deleting schedule data complete" );
+
     for my $day ( 0 .. 14 ) {
         print "Fetching data for day $day\n";
 

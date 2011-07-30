@@ -106,6 +106,7 @@ get '/graphs' => sub {
         { geektank => [
             "http://wubot/wubot/graphs/Uptime-bsd-01/Uptime-bsd-01-daily.png",
             "http://wubot/wubot/graphs/Uptime-bsd-02/Uptime-bsd-02-daily.png",
+            "http://wubot/wubot/graphs/Uptime-bsd-03/Uptime-bsd-03-daily.png",
             "http://wubot/wubot/graphs/Uptime-navi2/Uptime-navi2-daily.png",
             "http://wubot/wubot/graphs/Uptime-homework/Uptime-homework-daily.png",
         ] },
@@ -115,6 +116,17 @@ get '/graphs' => sub {
             "http://wubot/wubot/graphs/Uptime-rootbsd/Uptime-rootbsd-daily.png",
             "http://wubot/wubot/graphs/Uptime-geekfarm/Uptime-geekfarm-daily.png",
             "http://wubot/wubot/graphs/Ping-google-rootbsd/Ping-google-rootbsd-daily.png",
+        ] },
+        { weather => [
+          "http://image.weather.com/images/maps/current/acttemp_600x405.jpg",
+          "http://image.weather.com/images/maps/current/actheat_600x405.jpg",
+          "http://image.weather.com/web/radar/us_radar_plus_usen.jpg",
+          "http://image.weather.com/images/maps/boat-n-beach/us_wind_cur_600x405.jpg",
+          "http://image.weather.com/images/maps/special/norm_dep_hi_600x405.jpg",
+          "http://image.weather.com/images/maps/special/norm_dep_low_600x405.jpg",
+          "http://image.weather.com/images/maps/severe/map_light_ltst_4namus_enus_600x405.jpg",
+          "http://image.weather.com/images/maps/current/actchill_600x405.jpg",
+          "http://squall.sfsu.edu/gif/jetstream_init_00.gif",
         ] },
     ];
 
@@ -155,7 +167,12 @@ get '/tasks' => sub {
             $task->{color} = $pretty_colors->{ $task->{color} };
         }
 
-        $task->{emacs_link} = $task->{title};
+        if ( $task->{duration} ) {
+            $task->{emacs_link} = join( "%20", $task->{duration}, $task->{title} );
+        }
+        else {
+            $task->{emacs_link} = $task->{title};
+        }
         $task->{emacs_link} =~ s|\/|__SLASH__|g;
         $task->{emacs_link} = uri_escape( $task->{emacs_link} );
     }
@@ -178,16 +195,16 @@ get '/open/org/(.file)/(.link)' => sub {
     my $link = uri_unescape( $self->stash( 'link' ) );
     $link =~ s|[\'\"]|.|g;
     $link =~ s|__SLASH__|/|g;
-    $link = "file:/Users/wu/org/$filename\:\:$link\$";
+    $link = "file:/Users/wu/org/$filename\:\:$link";
 
     my $command;
     if ( $self->param('done') ) {
         my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(org-todo)(save-buffer)(raise-frame)) };
-        $command = qq(emacsclient -e '$emacs_foo' &);
+        $command = qq(emacsclient --socket-name /tmp/emacs501/server -e '$emacs_foo' &);
     }
     else {
         my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(raise-frame)) };
-        $command = qq(emacsclient -e '$emacs_foo' &);
+        $command = qq(emacsclient --socket-name /tmp/emacs501/server -e '$emacs_foo' &);
     }
 
     print "EMACS: $command\n";
@@ -378,6 +395,8 @@ get '/ical' => sub {
         my $duration = $timelength->get_seconds( $entry->{duration} );
 
         for my $due ( @due ) {
+            # everything is off by an hour?
+            $due -= 60*60;
 
             my $dt_start = DateTime->from_epoch( epoch => $due );
             my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';
@@ -421,7 +440,7 @@ get '/ical' => sub {
 
     my $select = { tablename => 'tasks',
                    callback  => $callback,
-                   where     => [ { scheduled => { '<', $time } }, { deadline => { '<', $time } } ],
+                   where     => [ { scheduled => { '>', $time } }, { deadline => { '>', $time } } ],
                    order     => 'deadline, scheduled',
                };
 

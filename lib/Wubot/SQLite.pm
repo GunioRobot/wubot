@@ -415,7 +415,7 @@ sub read_schemas {
         $self->logger->info( "Loading schema file: $user_schema_file" );
         my $user_schemas = YAML::LoadFile( $user_schema_file );
         for my $table ( keys %{ $user_schemas } ) {
-            $self->logger->info( "Adding user schema for table: $table" );
+            $self->logger->debug( "Adding user schema for table: $table" );
             $schemas->{ $table } = $user_schemas->{$table};
         }
     } else {
@@ -428,11 +428,11 @@ sub read_schemas {
         my $global_schemas = YAML::LoadFile( $global_schema_file );
         for my $table ( keys %{ $global_schemas } ) {
             next if $schemas->{ $table };
-            $self->logger->info( "Adding global schema for table: $table" );
+            $self->logger->debug( "Adding global schema for table: $table" );
             $schemas->{ $table } = $global_schemas->{$table};
         }
     } else {
-        $self->logger->warn( "global schema file not found: $global_schema_file" );
+        $self->logger->logdie( "global schema file not found: $global_schema_file" );
     }
 
     return $schemas;

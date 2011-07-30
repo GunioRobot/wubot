@@ -36,7 +36,7 @@ has 'schema_file' => ( is       => 'ro',
                         lazy     => 1,
                         default  => sub {
                             my $self = shift;
-                            my $schema_file = join( "/", $ENV{HOME}, "wubot", "conf", "schemas.yaml" );
+                            my $schema_file = join( "/", $ENV{HOME}, "wubot", "config", "schemas.yaml" );
                             $self->logger->debug( "schema file: $schema_file" );
                             return $schema_file;
                         },
@@ -114,11 +114,17 @@ sub get_tables {
 }
 
 sub check_schema {
-    my ( $self, $table, $schema_h ) = @_;
+    my ( $self, $table, $schema_h, $failok ) = @_;
 
     unless ( $schema_h ) {
         unless ( $self->sql_schemas->{ $table } ) {
-            $self->logger->logcroak( "ERROR: no schema specified, and global schema not found for table: $table" );
+            if ( $failok ) {
+                $self->logger->debug( "WARNING: no schema specified, and global schema not found for table: $table" );
+                return;
+            }
+            else {
+                $self->logger->logconfess( "WARNING: no schema specified, and global schema not found for table: $table" );
+            }
         }
         $schema_h = $self->sql_schemas->{ $table };
     }
@@ -239,13 +245,9 @@ sub select {
 
     #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 
-    my $sth;
-    eval {
-        $sth = $self->dbh->prepare($statement);
-        1;
-    } or do {
-        $self->logger->logcroak( "Can't prepare $statement: $@" );
-    };
+    my $schema_h = $self->check_schema( $tablename, undef, 1 );
+
+    my $sth = $self->get_prepared( $tablename, $schema_h, $statement );
 
     my $rv;
     eval {

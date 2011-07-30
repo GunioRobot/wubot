@@ -42,15 +42,6 @@ has 'reactor' => ( is => 'ro',
                    default => undef,
                );
 
-my $schema = { message_queue => { id         => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                                  date       => 'VARCHAR(32)',
-                                  subject    => 'VARCHAR(256)',
-                                  data       => 'TEXT',
-                                  hostname   => 'VARCHAR(32)',
-                                  seen       => 'INTEGER',
-                                  lastupdate => 'INTEGER',
-                              }
-           };
 
 sub initialize_db {
     my ( $self, $directory ) = @_;
@@ -129,13 +120,14 @@ sub store {
     }
 
     $self->sqlite->{ $dbfile }->insert( 'message_queue',
-                                        { date     => $date,
-                                          subject  => $subject,
-                                          data     => $message_text,
-                                          hostname => $message->{hostname},
-                                          seen     => undef,
+                                        { date       => $date,
+                                          subject    => $subject,
+                                          data       => $message_text,
+                                          hostname   => $message->{hostname},
+                                          seen       => undef,
+                                          lastupdate => $time,
+                                          key        => $message->{key} || "",
                                       },
-                                        $schema->{message_queue}
                                     );
 
     return 1;
@@ -191,9 +183,8 @@ sub get {
         my $error = $@;
         $self->logger->error( "ERROR LOADING MESSAGE: $entry->{id} => $entry->{subject}: $error" );
 
-        $self->sqlite->{ $dbfile }->insert( 'rejected',
+        $self->sqlite->{ $dbfile }->insert( 'message_queue_rejected',
                                             $entry,
-                                            $schema->{message_queue}
                                         );
 
         $self->sqlite->{ $dbfile }->delete( 'message_queue', { id => $entry->{id} } );
@@ -209,7 +200,7 @@ sub get {
     # method to delete the item from the queue AFTER it has been
     # processed.
     if ( wantarray ) {
-        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => time }, { id => $entry->{id} }, $schema->{message_queue} ) };
+        my $callback = sub { $self->sqlite->{ $dbfile }->update( 'message_queue', { seen => time }, { id => $entry->{id} } ) };
         $self->logger->trace( "Marking message_queue id seen: $entry->{id}: ", time );
         return ( $message, $callback );
     }

@@ -6,12 +6,8 @@ use Sys::Hostname;
 use Test::More 'no_plan';
 use YAML;
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
-
 use Wubot::LocalMessageStore;
-#use Wubot::Logger;
+use Wubot::Logger;
 
 my $hostname = hostname();
 $hostname =~ s|\..*$||;
@@ -201,10 +197,8 @@ $hostname =~ s|\..*$||;
                     key        => 'testcase',
                     lastupdate => time,
                     hostname   => $hostname,
+                    body       => "foo \U1234 bar",
                 };
-
-    use LWP::Simple;
-    $message->{body} = get( 'http://onionstand.blogspot.com/feeds/posts/default' );
 
     ok( my $messenger = Wubot::LocalMessageStore->new(),
         "Creating a new messenger"
@@ -218,15 +212,15 @@ $hostname =~ s|\..*$||;
         "Retrieving only message in queue"
     );
 
-    # is_deeply( $got_message,
-    #            $message,
-    #            "Checking that retrieved message matches sent message"
-    #        );
+    is_deeply( $got_message,
+               $message,
+               "Checking that retrieved message matches sent message"
+           );
 
-    # is( scalar $messenger->get( $directory ),
-    #     undef,
-    #     "Checking that no messages left in queue"
-    # );
+    is( scalar $messenger->get( $directory ),
+        undef,
+        "Checking that no messages left in queue"
+    );
 
 }
 
@@ -310,5 +304,44 @@ $hostname =~ s|\..*$||;
                [ 0, 0, 0 ],
                "Checking that there are no messages marked 'seen' in the queue"
            );
+
+}
+
+{
+    my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $timestamp = time - 10000;
+
+    my $message = { foo        => 1,
+                    checksum   => 1234,
+                    key        => 'testcase',
+                    hostname   => $hostname,
+                    lastupdate => $timestamp,
+                };
+
+    my $messenger = Wubot::LocalMessageStore->new();
+
+    $messenger->store( { %{ $message, },
+                     }, $directory );
+
+
+    my $sqlite = Wubot::SQLite->new( { file => "$directory/queue.sqlite" } );
+
+    my ( $row ) = $sqlite->select( { tablename => 'message_queue' } );
+
+    is( $row->{id},
+        1,
+        "Checking that 'id' was set to 1 in message_queue table"
+    );
+
+    is( $row->{lastupdate},
+        $timestamp,
+        "Checking that lastupdate column was populated"
+    );
+
+    is( $row->{key},
+        'testcase',
+        "Checking that key column was populated"
+    );
 
 }

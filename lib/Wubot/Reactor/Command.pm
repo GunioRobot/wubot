@@ -38,28 +38,6 @@ has 'queuedb'   => ( is       => 'ro',
                      },
                  );
 
-has 'qschema'   => ( is       => 'ro',
-                     isa      => 'HashRef',
-                     lazy     => 1,
-                     default  => sub {
-                         return { command    => 'text',
-                                  message    => 'text',
-                                  queueid    => 'varchar(32)',
-                                  started    => 'int',
-                                  pid        => 'int',
-                                  status     => 'int',
-                                  signal     => 'int',
-                                  pidfile    => 'varchar(128)',
-                                  logfile    => 'varchar(128)',
-                                  childpid   => 'int',
-                                  lastupdate => 'int',
-                                  output     => 'text',
-                                  id         => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                                  seen       => 'int',
-                              };
-                     },
-                 );
-
 has 'sqlite'    => ( is       => 'ro',
                      isa      => 'Wubot::SQLite',
                      lazy     => 1,
@@ -180,7 +158,7 @@ sub monitor {
         $message->{command_status} = 0;
         $message->{command_signal} = 0;
 
-        my ( $status ) = $self->sqlite->select( { tablename => 'queue',
+        my ( $status ) = $self->sqlite->select( { tablename => 'command_queue',
                                                   where     => { queueid => $id, seen => \$is_null, started => \$is_not_null },
                                                   order     => 'id',
                                               } );
@@ -205,11 +183,10 @@ sub monitor {
             }
             delete $message->{message};
 
-            $self->sqlite->update( 'queue',
+            $self->sqlite->update( 'command_queue',
                                    { seen     => time,
                                  },
                                    { id       => $status->{id} },
-                                   $self->qschema,
                                );
 
         }
@@ -257,7 +234,7 @@ sub monitor {
 
     my @queues;
     eval {                          # try
-        @queues = $self->sqlite->select( { tablename => 'queue',
+        @queues = $self->sqlite->select( { tablename => 'command_queue',
                                            fields    => 'DISTINCT queueid'
                                        } );
         1;
@@ -285,7 +262,7 @@ sub monitor {
              next QUEUE;
          }
 
-        my ( $entry ) = $self->sqlite->select( { tablename => 'queue',
+        my ( $entry ) = $self->sqlite->select( { tablename => 'command_queue',
                                                  where     => { queueid => $id, started => \$is_null, seen => \$is_null },
                                                  order     => 'id',
                                              },
@@ -329,7 +306,7 @@ sub fork_or_enqueue {
     my $logfile = join( "/", $self->logdir, "$id.log" );
     my $pidfile = join( "/", $self->logdir, "$id.pid" );
 
-    my $sqlid = $self->sqlite->insert( 'queue',
+    my $sqlid = $self->sqlite->insert( 'command_queue',
                                        { command    => $command,
                                          pidfile    => $pidfile,
                                          logfile    => $logfile,
@@ -337,7 +314,6 @@ sub fork_or_enqueue {
                                          lastupdate => time,
                                          message    => Dump( $message ),
                                      },
-                                       $self->qschema,
                                    );
 
     #if ( $self->check_process( $id ) ) {
@@ -374,7 +350,7 @@ sub try_fork {
         print $fh $pid;
         close $fh or die "Error closing file: $!\n";
 
-        $self->sqlite->update( 'queue',
+        $self->sqlite->update( 'command_queue',
                                { logfile  => $process->{logfile},
                                  logdir   => $self->{logdir},
                                  pidfile  => $process->{pidfile},
@@ -382,7 +358,6 @@ sub try_fork {
                                  pid      => $pid,
                              },
                                { id       => $process->{sqlid} },
-                               $self->qschema,
                            );
 
 
@@ -417,14 +392,13 @@ sub try_fork {
     # run command capturing output
     my $pid = open my $run, "-|", "$process->{command} 2>&1" or die "Unable to execute $process->{command}: $!";
 
-    $self->sqlite->update( 'queue',
+    $self->sqlite->update( 'command_queue',
                            { childpid => $pid,
                              logfile  => $process->{logfile},
                              logdir   => $self->{logdir},
                              pidfile  => $process->{pidfile},
                          },
                            { id       => $process->{sqlid} },
-                           $self->qschema,
                        );
 
     while ( my $line = <$run> ) {
@@ -447,12 +421,11 @@ sub try_fork {
 
     unlink( $process->{pidfile} );
 
-    $self->sqlite->update( 'queue',
+    $self->sqlite->update( 'command_queue',
                            { status   => $status,
                              signal   => $signal,
                          },
                            { id       => $process->{sqlid} },
-                           $self->qschema,
                        );
 
     close STDOUT;

@@ -19,6 +19,14 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
+has 'lastupdates'  => ( is => 'ro',
+                        isa => 'HashRef',
+                        lazy => 1,
+                        default => sub {
+                            return {};
+                        },
+                    );
+
 my $version = $RRDs::VERSION;
 
 my $option_versions = { 'right-axis' => 1.2029,
@@ -86,7 +94,13 @@ sub react {
         print YAML::Dump { key => $key, rrd => \%rrd_data };
     }
 
-    $rrd->update( $rrd_filename, $time, %rrd_data );
+    if ( $self->lastupdates->{$rrd_filename} && $self->lastupdates->{$rrd_filename} == $time ) {
+        $self->logger->warn( "ERROR: tried to update $rrd_filename again in the same second" );
+    }
+    else {
+        $rrd->update( $rrd_filename, $time, %rrd_data );
+        $self->lastupdates->{$rrd_filename} = $time;
+    }
 
     # log the value
     if ( $config->{log} ) {

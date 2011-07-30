@@ -18,12 +18,19 @@ sub check {
 
     my $rt;
 
-    for my $line ( split /\n/, `$command $host` ) {
+    for my $line ( split /\n/, `$command $host 2>&1` ) {
+        chomp $line;
+        next unless $line;
+
         if ( $line =~ m|icmp_seq\=(\d+)| ) {
             my $icmp_seq = $1;
             $line =~ m|time\=([\d\.]+)|;
             my $time = $1;
             $rt->{$icmp_seq} = $time;
+        }
+        else {
+            next if $line =~ m/data bytes|statistics|packets transmitted|round-trip/;
+            $self->logger->warn( "Can't parse output of ping command: $line" );
         }
     }
 

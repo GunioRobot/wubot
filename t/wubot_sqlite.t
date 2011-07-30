@@ -1,6 +1,7 @@
 #!/perl
 use strict;
 
+use Capture::Tiny;
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
 use Test::Exception;
@@ -238,10 +239,24 @@ ok( -r $sqldb,
                "Checking inserted data"
            );
 
-    throws_ok( sub { $sql->update( $table, { column1 => 7 }, { column1 => 0 } ) },
-               qr/no schema specified, and global schema not found for table: $table/,
-               "Checking that exception thrown when running a sql update without providing schema",
-           );
+    my $error;
+    my ( $stdout, $stderr ) = Capture::Tiny::capture {
+        eval {
+            $sql->update( $table, { column1 => 7 }, { column1 => 0 } );
+        };
+
+        $error = $@;
+    };
+
+    like( $error,
+          qr/no schema specified, and global schema not found for table: $table/,
+          "Checking that exception thrown when running a sql update without providing schema",
+      );
+
+    like( $stderr,
+          qr/no schema specified, and global schema not found for table: $table/,
+          "Checking that exception thrown when running a sql update without providing schema",
+      );
 
     ok( $sql->update( $table, { column1 => 7 }, { column1 => 0 }, $schema ),
         "Calling update() to set column1 to 7 where column1 was 0"
@@ -294,6 +309,7 @@ ok( -r $sqldb,
     my $schema = { column1 => 'INT', column2 => 'INT', column3 => 'INT' };
 
     my $data1 = { column1 => 0, column2 => 1, column3 => 2 };
+
     ok( $sql->insert_or_update( $table, $data1, { column1 => 3 }, $schema ),
         "Inserting data2 hash into table with insert_or_update and no pre-existing row"
     );

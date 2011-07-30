@@ -51,10 +51,10 @@ sub check {
 
     my $subject;
     my $status = "ok";
-    if ( $load01 > $inputs->{config}->{critical_load} ) {
+    if ( $inputs->{config}->{critical_load} && $load01 > $inputs->{config}->{critical_load} ) {
         $subject = "critical: load over last 1 minute is $load01 ";
         $status = 'critical';
-    } elsif ( $load01 > $inputs->{config}->{warning_load} ) {
+    } elsif ( $inputs->{config}->{warning_load} && $load01 > $inputs->{config}->{warning_load} ) {
         $subject = "warning: load over last 1 minute is $load01 ";
         $status = 'warning';
     }

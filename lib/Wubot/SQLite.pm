@@ -3,8 +3,10 @@ use Moose;
 
 # VERSION
 
+use Capture::Tiny;
 use DBI;
 use DBD::SQLite;
+use Devel::StackTrace;
 use FindBin;
 use Log::Log4perl;
 use SQL::Abstract;
@@ -99,7 +101,7 @@ sub create_table {
 
     $command .= "\n);";
 
-    $self->logger->debug( $command );
+    $self->logger->trace( $command );
 
     $self->dbh->do( $command );
 }
@@ -125,11 +127,12 @@ sub check_schema {
     unless ( $schema_h ) {
         unless ( $self->sql_schemas->{ $table } ) {
             if ( $failok ) {
-                $self->logger->debug( "WARNING: no schema specified, and global schema not found for table: $table" );
+                $self->logger->debug( "no schema specified, and global schema not found for table: $table" );
                 return;
             }
             else {
-                $self->logger->logconfess( "WARNING: no schema specified, and global schema not found for table: $table" );
+                $self->logger->debug( Devel::StackTrace->new->as_string );
+                $self->logger->logdie( "FATAL: no schema specified, and global schema not found for table: $table" );
             }
         }
         $schema_h = $self->sql_schemas->{ $table };
@@ -168,7 +171,13 @@ sub insert {
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
     eval {                          # try
-        $sth1->execute( @bind );
+        my ($stdout, $stderr) = Capture::Tiny::capture {
+            $sth1->execute( @bind );
+        };
+
+        if ( $stdout ) { $self->logger->warn( $stdout ) }
+        if ( $stderr ) { $self->logger->warn( $stderr ) }
+
         1;
     } or do {                       # catch
         return;
@@ -194,7 +203,13 @@ sub update {
     my $sth1 = $self->get_prepared( $table, $schema_h, $command );
 
     eval {                          # try
-        $sth1->execute( @bind );
+        my ($stdout, $stderr) = Capture::Tiny::capture {
+            $sth1->execute( @bind );
+        };
+
+        if ( $stdout ) { $self->logger->warn( $stdout ) }
+        if ( $stderr ) { $self->logger->warn( $stderr ) }
+
         1;
     } or do {                       # catch
         return;
@@ -211,7 +226,7 @@ sub insert_or_update {
     my $count;
     # wrap select() in an eval, this could fail, e.g. if the table does not already exist
     eval {
-        $self->select( { tablename => $table, where => $where, callback => sub { $count++ } } );
+        $self->select( { tablename => $table, where => $where, callback => sub { $count++ }, schema => $schema_h } );
     };
 
     if ( $count ) {
@@ -251,7 +266,7 @@ sub select {
 
     #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 
-    my $schema_h = $self->check_schema( $tablename, undef, 1 );
+    my $schema_h = $self->check_schema( $tablename, $options->{schema}, 1 );
 
     my $sth = $self->get_prepared( $tablename, $schema_h, $statement );
 
@@ -286,8 +301,14 @@ sub select {
 sub query {
     my ( $self, $statement, $callback ) = @_;
 
-    my $sth = $self->dbh->prepare($statement) or $self->logger->logcroak( "Can't prepare $statement" );
-    my $rv  = $sth->execute or $self->logger->logcroak( "can't execute the query: $statement" );
+    my ( $sth, $rv );
+    my ($stdout, $stderr) = Capture::Tiny::capture {
+        $sth = $self->dbh->prepare($statement) or $self->logger->logcroak( "Can't prepare $statement" );
+        $rv  = $sth->execute or $self->logger->logcroak( "can't execute the query: $statement" );
+    };
+
+    if ( $stdout ) { $self->logger->warn( $stdout ) }
+    if ( $stderr ) { $self->logger->warn( $stderr ) }
 
     my @return;
 
@@ -337,10 +358,21 @@ sub get_prepared {
 
     my $sth1;
 
+    # make sure dbh has been lazy loaded before we try to use it below
+    # inside Capture::Tiny
+    $self->dbh;
+
   RETRY:
     for my $retry ( 0 .. 10 ) {
         eval {                          # try
-            $sth1 = $self->dbh->prepare( $command );
+
+            my ($stdout, $stderr) = Capture::Tiny::capture {
+                $sth1 = $self->dbh->prepare( $command );
+            };
+
+            if ( $stdout ) { $self->logger->warn( $stdout ) }
+            if ( $stderr ) { $self->logger->warn( $stderr ) }
+
             1;
         } or do {                       # catch
             my $error = $@;

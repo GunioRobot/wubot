@@ -30,12 +30,3 @@ is( $1,
     "Checking for utf8 character in futurama episode name"
 );
 
-{
-    # my $content = $fetcher->fetch( 'http://feeds.feedburner.com/FreeBSD-TheUnknownGiant?format=xml' );
-    # $content =~ m|(FreeNAS 8 .*? Audio)|;
-    # print "GOT: $1\n";
-    # print YAML::Dump { got => $1 };
-}
-
-
-

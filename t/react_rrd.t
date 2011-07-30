@@ -6,10 +6,7 @@ use File::Temp qw/ tempdir /;
 use RRD::Simple;
 use Test::More 'no_plan';
 
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
-
+use Wubot::Logger;
 use Wubot::Reactor::RRD;
 
 ok( my $rrd = Wubot::Reactor::RRD->new(),

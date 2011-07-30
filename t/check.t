@@ -7,9 +7,7 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
-
+use Wubot::Logger;
 use Wubot::Check;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );

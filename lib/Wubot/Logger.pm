@@ -8,14 +8,34 @@ use Log::Log4perl qw(:easy);
 
 BEGIN {
 
-    my $log_level = $ENV{LOG_TRACE} ? 'TRACE' : $ENV{LOG_DEBUG} ? 'DEBUG' : 'INFO';
+    my $appender = "Log::Log4perl::Appender::ScreenColoredLevels";
+
+    my $log_level = 'INFO';
+    if ( $ENV{LOG_TRACE} || grep /\-trace/, @ARGV ) {
+        $log_level = 'TRACE';
+    }
+    elsif ( $ENV{LOG_DEBUG} || grep /\-d(?:ebug)?/, @ARGV ) {
+        $log_level = 'DEBUG';
+    }
+    elsif ( $ENV{LOG_VERBOSE} || grep /\-v(?:erbose)?/, @ARGV ) {
+        $log_level = 'INFO';
+    }
+    elsif ( $0 =~ m|\.t$| ) {
+        $log_level = 'FATAL';
+        $appender = "Log::Log4perl::Appender::Screen";
+    }
+    else {
+        $log_level = "WARN";
+    }
+
+    #warn "LOGGING INITIALIZED: $log_level\n";
 
     my $log_name = $0;
     $log_name =~ s|^.*\/||;
 
     my $conf = <<"EOT";
         log4perl.category = TRACE, Screen, Logfile
-        log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
+        log4perl.appender.Screen = $appender
         log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
         log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
         log4perl.appender.Screen.Threshold   = $log_level

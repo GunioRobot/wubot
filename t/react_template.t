@@ -6,12 +6,9 @@ use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
 
+use Wubot::Logger;
 use Wubot::LocalMessageStore;
 use Wubot::Reactor::Template;
-
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
-
 
 ok( my $template = Wubot::Reactor::Template->new(),
     "Creating new Template reactor object"

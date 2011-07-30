@@ -131,26 +131,26 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 {
     my $path = "$tempdir/file6";
 
-    open(my $fh, ">", $path)
+    open(my $fh1, ">", $path)
         or die "Couldn't open $path for writing: $!\n";
-    print $fh "ORIGINAL CONTENT";
-    close $fh or die "Error closing file: $!\n";
+    print $fh1 "ORIGINAL CONTENT";
+    close $fh1 or die "Error closing file: $!\n";
 
     ok( $writer->react( { abc => 'xyz' }, { source_field => 'abc', file => $path } ),
         "pre-existing path without 'overwrite' enabled"
     );
 
-    open(my $fh, "<", $path)
+    open(my $fh2, "<", $path)
         or die "Couldn't open $path for reading: $!\n";
 
     local $/ = undef;
 
-    is( <$fh>,
+    is( <$fh2>,
         "ORIGINAL CONTENT",
         "Validating file has original content"
     );
 
-    close $fh or die "Error closing file: $!\n";
+    close $fh2 or die "Error closing file: $!\n";
 
 }
 
@@ -158,25 +158,25 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 {
     my $path = "$tempdir/file7";
 
-    open(my $fh, ">", $path)
+    open(my $fh1, ">", $path)
         or die "Couldn't open $path for writing: $!\n";
-    print $fh "ORIGINAL CONTENT";
-    close $fh or die "Error closing file: $!\n";
+    print $fh1 "ORIGINAL CONTENT";
+    close $fh1 or die "Error closing file: $!\n";
 
     ok( $writer->react( { abc => 'xyz' }, { source_field => 'abc', file => $path, overwrite => 1 } ),
         "pre-existing path with 'overwrite' enabled"
     );
 
-    open(my $fh, "<", $path)
+    open(my $fh2, "<", $path)
         or die "Couldn't open $path for reading: $!\n";
 
     local $/ = undef;
 
-    is( <$fh>,
+    is( <$fh2>,
         "xyz",
         "Validating file has original content"
     );
 
-    close $fh or die "Error closing file: $!\n";
+    close $fh2 or die "Error closing file: $!\n";
 
 }

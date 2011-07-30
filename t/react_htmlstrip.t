@@ -5,6 +5,7 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
+use Wubot::Logger;
 use Wubot::LocalMessageStore;
 use Wubot::Reactor::HTMLStrip;
 

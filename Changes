@@ -1,5 +1,15 @@
 Revision history for Wubot
 
+0.0.5 Sat Jul 30, 2011  3:28 pm
+
+  - logging adjustments
+    - capture some stdout and log through Log::Log4perl
+    - default logging level lowered to WARN
+      - use '-verbose' or '$ENV{LOG_VERBOSE}' to return logging level to INFO
+    - add '-debug' and '-trace' command line options
+    - disable colorized logging in test cases
+    - capture stdout/stderr in all test cases
+
 0.0_4 Sat Jul 30, 2011  1:13 pm
 
   - significant changes since 0.0.3, see git commit logs

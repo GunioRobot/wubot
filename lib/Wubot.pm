@@ -11,34 +11,12 @@ use Carp;
 
 =head1 NAME
 
-Wubot - <One-line description of module's purpose>
+Wubot - personal distributed reactive automation
 
-
-=head1 SYNOPSIS
-
-    use Wubot;
 
 =head1 DESCRIPTION
 
 =cut
-
-#_* Methods
-
-=head1 SUBROUTINES/METHODS
-
-=over 8
-
-=item foo()
-
-=cut
-
-sub foo {
-
-}
-
-
-
-
 
 #_* End
 

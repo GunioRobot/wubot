@@ -86,8 +86,8 @@ push @timers, AnyEvent->timer( after    => 1,
                                },
                            );
 
-push @timers, AnyEvent->timer( after => 60,
-                               interval => 60,
+push @timers, AnyEvent->timer( after => 15,
+                               interval => 15,
                                cb => sub {
 
                                    for my $results ( $reactor->monitor() ) {

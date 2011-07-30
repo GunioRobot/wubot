@@ -17,6 +17,10 @@ sub check {
 
     my $path = $config->{path};
 
+    unless ( -r $path ) {
+        return { react => { subject => "path not found: $path" } };
+    }
+
     my $last_modified = ( stat $path )[9];
 
     my $age = time - $last_modified;
@@ -27,7 +31,7 @@ sub check {
 
         my $time_passed = $timelength->get_human_readable( $age );
 
-        return { react => { subject => "path has not been updated in $time_passed!" } };
+        return { react => { subject => "path has not been updated in $time_passed" } };
     }
 
     return;

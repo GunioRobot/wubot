@@ -42,6 +42,7 @@ bottom.
     rules:
 
 
+
 ** Console
 
 Begin by enabing the 'Console' plugin.  This will send all subjects to
@@ -129,7 +130,7 @@ situations, you can override the default behavior by setting
 'growl_id'.  For example:
 
   - name: twitter growl id
-    condition: key matches ^Twitter and username is true
+    condition: key matches ^Twitter AND username is true
     plugin: Template
     config:
       template: 'Twitter-{$username}'
@@ -148,11 +149,37 @@ prevent this sort of thing by using separate id for sticky
 notifications and non-sticky notifications.  That way a sticky window
 can nevery be cleared by a non-sticky window.
 
+
 ** IRC
 
 The IRC notification lets you send a public IRC message to a channel
 or a private message to a user.  For more information, see
 [[irc.txt]].
+
+** subject_text field
+
+If your message has a field 'subject_text', then that field will be
+used for the notifications instead of the 'subject' field.  This makes
+it easy to do things like strip HTML without alterting the original
+subject field.  You most likely will not want html to be displayed in
+the console notification or be read aloud.  You can strip HTML from
+any field using the HTMLStrip plugin, e.g.:
+
+      - name: strip HTML from subject
+        condition: contains subject
+        plugin: HTMLStrip
+        config:
+          field: subject
+          newfield: subject_text
+
+Keep this field in mind if you delete the subject field.  If you have
+created a subject_text field, then even if you delete the subject
+field, you could still receive a notification.  This can be confusing
+if you have set 'subject_text' and then you change 'subject'--since
+the changed subject won't be reflected in the notification.  The
+easiest way to avoid this is simply to avoid using the subject_text
+field.
+
 
 ** Reactor Config
 
@@ -173,6 +200,13 @@ rules:
   - name: notifications
     condition: subject is true
     rules:
+
+      - name: strip HTML from subject
+        condition: contains subject
+        plugin: HTMLStrip
+        config:
+          field: subject
+          newfield: subject_text
 
       - name: console
         plugin: Console

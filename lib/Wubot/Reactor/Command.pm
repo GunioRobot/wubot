@@ -7,6 +7,7 @@ use FileHandle;
 use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime setsid :sys_wait_h);
+use String::ShellQuote;
 use Term::ANSIColor;
 use YAML::XS;
 
@@ -51,7 +52,6 @@ has 'sqlite'    => ( is       => 'ro',
 my $is_null = "IS NULL";
 my $is_not_null = "IS NOT NULL";
 
-
 sub react {
     my ( $self, $message, $config ) = @_;
 
@@ -72,13 +72,29 @@ sub react {
 
         $self->logger->debug( "Running command field: $config->{command_field}: $command " );
     }
+    elsif ( $config->{command_array} ) {
+        my @entries;
+        for my $entry ( @{ $config->{command_array} } ) {
+            if ( $entry =~ m|^\{\$([\w\d\-]+)\}| ) {
+                if ( $message->{ $1 } ) { $entry = $message->{ $1 } };
+            }
+            $entry =~ s|\'||;
+            #$entry = shell_quote( $entry );
+            push @entries, "'$entry'";
+        }
+        $command = join( " ", @entries );
+    }
     else {
         $self->logger->error( "Command reactor error: no command or command_field specified in config" );
         return $message;
     }
 
+    if ( $config->{command_noresults} ) {
+        $message->{command_noresults} = 1;
+    }
+
     if ( $config->{fork} ) {
-        return $self->fork_or_enqueue( $command, $message, $config );
+        return $self->enqueue( $command, $message, $config );
     }
 
     $output = `$command 2>&1`;
@@ -137,7 +153,7 @@ sub monitor {
 
         next if $self->check_process( $id );
 
-        $self->logger->info( "Command: collecting finish process info for $id" );
+        $self->logger->debug( "Command: collecting finish process info for $id" );
 
         my $logfile = "$directory/$id.log";
 
@@ -215,12 +231,20 @@ sub monitor {
                 $subject .= " => $message->{command_name}";
             }
             $message->{subject} = $subject;
-            $self->logger->warn( $subject );
+            if ( $message->{command_noresults} ) {
+                $self->logger->debug( $subject );
+            }
+            else {
+                $self->logger->info( $subject );
+            }
         }
 
 
-        $self->logger->info( "Command: collected information about process $id" );
-        push @messages, $message;
+        $self->logger->debug( "Command: collected information about process $id" );
+
+        unless ( $message->{command_noresults} ) {
+            push @messages, $message;
+        }
 
         # TODO: hole here where message could be lost after the log is deleted!
 
@@ -291,10 +315,12 @@ sub monitor {
 
     }
 
+    return unless scalar @messages;
+
     return \@messages;
 }
 
-sub fork_or_enqueue {
+sub enqueue {
     my ( $self, $command, $message, $config ) = @_;
 
     my $id = $config->{fork};
@@ -316,29 +342,18 @@ sub fork_or_enqueue {
                                      },
                                    );
 
-    #if ( $self->check_process( $id ) ) {
+    $self->logger->debug( "Command: queueing for: $id [$sqlid]" );
 
-        $self->logger->info( "Command: queueing for: $id [$sqlid]" );
-
-        $message->{sqlid}          = $sqlid;
-        $message->{command_queued} = 1;
-        return $message;
-    #}
-
-    # return $self->try_fork( { id      => $id,
-    #                           message => $message,
-    #                           command => $command,
-    #                           logfile => $logfile,
-    #                           pidfile => $pidfile,
-    #                           sqlid   => $sqlid,
-    #                       } );
+    $message->{sqlid}          = $sqlid;
+    $message->{command_queued} = 1;
+    return $message;
 }
 
 sub try_fork {
     my ( $self, $process ) = @_;
 
-    $self->logger->info( "Forking new process for: $process->{id}" );
-    $self->logger->info( "Command: $process->{command}" );
+    $self->logger->debug( "Forking new process for: $process->{id}" );
+    $self->logger->debug( "Command: $process->{command}" );
 
     my $message = $process->{message} || {};
 
@@ -440,7 +455,7 @@ sub check_process {
     my $pidfile = join( "/", $self->logdir, "$id.pid" );
 
     unless ( -r $pidfile ) {
-        $self->logger->info( "Pidfile not found: $pidfile" );
+        $self->logger->debug( "Pidfile not found: $pidfile" );
         return;
     }
 
@@ -455,7 +470,7 @@ sub check_process {
         return $pid;
     }
 
-    $self->logger->info( "Pidfile exists but pid not active: $pid" );
+    $self->logger->debug( "Pidfile exists but pid not active: $pid" );
     unlink( $pidfile );
 
     return;

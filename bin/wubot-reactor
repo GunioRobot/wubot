@@ -19,10 +19,11 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 
 use Wubot::Config;
 use Wubot::Reactor;
-use Wubot::Reactor::Voice;
+#use Wubot::Reactor::Voice;
+use Wubot::LocalMessageStore;
 use Wubot::TimeLength;
 
-my $voice = Wubot::Reactor::Voice->new();
+#my $voice = Wubot::Reactor::Voice->new();
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
@@ -69,7 +70,7 @@ push @timers, AnyEvent->timer( after    => 1,
                                        } or do { # catch
                                            my $error = $@;
                                            warn "ERROR in reaction: $@";
-                                           print YAML::Dump $message;
+                                           $logger->debug( YAML::Dump $message );
                                        };
 
                                        # delete the message now that it has been processed
@@ -131,12 +132,12 @@ push @timers, AnyEvent->timer( after => 1,
                                }
                            );
 
-push @timers, AnyEvent->timer( after    => 1,
-                               interval => 10,
-                               cb       => sub {
-                                   $voice->say();
-                               },
-                           );
+# push @timers, AnyEvent->timer( after    => 1,
+#                                interval => 10,
+#                                cb       => sub {
+#                                    $voice->say();
+#                                },
+#                            );
 
 $logger->error( "Running..." );
 $end->recv;

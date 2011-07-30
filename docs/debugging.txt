@@ -63,6 +63,11 @@ like this:
   - name: dump message contents
     plugin: Dumper
 
+Note that where you put the rule may make all the difference.  For
+example, if you have a rule that modifies the message, then using the
+Dumper rule before that rule would show you the contents before the
+message was modified, and using the Dumper rule after the message
+modifying rule would show you the modified content.
 
 
 ** Logging

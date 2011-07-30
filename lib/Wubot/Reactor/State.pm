@@ -3,6 +3,7 @@ use Moose;
 
 # VERSION
 
+use File::Path;
 use YAML;
 
 use Wubot::TimeLength;
@@ -29,6 +30,16 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
+has 'cachedir' => ( is => 'ro',
+                    isa => 'Str',
+                    lazy => 1,
+                    default => sub {
+                        my $dir = join( "/", $ENV{HOME}, "wubot", "state" );
+                        unless ( -d $dir ) { mkpath( $dir ) };
+                        return $dir;
+                    },
+                );
+
 sub react {
     my ( $self, $message, $config ) = @_;
 
@@ -36,14 +47,30 @@ sub react {
     my $field      = $config->{field};
     my $field_data = $message->{ $field } || 0;
 
-    my $cache_data;
-    if ( exists $self->cache->{ $key }->{ $field }->{value} ) {
-        $cache_data = $self->cache->{ $key }->{ $field }->{value} || 0;
+    my $filename = join( ".", join( "_", $key, $field ), "yaml" );
+    $filename =~ s|[^\w\d\_\-\.]+|_|;
+
+    my $cache_file = join( "/", $self->cachedir, $filename );
+    $self->logger->debug( "State cache file: $cache_file" );
+
+    my $cache;
+    my $lastvalue;
+
+    if ( -r $cache_file ) {
+        $cache = YAML::LoadFile( $cache_file );
+    }
+
+    if ( $config->{notify_interval} ) {
+        $cache->{ $key }->{ $field }->{notify_interval} = $config->{notify_interval};
+    }
+
+    if ( exists $cache->{ $key }->{ $field }->{value} ) {
+        $lastvalue = $cache->{ $key }->{ $field }->{value} || 0;
     }
     else {
-        $cache_data = $field_data;
-        $self->cache->{ $key }->{ $field }->{value} = $field_data;
-        $self->cache->{ $key }->{ $field }->{lastupdate} = time;
+        $lastvalue = $field_data;
+        $cache->{ $key }->{ $field }->{value} = $field_data;
+        $cache->{ $key }->{ $field }->{lastupdate} = $message->{lastupdate} || time;
         $message->{state_init} = 1;
         $self->logger->info( "Initialized state for $key: $field" );
     }
@@ -51,17 +78,17 @@ sub react {
     my $update_cache = 0;
     my $changed_flag = 0;
 
-    unless ( $field_data == $cache_data ) {
+    unless ( $field_data == $lastvalue ) {
 
-        $message->{state_change} = $field_data - $cache_data;
+        $message->{state_change} = $field_data - $lastvalue;
 
         my $cache_age_string = "";
 
-        if ( $self->cache->{ $key }->{ $field }->{lastchange} ) {
+        if ( $cache->{ $key }->{ $field }->{lastchange} ) {
 
             $cache_age_string
                 = $self->timelength->get_human_readable(
-                    time - $self->cache->{ $key }->{ $field }->{lastchange}
+                    time - $cache->{ $key }->{ $field }->{lastchange}
                 );
 
             $cache_age_string = " ($cache_age_string)";
@@ -69,7 +96,7 @@ sub react {
 
         if ( $config->{increase} ) {
             if ( $message->{state_change} >= $config->{increase} ) {
-                $message->{subject} = "$key: $field increased: $cache_data => $field_data$cache_age_string";
+                $message->{subject} = "$key: $field increased: $lastvalue => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
                 $changed_flag = 1;
@@ -83,7 +110,7 @@ sub react {
         }
         elsif ( $config->{decrease} ) {
             if ( $message->{state_change} <= -$config->{decrease} ) {
-                $message->{subject} = "$key: $field decreased: $cache_data => $field_data$cache_age_string";
+                $message->{subject} = "$key: $field decreased: $lastvalue => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
                 $changed_flag = 1;
@@ -97,7 +124,7 @@ sub react {
         }
         else {
             if ( abs( $message->{state_change} ) > $config->{change} ) {
-                $message->{subject} = "$key: $field changed: $cache_data => $field_data$cache_age_string";
+                $message->{subject} = "$key: $field changed: $lastvalue => $field_data$cache_age_string";
                 $message->{state_changed} = 1;
                 $update_cache = 1;
                 $changed_flag = 1;
@@ -106,14 +133,16 @@ sub react {
     }
 
     if ( $update_cache ) {
-        $self->cache->{ $key }->{ $field }->{value}      = $field_data;
+        $cache->{ $key }->{ $field }->{value}      = $field_data;
     }
 
     if ( $changed_flag ) {
-        $self->cache->{ $key }->{ $field }->{lastchange} = time;
+        $cache->{ $key }->{ $field }->{lastchange} = $message->{lastupdate} || time;
     }
 
-    $self->cache->{ $key }->{ $field }->{lastupdate} = time;
+    $cache->{ $key }->{ $field }->{lastupdate} = $message->{lastupdate} || time;
+
+    YAML::DumpFile( $cache_file, $cache );
 
     return $message;
 }
@@ -125,24 +154,59 @@ sub monitor {
 
     my $now = time;
 
-    for my $key ( sort keys %{ $self->cache } ) {
+    my $directory = $self->cachedir;
 
-        for my $field ( sort keys %{ $self->cache->{$key} } ) {
+    my $dir_h;
+    opendir( $dir_h, $directory ) or die "Can't opendir $directory: $!";
 
-            my $check_age = $now - $self->cache->{$key}->{$field}->{lastupdate};
+  FILE:
+    while ( defined( my $entry = readdir( $dir_h ) ) ) {
+        next unless $entry && $entry =~ m|\.yaml$|;
 
-            if ( $check_age > 600 ) {
+        my $cache = YAML::LoadFile( "$directory/$entry" );
 
-                my $check_age_string = $self->timelength->get_human_readable( $check_age );
+      KEY:
+        for my $key ( sort keys %{ $cache } ) {
 
-                my $warning = "Warning: cache data for $key:$field not updated in $check_age_string";
+          FIELD:
+            for my $field ( sort keys %{ $cache->{$key} } ) {
 
-                $self->logger->warn( $warning );
+                my $check_age = $now - $cache->{$key}->{$field}->{lastupdate};
 
-                push @react, { key => 'wubot-reactor', subject => $warning };
+                if ( $check_age > 600 ) {
+
+                    my $notify_interval = $cache->{$key}->{$field}->{notify_interval};
+                    if ( $notify_interval ) {
+
+                        my $interval = $self->timelength->get_seconds( $notify_interval );
+                        $self->logger->debug( "Checking notify_interval: $notify_interval: $interval" );
+
+                        my $last_notify = $cache->{$key}->{$field}->{last_notify} || 0;
+                        my $notify_age = $now - $last_notify;
+
+                        if ( $last_notify && $notify_age < $interval ) {
+                            $self->logger->debug( "Suppressing notification, last=$notify_age, interval=$interval" );
+                            next FIELD;
+                        }
+
+                        $cache->{$key}->{$field}->{last_notify} = $now;
+                        YAML::DumpFile( "$directory/$entry", $cache );
+                    }
+
+                    my $check_age_string = $self->timelength->get_human_readable( $check_age );
+                    my $warning = "Warning: cache data for $key:$field not updated in $check_age_string";
+                    $self->logger->warn( $warning );
+
+                    push @react, { key => $key, subject => $warning };
+
+                }
             }
         }
+
+
     }
+    closedir( $dir_h );
+
 
     return unless @react;
 

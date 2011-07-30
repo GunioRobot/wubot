@@ -8,12 +8,13 @@ use Test::More 'no_plan';
 
 use Wubot::LocalMessageStore;
 use Wubot::Reactor::State;
+use Wubot::Logger;
 
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
 
 {
-    ok( my $state = Wubot::Reactor::State->new(),
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    ok( my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } ),
         "Creating new State reactor object"
     );
 
@@ -138,7 +139,9 @@ for my $testcase ( @{ $cases } ) {
 
     #print YAML::Dump { testcase => $testcase };
 
-    my $state = Wubot::Reactor::State->new();
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     for my $idx ( 0 .. $#{ $testcase->{cases} } - 1 ) {
         $state->react( $testcase->{cases}->[$idx], $testcase->{config} );
@@ -159,27 +162,117 @@ for my $testcase ( @{ $cases } ) {
 }
 
 {
-    my $state = Wubot::Reactor::State->new();
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     is_deeply( [ $state->monitor() ],
                [ ],
                "Checking that monitor() returns no errors with no data in cache"
            );
 
-    $state->cache->{testkey}->{testfield}->{lastupdate} = time - 50;
+    $state->react( { key => 'testkey', testfield => 5, lastupdate => time-50 }, { field => 'testfield', change => 10 } );
 
     is_deeply( [ $state->monitor() ],
                [ ],
                "Checking that monitor() returns no errors with cache data updated recently"
            );
 
-    $state->cache->{testkey}->{testfield}->{lastupdate} = time - 2*24*60*60;
+    $state->react( { key => 'testkey', testfield => 5, lastupdate => time-2*24*60*60 }, { field => 'testfield', change => 10 } );
 
     is_deeply( [ $state->monitor() ],
                [ { subject => "Warning: cache data for testkey:testfield not updated in 2d",
-                   key     => 'wubot-reactor'
+                   key     => 'testkey'
                } ],
                "Checking that monitor() returns warning with lastupdate time > 5 minues"
            );
+}
+
+{
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+
+    $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
+
+    $state->react( { key => 'TestCase2', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
+
+    $state->react( { key => 'TestCase3', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
+
+    is_deeply( [ $state->monitor() ],
+               [ { key => 'TestCase1',
+                   subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+               },
+                 { key => 'TestCase2',
+                   subject => 'Warning: cache data for TestCase2:a not updated in 1h',
+               },
+                 { key => 'TestCase3',
+                   subject => 'Warning: cache data for TestCase3:a not updated in 1h',
+               },
+             ],
+               "Checking that monitor() returns no changes in cache"
+           );
+
 
 }
+
+
+
+{
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    {
+        my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+
+        $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
+
+    }
+    {
+        my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+
+        is_deeply( [ $state->monitor() ],
+                   [ { key => 'TestCase1',
+                       subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+                   },
+                 ],
+                   "Checking that monitor() finds cache data from previous Wubot::Reactor::State instance"
+               );
+
+    }
+}
+
+
+{
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+
+    $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 },
+                   { field => 'a', change => 10, notify_interval => '5s' },
+               );
+
+    is_deeply( [ $state->monitor() ],
+               [ { key => 'TestCase1',
+                   subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+               },
+             ],
+               "Checking that monitor() sends a notification for stale cache"
+           );
+
+    is_deeply( [ $state->monitor() ],
+               [ ],
+               "Checking that monitor() does not notify again before end of notify interval"
+           );
+
+    sleep 5;
+
+    is_deeply( [ $state->monitor() ],
+               [ { key => 'TestCase1',
+                   subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+               },
+             ],
+               "Checking that monitor() returns notification after notify interval"
+           );
+}
+
+

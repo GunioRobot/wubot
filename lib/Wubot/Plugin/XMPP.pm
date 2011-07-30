@@ -58,8 +58,8 @@ sub check {
 
             last unless $message;
 
-            # cancel the forward flag when sending a message
-            delete $message->{forward};
+            # set the 'noforward' flag when sending a message
+            $message->{noforward} = 1;
 
             # convert to text
             my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
@@ -83,6 +83,7 @@ sub check {
     $self->{cl}->reg_cb( session_ready => sub {
                              my ($cl, $acc) = @_;
                              $self->{session_ready} = 1;
+                             $self->logger->warn( "XMPP: connected to server" );
                              $self->reactor->( { subject => "XMPP: session ready" } );
                          },
                          disconnect => sub {
@@ -90,7 +91,7 @@ sub check {
                              my $details = "";
                              if ( $h && $p ) { $details = "($h:$p)" };
                              $self->logger->error( "XMPP: disconnect $details: $reas" );
-                             $self->reactor->( { subject => "XMPP: disconnect $details: $reas", no_post => 1 } );
+                             $self->reactor->( { subject => "XMPP: disconnect $details: $reas", noforward => 1 } );
                              delete $self->{cl};
                              delete $self->{session_ready};
                          },
@@ -108,8 +109,8 @@ sub check {
                              eval { # try
                                  $data = YAML::Load( MIME::Base64::decode( Encode::decode( "UTF-8", $body ) ) );
 
-                                 # cancel the forward flag when sending a message
-                                 delete $data->{forward};
+                                 # set the noforward flag when sending a message
+                                 $data->{noforward} = 1;
 
                                  $self->reactor->( $data );
                                  1;

@@ -149,10 +149,11 @@ message to the XMPP message queue, e.g.:
     config:
       directory: /home/wu/wubot/forward
 
-If you want for a bot to forward messages it received from other bots,
-simply add a rule to delete the 'noforward' field before your
-MessageQueue rule is reached.  I usually have my 'forward' rule as the
-very last rule in my list.
+This allows you to point two bots at each other without creating a
+loop.  If you want for a bot to forward messages it received from
+other bots, simply add a rule to delete the 'noforward' field before
+your MessageQueue rule is reached.  I usually make my MessageQueue
+forward rule be the very last rule in my list.
 
 Important Note: This must be handled entirely in your rules, as the
 XMPP monitor will send any message in its queue whether the noforward

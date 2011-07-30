@@ -5,6 +5,7 @@ use Moose;
 
 use DBI;
 use DBD::SQLite;
+use FindBin;
 use Log::Log4perl;
 use SQL::Abstract;
 use YAML;
@@ -42,18 +43,23 @@ has 'schema_file' => ( is       => 'ro',
                         },
                     );
 
+has 'global_schema_file' => ( is       => 'ro',
+                              isa      => 'Str',
+                              lazy     => 1,
+                              default  => sub {
+                                  my $self = shift;
+                                  my $schema_file = join( "/", "$FindBin::Bin/../conf", "schemas.yaml" );
+                                  $self->logger->debug( "schema file: $schema_file" );
+                                  return $schema_file;
+                              },
+                          );
+
 has 'sql_schemas'  => ( is       => 'ro',
                         isa      => 'HashRef',
                         lazy     => 1,
                         default  => sub {
                             my $self = shift;
-                            my $schema_file = $self->schema_file;
-                            unless ( -r $schema_file ) {
-                                $self->logger->warn( "Schema file not found: $schema_file" );
-                                return {};
-                            }
-                            $self->logger->info( "Loading schema file: $schema_file" );
-                            return YAML::LoadFile( $schema_file );
+                            return $self->read_schemas();
                         },
                     );
 
@@ -399,5 +405,37 @@ sub disconnect {
     $self->dbh->disconnect;
 }
 
+sub read_schemas {
+    my ( $self ) = @_;
+
+    my $schemas = {};
+
+    my $user_schema_file = $self->schema_file;
+    if ( -r $user_schema_file ) {
+        $self->logger->info( "Loading schema file: $user_schema_file" );
+        my $user_schemas = YAML::LoadFile( $user_schema_file );
+        for my $table ( keys %{ $user_schemas } ) {
+            $self->logger->info( "Adding user schema for table: $table" );
+            $schemas->{ $table } = $user_schemas->{$table};
+        }
+    } else {
+        $self->logger->warn( "user schema file not found: $user_schema_file" );
+    }
+
+    my $global_schema_file = $self->global_schema_file;
+    if ( -r $global_schema_file ) {
+        $self->logger->info( "Loading global schema file: $global_schema_file" );
+        my $global_schemas = YAML::LoadFile( $global_schema_file );
+        for my $table ( keys %{ $global_schemas } ) {
+            next if $schemas->{ $table };
+            $self->logger->info( "Adding global schema for table: $table" );
+            $schemas->{ $table } = $global_schemas->{$table};
+        }
+    } else {
+        $self->logger->warn( "global schema file not found: $global_schema_file" );
+    }
+
+    return $schemas;
+}
 
 1;

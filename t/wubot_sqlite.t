@@ -14,13 +14,8 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 my $sqldb = "$tempdir/test.sql";
 
-my $schema_file = "$tempdir/test.yaml";
-my $test_schema = { xyz => { abc => 'INT',
-                             def => 'TEXT',
-                         } };
-YAML::DumpFile( $schema_file, $test_schema );
-
-ok( my $sql = Wubot::SQLite->new( { file => $sqldb, schema_file => $schema_file } ),
+ok( my $sql = Wubot::SQLite->new( { file               => $sqldb,
+                                } ),
     "Creating new Wubot::SQLite object"
 );
 
@@ -455,14 +450,53 @@ ok( -r $sqldb,
 
 # schemas yaml file
 {
+
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $sqldb = "$tempdir/test.sql";
+
+    my $schema_file = "$tempdir/test.yaml";
+    my $test_schema = { xyz => { abc => 'INT',
+                                 def => 'TEXT',
+                             } };
+    YAML::DumpFile( $schema_file, $test_schema );
+
+    my $global_schema_file = "$tempdir/global.yaml";
+    my $test_global_schema = { xyz => { abc => 'TEXT',
+                                        def => 'TEXT',
+                                    },
+                               foo => { bar => 'INT',
+                                        baz => 'TEXT',
+                                    },
+                           };
+    YAML::DumpFile( $global_schema_file, $test_global_schema );
+
+    ok( my $sql = Wubot::SQLite->new( { file               => $sqldb,
+                                        schema_file        => $schema_file,
+                                        global_schema_file => $global_schema_file,
+                                    } ),
+        "Creating new Wubot::SQLite object"
+    );
+
     is( $sql->schema_file(),
         $schema_file,
         "Checking that schema file configured on sql object"
     );
 
+    is( $sql->global_schema_file(),
+        $global_schema_file,
+        "Checking that global schema file configured on sql object"
+    );
+
     is_deeply( $sql->sql_schemas(),
-               $test_schema,
-               "Checking that test schemas were read in from schema YAML file"
+               { xyz => { abc => 'INT',
+                          def => 'TEXT',
+                      },
+                 foo => { bar => 'INT',
+                          baz => 'TEXT',
+                      },
+             },
+               "Checking that test schemas were read, and user schema overrides global schema"
            );
 
     my $table = "xyz";
@@ -491,3 +525,4 @@ throws_ok( sub { $sql->query( "SELECT * FROM test_table_2" ) },
            qr/prepare failed.*inactive database handle/,
            "Checking that exception thrown when running a sql query on dead sql handle",
        );
+

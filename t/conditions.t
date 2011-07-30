@@ -103,6 +103,14 @@ my $reactor = Wubot::Reactor->new();
         "Checking 'foo is false' when foo = true"
     );
 
+    ok( $reactor->condition( "foo matches ^Abc", { foo => "Abc-def" } ),
+        "Checking 'foo matches ^Abc' when foo = Abc-def"
+    );
+
+    ok( $reactor->condition( "foo matches now is the time", { foo => "now is the time for all" } ),
+        "Checking 'foo matches now is the time' when foo = now is the time for all"
+    );
+
     ok( $reactor->condition( "foo is true AND bar is true", { foo => "abc", bar => "def" } ),
         "Checking compound rule 'foo is true AND bar is true' when foo and bar are true"
     );

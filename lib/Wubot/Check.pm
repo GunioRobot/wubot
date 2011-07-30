@@ -111,15 +111,6 @@ has 'wubot_reactor' => ( is => 'ro',
                          },
                      );
 
-has 'sqlite_log'  => ( is => 'ro',
-                       isa => 'Wubot::SQLite',
-                       default => sub {
-                           my $path = join( "/", $ENV{HOME}, "wubot", "sqlite", "check-timer.sql" );
-                           return Wubot::SQLite->new( { file => "$path" } );
-                       },
-                   );
-
-
 
 =head1 SUBROUTINES/METHODS
 
@@ -227,28 +218,6 @@ sub check {
     my $end = new Benchmark;
     my $diff = timediff( $end, $start );
     $self->logger->debug( $self->key, ":", timestr( $diff, 'all' ) );
-
-    $self->sqlite_log->insert( 'checklog',
-                               { key        => $self->key,
-                                 status     => $status,
-                                 lastupdate => time,
-                                 usr        => $diff->[1],
-                                 sys        => $diff->[2],
-                                 cusr       => $diff->[3],
-                                 csys       => $diff->[4],
-                                 error      => $error,
-                             },
-                               { key        => 'VARCHAR(32)',
-                                 status     => 'INTEGER',
-                                 lastupdate => 'INTEGER',
-                                 usr        => 'REAL',
-                                 sys        => 'REAL',
-                                 cusr       => 'REAL',
-                                 csys       => 'REAL',
-                                 error      => 'TEXT',
-                               }
-                           );
-
 
     if ( $error ) {
         if ( $error eq "alarm\n" ) {

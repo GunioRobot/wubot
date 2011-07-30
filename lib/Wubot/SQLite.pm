@@ -48,7 +48,7 @@ has 'global_schema_file' => ( is       => 'ro',
                               lazy     => 1,
                               default  => sub {
                                   my $self = shift;
-                                  my $schema_file = join( "/", "$FindBin::Bin/../conf", "schemas.yaml" );
+                                  my $schema_file = join( "/", "$FindBin::Bin/../config", "global_schemas.yaml" );
                                   $self->logger->debug( "schema file: $schema_file" );
                                   return $schema_file;
                               },

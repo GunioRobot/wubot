@@ -1,9 +1,10 @@
 Revision history for Wubot
 
-0.1.0 Sat Jul 30, 2011  5:19 pm
+0.1_1 Sat Jul 30, 2011  5:19 pm
 
-  - bumping release number to test automated release
+  - bumping release number to test release automation
 
+  - use CPAN development version number
 
 0.0.6 Sat Jul 30, 2011  5:11 pm
 

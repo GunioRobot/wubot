@@ -1,5 +1,11 @@
 Revision history for Wubot
 
+0.0.6 Sat Jul 30, 2011  5:11 pm
+
+  - removed old MboxReader plugin, replaced by Mbox
+
+  - running perl critic test again
+
 0.0.5 Sat Jul 30, 2011  3:28 pm
 
   - logging adjustments

@@ -72,3 +72,22 @@ sub react {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::Console - display a notification to stdout
+
+
+=head1 SYNOPSIS
+
+      - name: console
+        plugin: Console
+
+
+=head1 DESCRIPTION
+
+For more information, please see the 'notifications' document.

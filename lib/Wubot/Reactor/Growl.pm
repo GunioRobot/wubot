@@ -80,3 +80,22 @@ sub react {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::Growl - display a growl notification on OS X using Growl::Tiny
+
+
+=head1 SYNOPSIS
+
+      - name: growl notify
+        plugin: Growl
+
+
+=head1 DESCRIPTION
+
+For more information, please see the 'notifications' document.

@@ -34,3 +34,29 @@ sub react {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::LessThan - set keys and values if the value of a field is less than a value
+
+
+=head1 DESCRIPTION
+
+This plugin is deprecated!
+
+Please use the '<' condition in combination with the 'SetField'
+reactor plugin:
+
+  - name: 'test' field is less than 5
+    condition: test < 5
+    plugin: SetField
+    config:
+      set:
+        key1: value1
+        key2: value2
+
+See the 'conditions' document for more information.

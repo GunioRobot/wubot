@@ -120,3 +120,41 @@ sub check_for_image {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::Icon - search for an appropriate icon for a message
+
+
+=head1 SYNOPSIS
+
+      - name: icon
+        plugin: Icon
+        config:
+          image_dir: /Users/your_id/.icons
+
+
+=head1 DESCRIPTION
+
+Attempts to find a suitable image for a message by looking for a file
+in the icon directory that matches a field on the message:
+
+  - 'image' field
+
+  - 'username' field
+    - parses username from email address
+
+  - monitor key
+
+  - monitor plugin name
+
+  - monitor instance name
+
+If no suitable icon can be found, then the image field will be set to
+'wubot.png'.
+
+For more information, please see the 'notifications' document.

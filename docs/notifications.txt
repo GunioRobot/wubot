@@ -12,12 +12,11 @@ There are currently three notification reactors:
 
   - Console
   - Growl
-  - Voice
   - IRC
 
-The 'Growl' and 'Voice' reactors currently only work on OS X.  These
-plugins could easily be adapated to use pop-up and voice notifications
-on other operating systems, but that has not yet been done.
+The 'Growl' reactor currently only works on OS X.  These plugins could
+easily be adapated to use pop-up notifications on other operating
+systems, but that has not yet been done.
 
 All three reactors look for a 'subject' field on a message, and use
 that for the notification.  Messages that do not have a 'subject'
@@ -235,8 +234,5 @@ rules:
 
       - name: growl notify
         plugin: Growl
-
-      - name: voice
-        plugin: Voice
 
 

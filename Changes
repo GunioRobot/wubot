@@ -1,5 +1,10 @@
 Revision history for Wubot
 
+0.1.0 Sat Jul 30, 2011  5:19 pm
+
+  - bumping release number to test automated release
+
+
 0.0.6 Sat Jul 30, 2011  5:11 pm
 
   - removed old MboxReader plugin, replaced by Mbox

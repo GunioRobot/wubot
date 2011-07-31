@@ -240,7 +240,8 @@ sub find_plugins {
         }
     }
 
-    return sort keys %plugins;
+    my @keys = sort keys %plugins;
+    return @keys;
 
 }
 

@@ -41,10 +41,13 @@ sub check {
 
         my $time = strftime( "%H:%M", localtime( $pulse_time ) );
 
+        my $weekday = lc( strftime( "%A", localtime( $pulse_time ) ) );
+
         $self->logger->debug( "Sending pulse for: $date $time" );
 
         my $message = { date => $date,
                         time => $time,
+                        day  => $weekday,
                         age  => $age,
                     };
 
@@ -85,6 +88,7 @@ Wubot::Plugin::Pulse - send a message once per minute
   age: 0
   checksum: ae947857531889e0fb55a517c4e0fc94
   date: 2011-07-31
+  day: sunday
   hostname: myhostname
   key: Pulse-myhostname
   lastupdate: 1312158327
@@ -100,6 +104,9 @@ contains the following fields:
 
   date: yyyy-mm-dd
   time: hh:mm
+  day: xday
+
+The 'day' field will contain the full weekday name in lower case.
 
 The message can be used within the reactor to trigger jobs to start at
 certain times or dates.

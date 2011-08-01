@@ -1,5 +1,13 @@
 Revision history for Wubot
 
+0.1_2 Sun Jul 31, 2011  5:27 pm
+
+  - added Pulse plugin
+    - sends a message once per minute
+    - useful for scheduled reactions
+
+  - added docs for more reactor plugins
+
 0.1_1 Sat Jul 30, 2011  5:19 pm
 
   - bumping release number to test release automation

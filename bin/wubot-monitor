@@ -88,7 +88,7 @@ my $timer = AnyEvent->timer( after    => 1,
                                          if ( ref $results eq "HASH" ) {
                                              if ( $results->{delay} ) {
                                                  $delay = $results->{delay};
-                                                 $logger->info( "Check rescheduled itself in $delay seconds" );
+                                                 $logger->debug( "Check $plugin rescheduled itself in $delay seconds" );
                                              }
                                          }
 

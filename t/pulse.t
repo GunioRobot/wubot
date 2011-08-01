@@ -101,6 +101,56 @@ ok( my $check = Wubot::Plugin::Pulse->new( { class      => 'Wubot::Plugin::Pulse
 
 
 {
+    my $time = time - 59;
+
+    ok( my $results_h = $check->check( { cache => { lastupdate => $time } } ),
+        "Calling check() method 59 seconds since last check"
+    );
+
+    is( scalar @{ $results_h->{react} },
+        0,
+        "Checking that no messages were sent when pulse ran again in 59 seconds"
+    );
+
+}
+
+{
+    my $time = time - 60;
+
+    ok( my $results_h = $check->check( { cache => { lastupdate => $time } } ),
+        "Calling check() method 60 seconds since last check"
+    );
+
+    is( scalar @{ $results_h->{react} },
+        1,
+        "Checking that 1 messages were sent when pulse ran again in 60 seconds"
+    );
+
+    is( $results_h->{react}->[0]->{age},
+        0,
+        "Checking that the 'age' field on the message was set to 0, indicating it is now"
+    );
+}
+
+{
+    my $time = time - 61;
+
+    ok( my $results_h = $check->check( { cache => { lastupdate => $time } } ),
+        "Calling check() method 61 seconds since last check"
+    );
+
+    is( scalar @{ $results_h->{react} },
+        1,
+        "Checking that 1 messages were sent when pulse ran again in 61 seconds"
+    );
+
+    is( $results_h->{react}->[0]->{age},
+        0,
+        "Checking that the 'age' field on the message was set to 0, indicating it is now"
+    );
+}
+
+{
     my $time = time - 90;
 
     ok( my $results_h = $check->check( { cache => { lastupdate => $time } } ),

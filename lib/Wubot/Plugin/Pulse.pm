@@ -24,9 +24,16 @@ sub check {
 
     my @minutes;
     if ( ! $cache->{lastupdate} ) {
+        $self->logger->warn( "First pulse, no pulse cache data found" );
         @minutes = ( 0 );
     }
     elsif ( $minutes_old ) {
+        if ( $minutes_old > 10 ) {
+            $self->logger->error( "Minutes since last pulse: $minutes_old" );
+        }
+        elsif ( $minutes_old > 1 ) {
+            $self->logger->info( "Minutes since last pulse: $minutes_old" );
+        }
         @minutes = reverse ( 0 .. $minutes_old - 1 );
     }
     else {

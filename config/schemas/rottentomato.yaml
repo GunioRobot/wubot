@@ -1,0 +1,7 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+percent: INTEGER
+link: VARCHAR(128)
+title: VARCHAR(128)
+synopsis: VARCHAR(512)
+lastupdate: INTEGER

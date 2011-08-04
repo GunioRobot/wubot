@@ -1,15 +1,15 @@
 ---
-command: TEXT
-message: TEXT
-queueid: VARCHAR(32)
-started: INTEGER
-pid: INTEGER
-status: INTEGER
-signal: INTEGER
-pidfile: VARCHAR(128)
-logfile: VARCHAR(128)
-childpid: INTEGER
-lastupdate: INTEGER
-output: TEXT
+command: text
+message: text
+queueid: varchar(32)
+started: int
+pid: int
+status: int
+signal: int
+pidfile: varchar(128)
+logfile: varchar(128)
+childpid: int
+lastupdate: int
+output: text
 id: INTEGER PRIMARY KEY AUTOINCREMENT
-seen: INTEGER
+seen: int

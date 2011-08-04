@@ -1,0 +1,9 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+name: VARCHAR(32)
+mac: VARCHAR(32)
+ip: VARCHAR(32)
+lastupdate: INTEGER
+hostname: VARCHAR(32)
+constraints:
+  - UNIQUE( name, mac, ip )

@@ -1,0 +1,9 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+subject: VARCHAR(256)
+title: VARCHAR(256)
+body: TEXT
+link: VARCHAR(256)
+lastupdate: INTEGER
+mailbox: VARCHAR(16)
+key: VARCHAR(32)

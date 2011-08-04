@@ -1,0 +1,6 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+idle_min: INTEGER
+active_min: INTEGER
+idle_state: INTEGER
+lastupdate: INTEGER

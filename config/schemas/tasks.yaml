@@ -1,0 +1,19 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+file: VARCHAR(32)
+taskid: VARCHAR(128)
+priority: INTEGER
+color: VARCHAR(16)
+status: VARCHAR(8)
+title: VARCHAR(128)
+body: TEXT
+scheduled: INTEGER
+scheduled_text: VARCHAR(16)
+scheduled_recurrence: VARCHAR(8)
+deadline: INTEGER
+deadline_text: VARCHAR(16)
+deadline_recurrence: VARCHAR(8)
+duration: VARCHAR(8)
+lastupdate: INTEGER
+constraints:
+  - UNIQUE( taskid )

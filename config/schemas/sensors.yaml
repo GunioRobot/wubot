@@ -1,0 +1,7 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+source: VARCHAR(32)
+type: VARCHAR(32)
+value: REAL
+units: VARCHAR(32)
+lastupdate: VARCHAR(32)

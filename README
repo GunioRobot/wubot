@@ -94,6 +94,9 @@ directory and run the scripts directly.
 Note that you will probably have to create a ~/wubot and ~/logs
 directory.  In the future these directories should be configurable.
 
+Also you will need to create ~/wubot/schemas, and copy the files from
+the 'config/schemas' directory into that directory.
+
 
 COPYRIGHT AND LICENCE
 

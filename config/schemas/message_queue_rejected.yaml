@@ -1,0 +1,9 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+date: VARCHAR(32)
+subject: VARCHAR(256)
+data: TEXT
+hostname: VARCHAR(32)
+seen: INTEGER
+lastupdate: INTEGER
+key: VARCHAR(128)

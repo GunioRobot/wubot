@@ -12,6 +12,12 @@ use Log::Log4perl;
 use SQL::Abstract;
 use YAML;
 
+# only initialize one connection to each database handle
+my %sql_handles;
+
+# don't continually reload schemas
+my %schemas;
+
 has 'file'         => ( is       => 'ro',
                         isa      => 'Str',
                         required => 1,
@@ -34,34 +40,14 @@ has 'sql_abstract' => ( is       => 'ro',
                         },
                     );
 
-has 'schema_file' => ( is       => 'ro',
+has 'schema_dir'   => ( is       => 'ro',
                         isa      => 'Str',
                         lazy     => 1,
                         default  => sub {
                             my $self = shift;
-                            my $schema_file = join( "/", $ENV{HOME}, "wubot", "config", "schemas.yaml" );
-                            $self->logger->debug( "schema file: $schema_file" );
-                            return $schema_file;
-                        },
-                    );
-
-has 'global_schema_file' => ( is       => 'ro',
-                              isa      => 'Str',
-                              lazy     => 1,
-                              default  => sub {
-                                  my $self = shift;
-                                  my $schema_file = join( "/", "$FindBin::Bin/../config", "global_schemas.yaml" );
-                                  $self->logger->debug( "schema file: $schema_file" );
-                                  return $schema_file;
-                              },
-                          );
-
-has 'sql_schemas'  => ( is       => 'ro',
-                        isa      => 'HashRef',
-                        lazy     => 1,
-                        default  => sub {
-                            my $self = shift;
-                            return $self->read_schemas();
+                            my $schema_dir = join( "/", $ENV{HOME}, "wubot", "schemas" );
+                            $self->logger->debug( "schema directory: $schema_dir" );
+                            return $schema_dir;
                         },
                     );
 
@@ -125,7 +111,7 @@ sub check_schema {
     my ( $self, $table, $schema_h, $failok ) = @_;
 
     unless ( $schema_h ) {
-        unless ( $self->sql_schemas->{ $table } ) {
+        unless ( $self->get_schema( $table ) ) {
             if ( $failok ) {
                 $self->logger->debug( "no schema specified, and global schema not found for table: $table" );
                 return;
@@ -135,7 +121,7 @@ sub check_schema {
                 $self->logger->logdie( "FATAL: no schema specified, and global schema not found for table: $table" );
             }
         }
-        $schema_h = $self->sql_schemas->{ $table };
+        $schema_h = $self->get_schema( $table );
     }
 
     unless ( $schema_h ) {
@@ -418,6 +404,11 @@ sub connect {
     my ( $self ) = @_;
 
     my $datafile = $self->file;
+
+    if ( $sql_handles{ $datafile } ) {
+        return $sql_handles{ $datafile };
+    }
+
     $self->logger->warn( "Opening sqlite file: $datafile" );
 
     my $dbh = DBI->connect(
@@ -428,6 +419,8 @@ sub connect {
         }
     ) or $self->logger->logcroak( "Unable to create database handle: $!" );
 
+    $sql_handles{ $datafile } = $dbh;
+
     return $dbh;
 }
 
@@ -437,37 +430,53 @@ sub disconnect {
     $self->dbh->disconnect;
 }
 
-sub read_schemas {
-    my ( $self ) = @_;
+sub get_schema {
+    my ( $self, $table ) = @_;
 
-    my $schemas = {};
-
-    my $user_schema_file = $self->schema_file;
-    if ( -r $user_schema_file ) {
-        $self->logger->info( "Loading schema file: $user_schema_file" );
-        my $user_schemas = YAML::LoadFile( $user_schema_file );
-        for my $table ( keys %{ $user_schemas } ) {
-            $self->logger->debug( "Adding user schema for table: $table" );
-            $schemas->{ $table } = $user_schemas->{$table};
-        }
-    } else {
-        $self->logger->warn( "user schema file not found: $user_schema_file" );
+    unless ( $table ) {
+        $self->logger->logconfess( "ERROR: get_schema called but no table specified" );
+    }
+    unless ( $table =~ m|^[\w\d\_]+$| ) {
+        $self->logger->logconfess( "ERROR: table name contains invalid characters: $table" );
     }
 
-    my $global_schema_file = $self->global_schema_file;
-    if ( -r $global_schema_file ) {
-        $self->logger->info( "Loading global schema file: $global_schema_file" );
-        my $global_schemas = YAML::LoadFile( $global_schema_file );
-        for my $table ( keys %{ $global_schemas } ) {
-            next if $schemas->{ $table };
-            $self->logger->debug( "Adding global schema for table: $table" );
-            $schemas->{ $table } = $global_schemas->{$table};
-        }
-    } else {
-        $self->logger->logdie( "global schema file not found: $global_schema_file" );
+    my $schema_file = join( "/", $self->schema_dir, "$table.yaml" );
+    $self->logger->debug( "looking for schema file: $schema_file" );
+
+    unless ( -r $schema_file ) {
+        $self->logger->debug( "schema file not found: $schema_file" );
+        return;
     }
 
-    return $schemas;
+    my $mtime = ( stat $schema_file )[9];
+    my $schema = {};
+
+    if ( $schemas{$table} ) {
+
+        if ( $mtime > $schemas{$table}->{mtime} ) {
+
+            # file updated since last load
+            $self->logger->warn( "Re-loading $table schema: $schema_file" );
+            $schema = YAML::LoadFile( $schema_file );
+        }
+        else {
+            # no updates, return from memory
+            return $schemas{$table}->{table};
+        }
+
+    }
+    else {
+
+        # hasn't yet been loaded from memory
+        $self->logger->info( "Loading $table schema: $schema_file" );
+        $schema = YAML::LoadFile( $schema_file );
+
+    }
+
+    $schemas{$table}->{table} = $schema;
+    $schemas{$table}->{mtime} = $mtime;
+
+    return $schema;
 }
 
 1;

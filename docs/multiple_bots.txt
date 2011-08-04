@@ -185,3 +185,5 @@ host.  An rsync command such as this will make that easy, just replace
 
   rsync -rav --delete --exclude='*.git' --include="*.{remotehost}" --exclude='*.yaml.*' --exclude='*.yaml' --delete-excluded ~/wubot/config/ {remotehost}:wubot/config/
 
+You will also probably want to sync the sql schema files which live in
+~/wubot/schemas.

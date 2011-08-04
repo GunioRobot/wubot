@@ -1,0 +1,15 @@
+---
+command: TEXT
+message: TEXT
+queueid: VARCHAR(32)
+started: INTEGER
+pid: INTEGER
+status: INTEGER
+signal: INTEGER
+pidfile: VARCHAR(128)
+logfile: VARCHAR(128)
+childpid: INTEGER
+lastupdate: INTEGER
+output: TEXT
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+seen: INTEGER

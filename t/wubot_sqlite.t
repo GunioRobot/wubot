@@ -467,52 +467,34 @@ ok( -r $sqldb,
 # schemas yaml file
 {
 
-    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $tempdir1 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $sqldb = "$tempdir1/test.sql";
 
-    my $sqldb = "$tempdir/test.sql";
+    my $tempdir2 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $xyz_schema = { abc => 'INT',
+                       def => 'TEXT',
+                   };
+    YAML::DumpFile( "$tempdir2/xyz.yaml", $xyz_schema );
 
-    my $schema_file = "$tempdir/test.yaml";
-    my $test_schema = { xyz => { abc => 'INT',
-                                 def => 'TEXT',
-                             } };
-    YAML::DumpFile( $schema_file, $test_schema );
-
-    my $global_schema_file = "$tempdir/global.yaml";
-    my $test_global_schema = { xyz => { abc => 'TEXT',
-                                        def => 'TEXT',
-                                    },
-                               foo => { bar => 'INT',
-                                        baz => 'TEXT',
-                                    },
-                           };
-    YAML::DumpFile( $global_schema_file, $test_global_schema );
+    my $foo_schema = { bar => 'INT',
+                       baz => 'TEXT',
+                   };
+    YAML::DumpFile( "$tempdir2/foo.yaml", $foo_schema );
 
     ok( my $sql = Wubot::SQLite->new( { file               => $sqldb,
-                                        schema_file        => $schema_file,
-                                        global_schema_file => $global_schema_file,
+                                        schema_dir         => $tempdir2,
                                     } ),
         "Creating new Wubot::SQLite object"
     );
 
-    is( $sql->schema_file(),
-        $schema_file,
-        "Checking that schema file configured on sql object"
-    );
+    is_deeply( $sql->check_schema( 'xyz' ),
+               $xyz_schema,
+               "Checking xyz schema"
+           );
 
-    is( $sql->global_schema_file(),
-        $global_schema_file,
-        "Checking that global schema file configured on sql object"
-    );
-
-    is_deeply( $sql->sql_schemas(),
-               { xyz => { abc => 'INT',
-                          def => 'TEXT',
-                      },
-                 foo => { bar => 'INT',
-                          baz => 'TEXT',
-                      },
-             },
-               "Checking that test schemas were read, and user schema overrides global schema"
+    is_deeply( $sql->check_schema( 'foo' ),
+               $foo_schema,
+               "Checking foo schema"
            );
 
     my $table = "xyz";
@@ -530,6 +512,21 @@ ok( -r $sqldb,
                "Checking that defined columns inserted into table"
            );
 
+    # update schema
+    $xyz_schema->{ghi} = 'TEXT';
+    sleep 1; # ensure date stamp is at least one second later
+    YAML::DumpFile( "$tempdir2/xyz.yaml", $xyz_schema );
+
+    ok( $sql->insert( $table, { abc => 234, def => 567, ghi => 890 } ),
+        "Inserting data, after adding column to schema file"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table ORDER BY abc" ) ],
+               [ { abc => 123, def => 456, ghi => undef },
+                 { abc => 234, def => 567, ghi => 890 }
+             ],
+               "Checking that defined columns inserted into table"
+           );
 
 }
 

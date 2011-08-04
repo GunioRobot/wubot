@@ -61,13 +61,13 @@ sub initialize_db {
     if ( $total ) {
 
         if ( $total > 100000 ) {
-            $self->logger->fatal( "queue length: $total ($seen/$unseen): $dbfile" );
-        }
-        elsif ( $total > 30000 ) {
             $self->logger->error( "queue length: $total ($seen/$unseen): $dbfile" );
         }
-        else {
+        elsif ( $total > 30000 ) {
             $self->logger->warn( "queue length: $total ($seen/$unseen): $dbfile" );
+        }
+        else {
+            $self->logger->info( "queue length: $total ($seen/$unseen): $dbfile" );
         }
 
         # if ( $self->reactor ) {
@@ -149,7 +149,7 @@ sub delete_seen {
 
    my $time = time;
    if ( $age ) { $time -= $age }
-   $self->logger->warn( "Deleting items from message queue that are older than: ", scalar localtime $time );
+   $self->logger->info( "Deleting items from message queue that are older than: ", scalar localtime $time );
 
    my $conditions = { seen => { '<' => $time } };
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );

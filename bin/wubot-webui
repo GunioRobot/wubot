@@ -63,8 +63,10 @@ my $schemas = { tv_data => { show             => 'VARCHAR(128)',
 my $sqlite_rss     = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/rss.sql' } );
 my $sqlite_tv_data = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tv_data.sql' } );
 my $sqlite_tasks   = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tasks.sql' } );
+my $sqlite_notify  = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/notify.sql' } );
 my $sqlite_tv      = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/xmltv.sql' } );
 
+my $is_null = "IS NULL";
 
 my $timelength = Wubot::TimeLength->new();
 
@@ -151,6 +153,107 @@ get '/graphs' => sub {
     $self->render( template => 'graphs' );
 
 };
+
+
+get '/notify' => sub {
+    my $self = shift;
+
+    my $now = time;
+
+    my $seen_id      = $self->param( "seen" );
+    if ( $seen_id ) {
+        $sqlite_notify->update( 'notifications',
+                                { seen => $now },
+                                { id   => $seen_id  },
+                            );
+
+        $self->redirect_to( "/notify" );
+    }
+
+    my $seen_key1      = $self->param( "seen_key1" );
+    if ( $seen_key1 ) {
+        $sqlite_notify->update( 'notifications',
+                                { seen => $now },
+                                { key  => { "LIKE" => "$seen_key1%" }  },
+                            );
+
+        $self->redirect_to( "/notify" );
+    }
+
+
+    my $seen_key      = $self->param( "seen_key" );
+    if ( $seen_key ) {
+        $sqlite_notify->update( 'notifications',
+                                { seen => $now },
+                                { key  => $seen_key },
+                            );
+
+        $self->redirect_to( "/notify" );
+    }
+
+
+    my $command = $self->param( "command" );
+    if ( $command ) {
+        if ( $command eq "r.*" ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    {},
+                                );
+        } elsif ( $command =~ m|^r.(.*)$| ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => { 'LIKE' => "%$1%" } },
+                                );
+        }
+    }
+
+    my @messages;
+    my $seen;
+
+  MESSAGE:
+    for my $message ( $sqlite_notify->select( { tablename => 'notifications',
+                                                where     => { seen => \$is_null },
+                                                order     => 'lastupdate DESC',
+                                                limit     => 100,
+                                            } ) ) {
+
+        if ( $seen->{ $message->{subject} } ) {
+            $seen->{ $message->{subject} } += 1;
+            next MESSAGE;
+        }
+        else {
+            $seen->{ $message->{subject} } = 1;
+        }
+
+        push @messages, $message;
+    }
+
+    for my $message ( @messages ) {
+        unless ( $message->{color} ) { $message->{color} = $pretty_colors->{dark} }
+
+        $message->{age} = $timelength->get_human_readable( $now - $message->{lastupdate} );
+        $message->{icon} =~ s|^.*\/||;
+
+        $message->{count} = $seen->{ $message->{subject} };
+
+        if ( $message->{key} =~ m|^(.*?)\-(.*)| ) {
+            $message->{key1} = $1;
+            $message->{key2} = $2;
+        }
+        else {
+            $message->{key1} = $message->{key};
+        }
+    }
+
+
+    $self->stash( 'headers', [qw/key1 key2 username icon id count subject link age/ ] );
+
+    $self->stash( 'body_data', \@messages );
+
+    $self->render( template => 'notify' );
+
+};
+
 
 get '/tasks' => sub {
     my $self = shift;

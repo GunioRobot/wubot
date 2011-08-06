@@ -1,0 +1,7 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+subject: TEXT
+subject_text: TEXT
+icon: varchar(256)
+username: varchar(64)
+lastupdate: INTEGER

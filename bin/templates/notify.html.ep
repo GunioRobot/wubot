@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <title>wubot notifications</title>
+    <meta http-equiv="refresh" content="60">
+    <link rel='stylesheet' href='sort/style.css' type='text/css' />
+    <script type='text/javascript' src='sort/common.js'></script>
+    <script type='text/javascript' src='sort/css.js'></script>
+    <script type='text/javascript' src='sort/standardista-table-sorting.js'></script>
+    <style type="text/css">
+
+table {
+  width: 100%;
+  border: 1px solid #000;
+  font-size:small;
+}
+th.count {
+  width: 3%
+}
+th.key, th.username {
+  width: 10%
+}
+th.subject {
+  width: 65%;
+}
+
+    </style>
+  </head>
+  <body bgcolor=black>
+    <form>
+      <input name="command">
+      <input type="submit">
+    </form>
+
+    <table class='sortable autostripe'>
+      <thead>
+        <tr>
+          <% for my $header ( @$headers ) { %>
+          <th class="<%= $header %>"><%= $header %></th>
+          <% } %>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <% for my $row ( @{ $body_data } ) { %>
+        <tr bgcolor="<%= $row->{color} %>">
+
+          <td>
+            <a href="?seen_key1=<%= $row->{key1} %>"><%= $row->{key1} %></a>
+          </td>
+
+          <td>
+            <a href="?seen_key=<%= $row->{key} %>"><%= $row->{key2} %></a>
+          </td>
+
+          <td><%= $row->{username} %></td>
+
+          <td><img height="32" width="32" src="/images/<%= $row->{icon} %>"></td>
+
+          <td><a href="?seen=<%= $row->{id} %>">seen</a></td>
+
+          <td>
+            <% if ( $row->{count} && $row->{count} > 1 ) { %>
+            <%= $row->{count} %>
+            <% } %>
+          </td>
+
+          <td><%= $row->{subject} %></td>
+
+          <td><% if ( $row->{link} ) { %>
+                 <a href="<%= $row->{link} %>">link</a>
+              <% } %>
+          </td>
+
+          <td><%= $row->{age} %></td>
+
+        </tr>
+        <% } %>
+
+      </tbody>
+      <tfoot></tfoot>
+    </table>
+  </body>
+</html>
+
+

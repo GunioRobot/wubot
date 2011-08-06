@@ -11,7 +11,7 @@ my $constants = { s => 1,
                   d => 60*60*24,
                   w => 60*60*24*7,
                   M => 60*60*24*30,
-                  y => 60*60*24*7*365,
+                  y => 60*60*24*365,
               };
 
 sub get_seconds {
@@ -61,13 +61,16 @@ sub get_human_readable {
     my @string;
 
   TIME:
-    for my $time ( qw( y M d h m s ) ) {
+    for my $time ( qw( y M w d h m s ) ) {
 
         if ( $time eq "s" ) {
             next TIME if $orig_seconds > $constants->{h};
         }
         elsif ( $time eq "m" ) {
             next TIME if $orig_seconds > $constants->{d};
+        }
+        elsif ( $time eq "h" ) {
+            next TIME if $orig_seconds > $constants->{w};
         }
 
         my $num_seconds = $constants->{ $time };

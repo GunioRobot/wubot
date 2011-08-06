@@ -67,6 +67,27 @@ ok( my $timelength = Wubot::TimeLength->new(),
         "Human-readable time for -1m"
     );
 
+    is( $timelength->get_human_readable( 60*60*24*8 ),
+        "1w1d",
+        "Human-readable time for 8 days"
+    );
+
+    is( $timelength->get_human_readable( 60*60*24*31 ),
+        "1M1d",
+        "Human-readable time for 1 month and 1 day"
+    );
+
+    is( $timelength->get_human_readable( 60*60*24*366 ),
+        "1y1d",
+        "Human-readable time for 366 days"
+    );
+
+    is( $timelength->get_human_readable( 60*60*24*365*20 + 60*60*24*7 ),
+        "20y1w",
+        "Human-readable time for 20 years and 1 week"
+    );
+
+
 }
 
 # hours

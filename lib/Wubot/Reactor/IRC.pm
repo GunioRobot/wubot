@@ -117,3 +117,15 @@ sub close {
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Reactor::IRC - public and private IRC notifications
+
+
+=head1 DESCRIPTION
+
+For more info, please see the irc.txt document in the docs directory.

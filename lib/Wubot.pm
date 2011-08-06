@@ -16,6 +16,8 @@ Wubot - personal distributed reactive automation
 
 =head1 DESCRIPTION
 
+Please see the README for a full description.
+
 =cut
 
 #_* End

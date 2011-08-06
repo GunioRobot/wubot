@@ -7,7 +7,6 @@ use FileHandle;
 use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime setsid :sys_wait_h);
-use String::ShellQuote;
 use Term::ANSIColor;
 use YAML::XS;
 

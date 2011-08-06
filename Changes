@@ -1,5 +1,20 @@
 Revision history for Wubot
 
+0.1_3 Fri Aug  5, 2011  7:17 pm
+
+  - default schema config file changes
+    - break out schemas into one file per table
+      - all schemas now live in ~/wubot/schemas/
+    - schema files automatically re-read on change without having to restart wubot
+
+  - minor tweaks to new Pulse plugin
+
+  - Wubot::SQLite caches db handles, no longer opens multiple handles to the same db
+
+  - changed a few logging levels
+
+  - added docs for more reactor plugins
+
 0.1_2 Sun Jul 31, 2011  5:27 pm
 
   - added Pulse plugin

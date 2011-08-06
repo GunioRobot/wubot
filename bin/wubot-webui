@@ -231,7 +231,9 @@ get '/notify' => sub {
     for my $message ( @messages ) {
         unless ( $message->{color} ) { $message->{color} = $pretty_colors->{dark} }
 
-        $message->{age} = $timelength->get_human_readable( $now - $message->{lastupdate} );
+        if ( $message->{lastupdate} ) {
+            $message->{age} = $timelength->get_human_readable( $now - $message->{lastupdate} );
+        }
         $message->{icon} =~ s|^.*\/||;
 
         $message->{count} = $seen->{ $message->{subject} };

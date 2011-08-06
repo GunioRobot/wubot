@@ -197,7 +197,7 @@ sub monitor {
                     my $warning = "Warning: cache data for $key:$field not updated in $check_age_string";
                     $self->logger->warn( $warning );
 
-                    push @react, { key => $key, subject => $warning };
+                    push @react, { key => $key, subject => $warning, lastupdate => $now };
 
                 }
             }

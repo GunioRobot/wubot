@@ -154,9 +154,10 @@ get '/graphs' => sub {
 
 };
 
-
-get '/notify' => sub {
+any '/notify' => sub {
     my $self = shift;
+
+    my $now = time;
 
     my $params = $self->req->params->to_hash;
     for my $param ( sort keys %{ $params } ) {
@@ -168,14 +169,45 @@ get '/notify' => sub {
         $param =~ m|^tag_(\d+)|;
         my $id = $1;
 
-        print "Setting tag $tag on id $id\n";
+        if ( $tag eq "r" ) {
+            #print "Marking read: $id\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
+                                );
 
-        $sqlite_notify->insert( 'tags',
-                                { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
-                            );
+        }
+        elsif ( $tag eq "rr" ) {
+            my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
+                                                      fields    => 'subject',
+                                                      where     => { id => $id },
+                                                  } );
+            #print "Marking read: $entry->{subject}\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => $entry->{subject} },
+                                );
+
+        }
+        elsif ( $tag eq "r.*" ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    {},
+                                );
+        }
+        elsif ( $tag =~ m|^r.(.*)$| ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => { 'LIKE' => "%$1%" } },
+                                );
+        }
+        else {
+            print "Setting tag $tag on id $id\n";
+            $sqlite_notify->insert( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
+                                );
+        }
     }
-
-    my $now = time;
 
     my $seen_id      = $self->param( "seen" );
     if ( $seen_id ) {
@@ -208,22 +240,6 @@ get '/notify' => sub {
         $self->redirect_to( "/notify" );
     }
 
-
-    my $command = $self->param( "command" );
-    if ( $command ) {
-        if ( $command eq "r.*" ) {
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    {},
-                                );
-        } elsif ( $command =~ m|^r.(.*)$| ) {
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    { subject => { 'LIKE' => "%$1%" } },
-                                );
-        }
-    }
-
     my @messages;
     my $seen;
 
@@ -252,7 +268,8 @@ get '/notify' => sub {
     }
 
     for my $message ( @messages ) {
-        unless ( $message->{color} ) { $message->{color} = $pretty_colors->{dark} }
+        unless ( $message->{color} ) { $message->{color} = $pretty_colors->{black} }
+        if ( $pretty_colors->{ $message->{color} } ) { $message->{color} = $pretty_colors->{ $message->{color} } }
 
         my $age = 0;
         if ( $message->{lastupdate} ) {
@@ -274,7 +291,7 @@ get '/notify' => sub {
         }
     }
 
-    $self->stash( 'headers', [qw/key1 key2 username icon id count subject link tag age/ ] );
+    $self->stash( 'headers', [qw/key1 key2 id username icon count tag subject link age/ ] );
 
     $self->stash( 'body_data', \@messages );
 

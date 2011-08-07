@@ -2,23 +2,49 @@
   <head>
     <title>wubot notifications</title>
     <meta http-equiv="refresh" content="60">
-    <link rel='stylesheet' href='sort/style.css' type='text/css' />
-    <script type='text/javascript' src='sort/common.js'></script>
-    <script type='text/javascript' src='sort/css.js'></script>
-    <script type='text/javascript' src='sort/standardista-table-sorting.js'></script>
     <style type="text/css">
 
+a {
+  color: #cccccc;
+  text-decoration: none;
+}
 input {
-  background-color: black;
-  color: #FF00FF;
+  color: #cccccc;
 }
 table {
   width: 100%;
-  border: 1px solid #000;
   font-size: small;
+  border-spacing: 0;
+  border-collapse: collapse;
 }
-th.count {
-  width: 3%
+tr {
+  text-align: center
+}
+td {
+  border-color: #000;
+  border-width: 1px 0px 0 0;
+  border-style: solid;
+  margin: 0;
+  padding: 4px;
+  text-align: center;
+  color: #cccccc;
+}
+th {
+  background-color: purple;
+}
+th.key1, th.key2 {
+  width: 5%;
+}
+th.count, th.id {
+  width: 3%;
+}
+td.age {
+  color: #000000;
+  width: 4%;
+}
+td.seen {
+  color: #000000;
+  width: 2%;
 }
 th.key, th.username {
   width: 10%
@@ -30,12 +56,9 @@ th.subject {
     </style>
   </head>
   <body bgcolor=black>
-    <form>
-      <input name="command">
-      <input type="submit">
-      <font color="#FF00FF">[ <%= $count %> unread ]</font>
+    <form method="post">
 
-    <table class='sortable autostripe'>
+    <table>
       <thead>
         <tr>
           <% for my $header ( @$headers ) { %>
@@ -57,19 +80,21 @@ th.subject {
             <a href="?seen_key=<%= $row->{key} %>"><%= $row->{key2} %></a>
           </td>
 
-          <td><%= $row->{username} %></td>
+          <td class="seen"><a href="?seen=<%= $row->{id} %>">seen</a></td>
+
+          <td style="text-align: right"><%= $row->{username} %></td>
 
           <td><img height="32" width="32" src="/images/<%= $row->{icon} %>"></td>
 
-          <td><a href="?seen=<%= $row->{id} %>">seen</a></td>
-
-          <td>
+          <td align="center">
             <% if ( $row->{count} && $row->{count} > 1 ) { %>
             <%= $row->{count} %>
             <% } %>
           </td>
 
-          <td><%= $row->{subject} %></td>
+          <td><input type="text" name="tag_<%= $row->{id} %>" size="5" style="background-color: <%= $row->{color} %>; border: 1px solid black"></td>
+
+          <td style="text-align: left"><%= $row->{subject} %></td>
 
           <td>
             <% if ( $row->{link} ) { %>
@@ -77,9 +102,7 @@ th.subject {
             <% } %>
           </td>
 
-          <td><input type="text" name="tag_<%= $row->{id} %>" size="5"></td>
-
-          <td bgcolor="<%= $row->{age_color} %>"><%= $row->{age} %></td>
+          <td class="age" bgcolor="<%= $row->{age_color} %>"><%= $row->{age} %></td>
 
         </tr>
         <% } %>
@@ -88,6 +111,8 @@ th.subject {
       <tfoot></tfoot>
     </table>
 
+    <font color="#FF00FF">[ <%= $count %> unread ]</font>
+    <input type="submit">
     </form>
 
   </body>

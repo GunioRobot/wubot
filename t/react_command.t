@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Differences;
-use Test::More tests => 21;
+use Test::More tests => 24;
 
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
@@ -118,6 +118,12 @@ $queuedb .= "/commands.sql";
 
     my ( $results_h ) = @{ $results_a };
 
+    ok( $results_h->{lastupdate},
+        "Checking that lastupdate time is set"
+    );
+
+    delete $results_h->{lastupdate};
+
     eq_or_diff_data( \$results_h,
                      \{ command_output => 'finished',
                         command_signal => 0,
@@ -160,7 +166,19 @@ $queuedb .= "/commands.sql";
 
     sleep 3;
 
-    eq_or_diff( \$command->monitor(),
+    my $results3_h = $command->monitor();
+
+    ok( $results3_h->[0]->{lastupdate},
+        "Checking that lastupdate field is set in first message"
+    );
+    ok( $results3_h->[1]->{lastupdate},
+        "Checking that lastupdate field is set in second message"
+    );
+
+    delete $results3_h->[0]->{lastupdate};
+    delete $results3_h->[1]->{lastupdate};
+
+    eq_or_diff( \$results3_h,
                 \[
                    { command_output => 'finished1',
                      command_queue => 'separate.1',

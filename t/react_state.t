@@ -2,9 +2,10 @@
 use strict;
 use warnings;
 
+use Test::More tests => 29;
+
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
-use Test::More 'no_plan';
 
 use Wubot::LocalMessageStore;
 use Wubot::Reactor::State;
@@ -180,7 +181,16 @@ for my $testcase ( @{ $cases } ) {
 
     $state->react( { key => 'testkey', testfield => 5, lastupdate => time-2*24*60*60 }, { field => 'testfield', change => 10 } );
 
-    is_deeply( [ $state->monitor() ],
+    my @results = $state->monitor();
+
+    for my $results ( @results ) {
+        ok( $results->{lastupdate},
+            "Checking that lastupdate field set in reaction message"
+        );
+        delete $results->{lastupdate};
+    }
+
+    is_deeply( \@results,
                [ { subject => "Warning: cache data for testkey:testfield not updated in 2d",
                    key     => 'testkey'
                } ],
@@ -199,7 +209,16 @@ for my $testcase ( @{ $cases } ) {
 
     $state->react( { key => 'TestCase3', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
 
-    is_deeply( [ $state->monitor() ],
+    my @results = $state->monitor();
+
+    for my $results ( @results ) {
+        ok( $results->{lastupdate},
+            "Checking that lastupdate field set in reaction message"
+        );
+        delete $results->{lastupdate};
+    }
+
+    is_deeply( \@results,
                [ { key => 'TestCase1',
                    subject => 'Warning: cache data for TestCase1:a not updated in 1h',
                },
@@ -230,7 +249,16 @@ for my $testcase ( @{ $cases } ) {
     {
         my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
-        is_deeply( [ $state->monitor() ],
+        my @results = $state->monitor();
+
+        for my $results ( @results ) {
+            ok( $results->{lastupdate},
+                "Checking that lastupdate field set in reaction message"
+            );
+            delete $results->{lastupdate};
+        }
+
+        is_deeply( \@results,
                    [ { key => 'TestCase1',
                        subject => 'Warning: cache data for TestCase1:a not updated in 1h',
                    },
@@ -251,13 +279,24 @@ for my $testcase ( @{ $cases } ) {
                    { field => 'a', change => 10, notify_interval => '5s' },
                );
 
-    is_deeply( [ $state->monitor() ],
-               [ { key => 'TestCase1',
-                   subject => 'Warning: cache data for TestCase1:a not updated in 1h',
-               },
-             ],
-               "Checking that monitor() sends a notification for stale cache"
-           );
+    {
+        my @results = $state->monitor();
+
+        for my $results ( @results ) {
+            ok( $results->{lastupdate},
+                "Checking that lastupdate field set in reaction message"
+            );
+            delete $results->{lastupdate};
+        }
+
+        is_deeply( \@results,
+                   [ { key => 'TestCase1',
+                       subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+                   },
+                 ],
+                   "Checking that monitor() sends a notification for stale cache"
+               );
+    }
 
     is_deeply( [ $state->monitor() ],
                [ ],
@@ -266,13 +305,24 @@ for my $testcase ( @{ $cases } ) {
 
     sleep 5;
 
-    is_deeply( [ $state->monitor() ],
-               [ { key => 'TestCase1',
-                   subject => 'Warning: cache data for TestCase1:a not updated in 1h',
-               },
-             ],
-               "Checking that monitor() returns notification after notify interval"
-           );
+    {
+        my @results = $state->monitor();
+
+        for my $results ( @results ) {
+            ok( $results->{lastupdate},
+                "Checking that lastupdate field set in reaction message"
+            );
+            delete $results->{lastupdate};
+        }
+
+        is_deeply( \@results,
+                   [ { key => 'TestCase1',
+                       subject => 'Warning: cache data for TestCase1:a not updated in 1h',
+                   },
+                 ],
+                   "Checking that monitor() returns notification after notify interval"
+               );
+    }
 }
 
 

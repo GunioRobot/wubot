@@ -217,6 +217,8 @@ get '/notify' => sub {
                                                 limit     => 100,
                                             } ) ) {
 
+        utf8::decode( $message->{subject} );
+
         if ( $seen->{ $message->{subject} } ) {
             $seen->{ $message->{subject} } += 1;
             next MESSAGE;
@@ -231,9 +233,13 @@ get '/notify' => sub {
     for my $message ( @messages ) {
         unless ( $message->{color} ) { $message->{color} = $pretty_colors->{dark} }
 
+        my $age = 0;
         if ( $message->{lastupdate} ) {
-            $message->{age} = $timelength->get_human_readable( $now - $message->{lastupdate} );
+            $age = $now - $message->{lastupdate};
+            $message->{age} = $timelength->get_human_readable( $age );
         }
+        $message->{age_color} = $timelength->get_age_color( $age );
+
         $message->{icon} =~ s|^.*\/||;
 
         $message->{count} = $seen->{ $message->{subject} };
@@ -247,10 +253,15 @@ get '/notify' => sub {
         }
     }
 
-
     $self->stash( 'headers', [qw/key1 key2 username icon id count subject link age/ ] );
 
     $self->stash( 'body_data', \@messages );
+
+    my ( $total ) = $sqlite_notify->select( { fields    => 'count(*) as count',
+                                          tablename => 'notifications',
+                                          where     => { seen => \$is_null },
+                                      } );
+    $self->stash( 'count', $total->{count} );
 
     $self->render( template => 'notify' );
 

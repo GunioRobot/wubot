@@ -11,7 +11,7 @@
 table {
   width: 100%;
   border: 1px solid #000;
-  font-size:small;
+  font-size: small;
 }
 th.count {
   width: 3%
@@ -29,6 +29,7 @@ th.subject {
     <form>
       <input name="command">
       <input type="submit">
+      <font color=white>[ <%= $count %> unread ]</font>
     </form>
 
     <table class='sortable autostripe'>
@@ -72,7 +73,7 @@ th.subject {
               <% } %>
           </td>
 
-          <td><%= $row->{age} %></td>
+          <td bgcolor="<%= $row->{age_color} %>"><%= $row->{age} %></td>
 
         </tr>
         <% } %>

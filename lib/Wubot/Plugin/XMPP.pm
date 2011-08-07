@@ -107,7 +107,7 @@ sub check {
                              my $data;
 
                              eval { # try
-                                 $data = YAML::Load( MIME::Base64::decode( Encode::decode( "UTF-8", $body ) ) );
+                                 $data = YAML::Load( Encode::decode( "UTF-8", MIME::Base64::decode( $body ) ) );
 
                                  # set the noforward flag when sending a message
                                  $data->{noforward} = 1;

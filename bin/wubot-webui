@@ -158,6 +158,23 @@ get '/graphs' => sub {
 get '/notify' => sub {
     my $self = shift;
 
+    my $params = $self->req->params->to_hash;
+    for my $param ( sort keys %{ $params } ) {
+        next unless $params->{$param};
+        next unless $param =~ m|^tag_|;
+
+        my $tag = $params->{$param};
+
+        $param =~ m|^tag_(\d+)|;
+        my $id = $1;
+
+        print "Setting tag $tag on id $id\n";
+
+        $sqlite_notify->insert( 'tags',
+                                { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
+                            );
+    }
+
     my $now = time;
 
     my $seen_id      = $self->param( "seen" );
@@ -219,6 +236,10 @@ get '/notify' => sub {
 
         utf8::decode( $message->{subject} );
 
+        if ( ! $message->{link} && $message->{subject} =~ m|(https?\:\/\/\S+)| ) {
+            $message->{link} = $1;
+        }
+
         if ( $seen->{ $message->{subject} } ) {
             $seen->{ $message->{subject} } += 1;
             next MESSAGE;
@@ -253,7 +274,7 @@ get '/notify' => sub {
         }
     }
 
-    $self->stash( 'headers', [qw/key1 key2 username icon id count subject link age/ ] );
+    $self->stash( 'headers', [qw/key1 key2 username icon id count subject link tag age/ ] );
 
     $self->stash( 'body_data', \@messages );
 

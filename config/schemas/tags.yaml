@@ -1,0 +1,9 @@
+---
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+tablename: VARCHAR(32)
+tag: VARCHAR(32)
+remoteid: INTEGER
+lastupdate: INTEGER
+constraints:
+  - UNIQUE( tablename, tag, remoteid )
+

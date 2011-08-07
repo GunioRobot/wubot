@@ -68,11 +68,19 @@ sub check {
 
         $self->cache_mark_seen( $cache, $status->{text} );
 
-        push @react, { subject  => join( ": ", $status->{user}->{screen_name}, $status->{text} ),
-                       text     => $status->{text},
-                       username => lc($status->{user}->{screen_name}),
-                       profile_image_url => $status->{user}->{profile_image_url},
-                   };
+        my $subject = join( ": ", $status->{user}->{screen_name}, $status->{text} );
+
+        my $entry = { subject  => $subject,
+                      text     => $status->{text},
+                      username => lc($status->{user}->{screen_name}),
+                      profile_image_url => $status->{user}->{profile_image_url},
+                  };
+
+        if ( $status->{text} =~ m|(https?\:\/\/\S+)| ) {
+            $entry->{link} = $1;
+        }
+
+        push @react, $entry;
     }
 
     $self->cache_expire( $cache );

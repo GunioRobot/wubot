@@ -1,5 +1,23 @@
 Revision history for Wubot
 
+0.1_4 Sun Aug  7, 2011  1:07 pm
+
+  - working on a new 'notifications' web ui
+    - see the notifications.txt doc for more info
+
+  - bug fix in utf-8 handling for XMPP messages
+
+  - timelength
+    - generate a color based on the message age
+    - bug fix for messages over 1 year old
+
+  - minor plugin improvements
+    - Command reactor updates 'lastupdate' field on background task completion message
+    - State reactor adds 'lastupdate' field to stale cache messages
+    - Outlook plugin always sends inbox message count
+      - only sets subject if message count is nonzero
+    - Twitter - capture link into 'link' field
+
 0.1_3 Fri Aug  5, 2011  7:17 pm
 
   - default schema config file changes

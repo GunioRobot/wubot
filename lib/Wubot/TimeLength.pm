@@ -104,5 +104,67 @@ sub get_hours {
 
 }
 
+sub get_age_color {
+    my ( $self, $seconds ) = @_;
+
+    if ( $seconds < $constants->{h} ) {
+        # minutes
+        my $r = $self->range_map( $seconds, $constants->{m}, $constants->{h}, 255, 110 );
+        my $b = $self->range_map( $seconds, $constants->{m}, $constants->{h}, 255, 170 );
+        return $self->get_hex_color( $r, 0, $b );
+
+    }
+    elsif ( $seconds < $constants->{d} ) {
+        # hours
+        my $r = $self->range_map( $seconds, $constants->{h}, $constants->{d},  90,  40 );
+        my $g = $self->range_map( $seconds, $constants->{h}, $constants->{d}, 100,   0 );
+        my $b = $self->range_map( $seconds, $constants->{h}, $constants->{d}, 255, 170 );
+        return $self->get_hex_color( $r, $g, $b );
+    }
+    elsif ( $seconds < $constants->{M} ) {
+        # days
+        my $c = $self->range_map( $seconds, $constants->{d},  $constants->{M}, 240,  120 );
+        return $self->get_hex_color( $c, $c, $c );
+    }
+
+    # months
+    my $c = $self->range_map( $seconds, $constants->{M}, $constants->{y}, 250,  0 );
+    return $self->get_hex_color( $c, $c, 0 );
+}
+
+sub get_hex_color {
+    my ( $self, $r, $g, $b ) = @_;
+
+    my $color = "#";
+
+    for my $col ( $r, $g, $b ) {
+        $color .= sprintf( "%02x", $col );
+    }
+
+    return $color;
+}
+
+sub range_map {
+    my ( $self, $value, $low1, $high1, $low2, $high2 ) = @_;
+
+    my $orig_value = $value;
+
+    # ensure value is within low1 and high1
+    if    ( $value < $low1  ) { $value = $low1  }
+    elsif ( $value > $high1 ) { $value = $high1 }
+
+    my $ratio = ( $high2 - $low2 ) / ( $high1 - $low1 );
+
+    $value -= $low1;
+
+    $value *= $ratio;
+
+    $value += $low2;
+
+    #print "MAP: $orig_value => $value [ $low1 .. $high1 ] [ $low2 .. $high2 ]\n";
+
+    return $value;
+}
+
 1;
 

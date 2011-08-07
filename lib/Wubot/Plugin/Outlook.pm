@@ -38,9 +38,13 @@ sub check {
 
     my $count = scalar $self->get_msgids( $content );
 
-    if ( $count > 1 ) {
-        push @react, { subject => "$count messages in your inbox", count => $count };
+    my $message = { count => $count };
+
+    if ( $count ) {
+        $message->{subject} = "$count messages in your inbox";
     }
+
+    push @react, $message;
 
     return { react => \@react };
 }

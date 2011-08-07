@@ -238,6 +238,7 @@ sub monitor {
             }
         }
 
+        $message->{lastupdate} = time;
 
         $self->logger->debug( "Command: collected information about process $id" );
 

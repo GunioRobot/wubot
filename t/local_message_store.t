@@ -197,7 +197,7 @@ $hostname =~ s|\..*$||;
                     key        => 'testcase',
                     lastupdate => time,
                     hostname   => $hostname,
-                    body       => "foo \U1234 bar",
+                    body       => "foo \x{263A} bar",
                 };
 
     ok( my $messenger = Wubot::LocalMessageStore->new(),

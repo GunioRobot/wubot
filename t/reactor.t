@@ -1,7 +1,8 @@
 #!/perl
 use strict;
 
-use Test::More 'no_plan';
+use Test::More tests => 21;
+
 use YAML;
 
 use Wubot::Logger;
@@ -179,19 +180,19 @@ my $reactor = Wubot::Reactor->new( config => $config );
         "checking 'last_rule' prevents further rules from processing"
     );
 
-    is( $reactor->react( { key => 'TestCase-test6' } )->{no_more_rules},
+    is( $reactor->react( { key => 'TestCase-test6' } )->{last_rule},
         1,
-        "checking 'last_rule' set 'no_more_rules' field"
+        "checking 'last_rule' set 'last_rule' field"
     );
 
-    is( $reactor->react( { key => 'TestCase-test7' } )->{no_more_rules},
+    is( $reactor->react( { key => 'TestCase-test7' } )->{last_rule},
         undef,
-        "Check that 'no_more_rules' field not set by default"
+        "Check that 'last_rule' field not set by default"
     );
 
-    is( $reactor->react( { key => 'TestCase-test8' } )->{no_more_rules},
+    is( $reactor->react( { key => 'TestCase-test8' } )->{last_rule},
         1,
-        "checking 'last_rule' set 'no_more_rules' field"
+        "checking 'last_rule' set 'last_rule' field"
     );
 }
 

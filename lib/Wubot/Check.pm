@@ -289,8 +289,8 @@ sub _react_results {
         $self->wubot_reactor->react( $react, $config->{react} );
     }
 
-    if ( $react->{no_more_rules} || $react->{last_rule} ) {
-        $self->logger->debug( " - check instance reaction set no_more_rules" );
+    if ( $react->{last_rule} ) {
+        $self->logger->debug( " - check instance reaction set last_rule" );
         $self->logger->trace( YAML::Dump $react );
     }
     else {

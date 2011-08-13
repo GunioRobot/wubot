@@ -1,9 +1,10 @@
 #!/perl
 use strict;
 
+use Test::More tests => 32;
+
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
-use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
@@ -169,6 +170,32 @@ my $cache_file = "$tempdir/storage.yaml";
         "Checking that testparam message added to queue"
     );
 
+}
+
+{
+    my $react = [ { name => 'last rule reaction',
+                    last_rule => 1,
+                },
+              ];
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
+                                         cache_file        => $cache_file,
+                                         key               => 'TestCase-testcase',
+                                         reactor_queue_dir => $tempdir,
+                                     } ),
+        "Creating a new check instance"
+    );
+
+    ok( my $results = $check->check( { testparam => 'testvalue',
+                                       react     => $react,
+                                   },  ),
+        "Calling check() method and passing new config"
+    );
+
+    ok( $results->{react}->[0]->{last_rule},
+        "Checking that last_rule field in rule sets last_rule field in reaction"
+    );
 }
 
 

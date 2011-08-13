@@ -33,7 +33,7 @@ has 'monitors' => ( is => 'ro',
 sub react {
     my ( $self, $message, $rules, $depth ) = @_;
 
-    return $message if $message->{no_more_rules};
+    return $message if $message->{last_rule};
 
     $depth = $depth || 1;
     unless ( $rules ) {
@@ -46,7 +46,7 @@ sub react {
   RULE:
     for my $rule ( @{ $rules } ) {
 
-        return $message if $message->{no_more_rules};
+        return $message if $message->{last_rule};
 
         if ( $rule->{condition} ) {
             next RULE unless $self->condition( $rule->{condition}, $message );
@@ -63,11 +63,8 @@ sub react {
         }
 
         if ( $rule->{last_rule} ) {
-            $message->{no_more_rules} = 1;
-        }
-
-        if ( $message->{no_more_rules} ) {
-            $self->logger->debug( " " x $depth, "- no_more_rules set" );
+            $message->{last_rule} = 1;
+            $self->logger->debug( " " x $depth, "- last_rule set" );
         }
     }
 

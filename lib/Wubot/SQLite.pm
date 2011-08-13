@@ -149,6 +149,7 @@ sub insert {
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
         next if $field eq "constraints";
+        next if $field eq "id";
         $insert->{ $field } = $entry->{ $field };
     }
 
@@ -180,6 +181,7 @@ sub update {
     my $insert;
     for my $field ( keys %{ $schema_h } ) {
         next if $field eq "constraints";
+        next if $field eq "id";
         next unless exists $update->{ $field };
         $insert->{ $field } = $update->{ $field };
     }

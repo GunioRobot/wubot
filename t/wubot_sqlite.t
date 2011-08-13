@@ -530,6 +530,27 @@ ok( -r $sqldb,
 
 }
 
+# id field
+{
+    my $table = "test_table_13";
+    my $schema = { id      => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                   column1 => 'INT',
+                   column2 => 'INT',
+               };
+
+    ok( $sql->insert( $table, { id => 5, column1 => 0, column2 => 1 }, $schema ),
+        "Inserting data hash into table with an 'id' that should be ignored"
+    );
+
+    is_deeply( [ $sql->query( "SELECT * FROM $table" ) ],
+               [ { id => 1, column1 => 0, column2 => 1 } ],
+               "Checking inserted data got id that was autoincremented"
+           );
+
+
+
+}
+
 ok( $sql->disconnect(),
     "Closing SQLite file"
 );

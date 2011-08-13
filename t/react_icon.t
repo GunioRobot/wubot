@@ -66,27 +66,6 @@ my $dir    = 't/icons';
                "Checking icon detector when image exists for username"
            );
 
-    is_deeply( $icon->react( { username => 'wu@somehost.com' }, $config ),
-               { username  => 'wu@somehost.com',
-                 icon      => "$dir/wu.png",
-             },
-               'Checking icon detector for email style: username@address'
-           );
-
-    is_deeply( $icon->react( { username => 'fullname <wu@somehost.com>' }, $config ),
-               { username  => 'fullname <wu@somehost.com>',
-                 icon      => "$dir/wu.png",
-             },
-               'Checking icon detector for email style: fullname <username@address>'
-           );
-
-    is_deeply( $icon->react( { username => 'wu|idle' }, $config ),
-               { username  => 'wu|idle',
-                 icon      => "$dir/wu.png",
-             },
-               "Checking icon detector for irc-style username|comment"
-           );
-
 }
 
 {
@@ -109,20 +88,4 @@ my $dir    = 't/icons';
              },
                "Checking icon detector with custom username for wu"
            );
-
-    is_deeply( $icon->react( { username => 'dude@home' }, $config ),
-               { username => 'dude@home',
-                 icon     => "$dir/wu.png",
-             },
-               'Checking icon detector with custom username for dude with username dude@home'
-           );
-
-    is_deeply( $icon->react( { username => 'dude|irc' }, $config ),
-               { username => 'dude|irc',
-                 icon     => "$dir/wu.png",
-             },
-               "Checking icon detector with custom username for dude with username dude|irc"
-           );
-
-
 }

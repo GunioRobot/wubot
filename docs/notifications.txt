@@ -40,6 +40,14 @@ bottom.
     condition: subject is true
     rules:
 
+** User
+
+The User reactor will parse the username field and extract any
+information such as the domain name or full name from an email
+address, or IRC-style username comments.  See the User reactor
+documentation for more information.  This will leave you with a short
+username which works better in notifications and makes it easier to
+locate an icon for the user.
 
 
 ** Console
@@ -63,13 +71,13 @@ growl notifications is easy, just add a 'Growl' rule.
       - name: growl notify
         plugin: Growl
 
-*** Growl Icons
+*** Icons
 
-It would be nice to have an icon for the growl notifications, so we'll
-use the Icon plugin to find one.  This plugin looks at a series of
-fields on the message (e.g. the username, the key, the plugin, the
-instance name) and tries to find a custom .png file in your icons
-directory that is appropriate.
+It is very nice to have icons, e.g. for the growl notifications or the
+web ui.  The Icon plugin can be used to locate one.  This plugin looks
+at a series of fields on the message (e.g. the username, the key, the
+plugin, the instance name) and tries to find a custom .png file in
+your icons directory that is appropriate.
 
       - name: growl icon
         plugin: Icon
@@ -278,6 +286,9 @@ rules:
         config:
           field: subject
           newfield: subject_text
+
+      - name: user field parser
+        plugin: User
 
       - name: console
         plugin: Console

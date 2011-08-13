@@ -97,7 +97,8 @@ Any remaining text will be left in the username field.
 
 After this plugin has reacted on the message, you may want to send it
 through the Icon reactor to determine if there is an appropriate icon
-for the user in your images directory.
+for the user in your images directory.  For more information, please
+see the 'notifications' document.
 
 Eventually this plugin will be adapated to identify a user in a
 database of contacts, and optionally apply configuration data from the

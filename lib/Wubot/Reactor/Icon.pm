@@ -39,29 +39,8 @@ sub react {
             $message->{icon} = $icon;
             return $message;
         }
-
-        if ( $message->{username} =~ m|\@| ) {
-            $message->{username} =~ m|^(.*)\@|;
-            my $username = $1;
-            $username =~ s|^.*\<||;
-
-            if ( my $icon = $self->check_for_image( $image_dir, $username, $config, 'username' ) ) {
-                $message->{icon} = $icon;
-                return $message;
-            }
-
-        }
-
-        if ( $message->{username} =~ m/\|/ ) {
-            $message->{username} =~ m/^(.*)\|/;
-            my $username = $1;
-
-            if ( my $icon = $self->check_for_image( $image_dir, $username, $config, 'username' ) ) {
-                $message->{icon} = $icon;
-                return $message;
-            }
-        }
     }
+
 
     if ( $message->{key} ) {
 
@@ -73,12 +52,12 @@ sub react {
         $message->{key} =~ m|^(.*?)\-(.*)$|;
         my ( $plugin, $instance ) = ( $1, $2 );
 
-        if ( my $icon = $self->check_for_image( $image_dir, $plugin, $config, 'plugin', ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $instance, $config, 'instance' ) ) {
             $message->{icon} = $icon;
             return $message;
         }
 
-        if ( my $icon = $self->check_for_image( $image_dir, $instance, $config, 'instance' ) ) {
+        if ( my $icon = $self->check_for_image( $image_dir, $plugin, $config, 'plugin', ) ) {
             $message->{icon} = $icon;
             return $message;
         }

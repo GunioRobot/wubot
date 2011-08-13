@@ -125,7 +125,6 @@ in the icon directory that matches a field on the message:
   - 'image' field
 
   - 'username' field
-    - parses username from email address
 
   - monitor key
 
@@ -135,5 +134,10 @@ in the icon directory that matches a field on the message:
 
 If no suitable icon can be found, then the image field will be set to
 'wubot.png'.
+
+Note that the Icon plugin no longer tries to parse any information in
+the username field.  It is highly recommended that you use the User
+reactor plugin prior to using the Icon plugin so that the username
+field is parsed appropriately.
 
 For more information, please see the 'notifications' document.

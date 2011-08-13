@@ -10,7 +10,7 @@ sub react {
     my ( $self, $message, $config ) = @_;
 
     my $field    = $config->{field};
-    my $newfield = $config->{newfield} || join( '_', $config->{field}, 'text' );
+    my $newfield = $config->{target_field} || $config->{newfield} || join( '_', $config->{field}, 'text' );
 
     my $value = $message->{ $field };
 
@@ -53,19 +53,21 @@ Wubot::Reactor::HTMLStrip - strip HTML data from a field
     plugin: HTMLStrip
     config:
       field: title
-      newfield: title
+      target_field: title
 
 
 =head1 DESCRIPTION
 
 The HTMLStrip plugin uses the perl module HTML::Strip to remove HTML
 from a field.  The original field content is not overwritten by
-default.  If you do not specify a 'newfield', then the HTML-stripped
-content will be stored in a new field that matches the original field
-but ends in _text.  If you specify a 'newfield' in the config, then
-the HTML-stripped text will be stored in that field.  If you want to
+default.  If you do not specify a 'target_field', then the
+HTML-stripped content will be stored in a newly created field that
+hast the same name as the original field plus _text.  For example, if
+you use the 'subject' field, the results will go into 'subject_text'
+by default.  If you specify a 'target_field' in the config, then the
+HTML-stripped text will be stored in that field.  If you want to
 replace the contents of an existing field with the HTML-stripped
-content, then use the same field for both 'field' and 'newfield'.
+content, set 'field' and 'target_field' to the same field.
 
 HTML::Strip can leave many \xA0 characters in the text which can be
 difficult to deal with.  So HTMLStrip replaces all such characters
@@ -73,4 +75,3 @@ with a single whitespace.
 
 If the new field is utf8 (according to utf8::is_utf8), then the new
 field will be passed to utf8::encode().
-

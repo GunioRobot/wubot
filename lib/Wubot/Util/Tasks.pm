@@ -52,7 +52,7 @@ sub get_tasks {
                           callback  => sub {
                               my $task = shift;
                               $seen->{$task->{file}}->{$task->{title}} = 1;
-                              $task->{subject} = "Past Deadline: $task->{file}.org => $task->{title}\n";
+                              $task->{subject} = "Past Deadline: $task->{file}.org: $task->{title}\n";
 
                               $task->{color} = $colors->{deadline}->{ $task->{priority} };
 
@@ -73,7 +73,7 @@ sub get_tasks {
                               my $task = shift;
                               return if $seen->{$task->{file}}->{$task->{title}};
                               $seen->{$task->{file}}->{$task->{title}} = 1;
-                              $task->{subject} = "Overdue: $task->{file}.org => $task->{title}\n";
+                              $task->{subject} = "Overdue: $task->{file}.org: $task->{title}\n";
 
                               $task->{color} = $colors->{due}->{ $task->{priority} };
 
@@ -94,7 +94,7 @@ sub get_tasks {
                                   my $task = shift;
                                   next if $seen->{$task->{file}}->{$task->{title}};
                                   $seen->{$task->{file}}->{$task->{title}} = 1;
-                                  $task->{subject} = "Priority: $task->{file}.org => $task->{title}\n";
+                                  $task->{subject} = "Priority: $task->{file}.org: $task->{title}\n";
                                   $task->{color}   = $priority_colors->{ $task->{priority} };
                                   $count++;
                                   $task->{count} = $count;
@@ -120,7 +120,7 @@ sub check_schedule {
                           order     => [ 'deadline', 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
                                              my $due = strftime( "%l:%M %p", localtime( $task->{deadline} - 3600 ) );
-                                             $task->{subject} = "Deadline: $task->{file} => $task->{title}";
+                                             $task->{subject} = "Deadline: $task->{file}: $task->{title}";
                                              $task->{color}   = 'red';
                                              push @tasks, $task;
                                          },
@@ -133,7 +133,7 @@ sub check_schedule {
                           order     => [ 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
                                              my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} - 3600 ) );
-                                             $task->{subject} = "Scheduled: $task->{file} => $task->{title}";
+                                             $task->{subject} = "Scheduled: $task->{file}: $task->{title}";
                                              $task->{color}   = 'yellow';
                                              push @tasks, $task;
                                          },

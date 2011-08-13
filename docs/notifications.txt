@@ -177,7 +177,7 @@ any field using the HTMLStrip plugin, e.g.:
         plugin: HTMLStrip
         config:
           field: subject
-          newfield: subject_text
+          target_field: subject_text
 
 Keep this field in mind if you delete the subject field.  If you have
 created a subject_text field, then even if you delete the subject
@@ -285,7 +285,7 @@ rules:
         plugin: HTMLStrip
         config:
           field: subject
-          newfield: subject_text
+          target_field: subject_text
 
       - name: user field parser
         plugin: User

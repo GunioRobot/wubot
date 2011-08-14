@@ -212,7 +212,10 @@ schema files from config/schemas/ in the wubot distribution into your
 ~/wubot/schemas/.
 
 Next, start up the wubot-webui process if you haven't already done so.
-By default you can hit the notification web interface at:
+To do this, copy the 'webui' directory out of the distribution
+tarball, set into the 'webui' directory, and run the script
+./wubot-webui.  By default you can get to the notification web
+interface at:
 
   http://localhost:3000/notify/
 

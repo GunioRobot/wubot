@@ -30,6 +30,8 @@ sub check {
 
         # growl identifier for coalescing
         $task->{growl_id} = $task->{title};
+
+        $task->{link} = "/tasks";
     }
 
     return { react => \@tasks };

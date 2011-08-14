@@ -42,6 +42,8 @@ sub check {
         $task->{sticky} = 1;
     }
 
+    $task->{link} = "/tasks";
+
     # cache the last task
     $cache->{lasttask}   = $task->{subject};
     $cache->{lastnotify} = time;

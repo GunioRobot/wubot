@@ -58,7 +58,7 @@ sub check {
 
         $self->cache_mark_seen( $cache, $match );
 
-        push @react, { match => $match };
+        push @react, { match => $match, link => $config->{url} };
 
     }
 

@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <title>wubot tags</title>
+    <meta http-equiv="refresh" content="60">
+    <style>
+
+td {
+  color: #cccccc;
+}
+a {
+  color: #cccccc;
+  text-decoration: none;
+}
+
+    </style>
+  </head>
+
+
+  <body bgcolor=black>
+
+    <font size="-1" color="#FF00FF">
+      |
+      <a href="/notify">notifications</a>
+      |
+      <a href="/graphs">graphs</a>
+      |
+    </font>
+
+    <table cellpadding="5">
+      <% for my $tag_row ( @$tags ) { %>
+      <tr bgcolor="purple">
+        <td width="300px">
+          <a href="/notify?tag=<%= $tag_row->{tag} %>"><%= $tag_row->{tag} %></a>
+        </td>
+        <td bgcolor="<%= $tag_row->{age_color} %>">
+          <font color="black"><%= $tag_row->{age} %></font>
+        </td>
+      </tr>
+      <% } %>
+    </table>
+
+  </body>
+</html>
+
+

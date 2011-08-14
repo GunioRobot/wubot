@@ -38,18 +38,37 @@ my $tv = Wubot::Util::XMLTV->new();
 
 my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
 
-my $pretty_colors = { magenta => '#770077',
-                      purple  => '#770077',
-                      yellow  => '#999900',
-                      red     => '#770000',
-                      cyan    => '#007777',
-                      green   => '#005500',
-                      orange  => '#AA7700',
-                      blue    => '#0000BB',
-                      black   => '#333333',
-                      pink    => '#FF33FF',
-                      dark    => '666699',
+# solarized color schema: http://ethanschoonover.com/solarized
+my $pretty_colors = { pink      => '#FF33FF',
+                      yellow    => '#b58900',
+                      orange    => '#cb4b16',
+                      red       => '#dc322f',
+                      magenta   => '#770077',
+                      brmagenta => '#d33682',
+                      violet    => '#6c71c4',
+                      blue      => '#268bd2',
+                      cyan      => '#2aa198',
+                      green     => '#859900',
+                      black     => '#333333',
+                      brblack   => '#002b36',
+                      brgreen   => '#586e75',
+                      bryellow  => '#657b83',
+                      brblue    => '#839496',
+                      brcyan    => '#93a1a1',
+                      white     => '#eee8d5',
+                      brwhite   => '#fdf6e3',
+                      purple    => 'magenta',
+                      dark      => 'black',
                   };
+
+# color aliases
+for my $color ( sort keys %{ $pretty_colors } ) {
+    my $value = $pretty_colors->{$color};
+    if ( $pretty_colors->{ $value } ) {
+        $pretty_colors->{$color} = $pretty_colors->{ $value };
+    }
+}
+
 
 my $schemas = { tv_data => { show             => 'VARCHAR(128)',
                              id               => 'INTEGER PRIMARY KEY AUTOINCREMENT',
@@ -132,7 +151,7 @@ get '/graphs' => sub {
         ] },
     ];
 
-    my $search_key = $self->param( 'key' );
+    my $search_key = $self->param( 'key' ) || "sensors";
 
     my @nav;
     my @png;
@@ -154,10 +173,44 @@ get '/graphs' => sub {
 
 };
 
+get '/tags' => sub {
+
+    my $self = shift;
+
+    my @tags;
+
+    my $now = time;
+
+    for my $tag ( $sqlite_notify->select( { tablename => 'tags',
+                                            fields    => 'distinct tag, lastupdate',
+                                            order     => 'lastupdate DESC',
+                                        } ) ) {
+
+        my $age = $now - $tag->{lastupdate};
+
+        $tag->{age} = $timelength->get_human_readable( $age );
+        $tag->{age_color} = $timelength->get_age_color( $age );
+
+        push @tags, $tag;
+    }
+
+    $self->stash( 'tags', \@tags );
+
+    $self->render( template => 'tags' );
+
+};
+
 any '/notify' => sub {
     my $self = shift;
 
     my $now = time;
+
+    my $where = { seen => \$is_null };
+
+    my $order = 'lastupdate DESC';
+    if ( $self->param( 'order' ) ) {
+        $order = $self->param( 'order' );
+    }
 
     my $params = $self->req->params->to_hash;
     for my $param ( sort keys %{ $params } ) {
@@ -195,10 +248,23 @@ any '/notify' => sub {
                                     {},
                                 );
         }
-        elsif ( $tag =~ m|^r.(.*)$| ) {
+        elsif ( $tag =~ m|^r\.(.*)$| ) {
             $sqlite_notify->update( 'notifications',
                                     { seen => $now },
                                     { subject => { 'LIKE' => "%$1%" } },
+                                );
+        }
+        elsif ( $pretty_colors->{ $tag } ) {
+            $sqlite_notify->update( 'notifications',
+                                    { color => $tag },
+                                    { id    => $id  },
+                                );
+        }
+        elsif ( $tag =~ m|^-| ) {
+            $tag =~ s|^\-||;
+            print "Removing tag $tag on id $id\n";
+            $sqlite_notify->delete( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications' },
                                 );
         }
         else {
@@ -211,24 +277,22 @@ any '/notify' => sub {
 
     my $seen_id      = $self->param( "seen" );
     if ( $seen_id ) {
+        my @seen = split /,/, $seen_id;
         $sqlite_notify->update( 'notifications',
-                                { seen => $now },
-                                { id   => $seen_id  },
+                                { seen => $now   },
+                                { id   => \@seen },
                             );
 
         $self->redirect_to( "/notify" );
     }
 
-    my $seen_key1      = $self->param( "seen_key1" );
-    if ( $seen_key1 ) {
-        $sqlite_notify->update( 'notifications',
-                                { seen => $now },
-                                { key  => { "LIKE" => "$seen_key1%" }  },
-                            );
-
-        $self->redirect_to( "/notify" );
+    my $key      = $self->param( "key" );
+    if ( $key ) {
+        $where = { key => $key, seen => undef };
+        unless ( $self->param( 'order' ) ) {
+            $order = "lastupdate";
+        }
     }
-
 
     my $seen_key      = $self->param( "seen_key" );
     if ( $seen_key ) {
@@ -240,15 +304,34 @@ any '/notify' => sub {
         $self->redirect_to( "/notify" );
     }
 
+
+    my $tag = $self->param( "tag" );
+    if ( $tag ) {
+        my @ids;
+        for my $row ( $sqlite_notify->select( { tablename => 'tags',
+                                               fieldname => 'remoteid',
+                                               where     => { tag => $tag },
+                                               order     => $order,
+                                           } ) ) {
+
+            push @ids, $row->{remoteid};
+        }
+
+        $where = { id => \@ids };
+    }
+
     my @messages;
+    my @ids;
     my $seen;
 
   MESSAGE:
     for my $message ( $sqlite_notify->select( { tablename => 'notifications',
-                                                where     => { seen => \$is_null },
-                                                order     => 'lastupdate DESC',
+                                                where     => $where,
+                                                order     => $order,
                                                 limit     => 100,
                                             } ) ) {
+
+        push @ids, $message->{id};
 
         utf8::decode( $message->{subject} );
 
@@ -256,12 +339,14 @@ any '/notify' => sub {
             $message->{link} = $1;
         }
 
-        if ( $seen->{ $message->{subject} } ) {
-            $seen->{ $message->{subject} } += 1;
-            next MESSAGE;
-        }
-        else {
-            $seen->{ $message->{subject} } = 1;
+        unless ( $key ) {
+            if ( $seen->{ $message->{subject} } ) {
+                $seen->{ $message->{subject} } += 1;
+                next MESSAGE;
+            }
+            else {
+                $seen->{ $message->{subject} } = 1;
+            }
         }
 
         push @messages, $message;
@@ -289,11 +374,14 @@ any '/notify' => sub {
         else {
             $message->{key1} = $message->{key};
         }
+
     }
 
-    $self->stash( 'headers', [qw/key1 key2 id username icon count tag subject link age/ ] );
+    $self->stash( 'headers', [qw/cmd key1 key2 seen count username icon subject link age/ ] );
 
     $self->stash( 'body_data', \@messages );
+
+    $self->stash( 'ids', join( ",", @ids ) );
 
     my ( $total ) = $sqlite_notify->select( { fields    => 'count(*) as count',
                                           tablename => 'notifications',

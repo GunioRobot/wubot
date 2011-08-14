@@ -5,7 +5,16 @@
   </head>
   <body bgcolor='black'>
 
+  <font size="-1" color="#FF00FF">
     |
+    <a href="/notify" style="color: #cccccc">notifications</a>
+    |
+    <a href="/tags" style="color: #cccccc">tags</a>
+    |
+    <a href="/graphs" style="color: #cccccc">graphs</a>
+    |
+  </font>
+
     <% for my $key ( @$nav ) { %>
       <a href='?key=<%= $key %>'><%= $key %></a> |
     <% } %>

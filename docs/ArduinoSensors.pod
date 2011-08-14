@@ -100,7 +100,7 @@ beginning of the line up until the beginning-of-record character:
       regexp_search: '^.*\^'
 
 At this point I find it useful to display the line that was read to
-stdout:
+stdout in the terminal running the monitor process:
 
   - name: dump line
     plugin: Dumper
@@ -162,49 +162,49 @@ Since all of this is really simple stuff that just involves shuffling
 around some data on the message, we'll do all of this directly in the
 monitor config.  Here is the resulting config:
 
----
-delay: 5s
-device: /dev/tty.usbmodem3b11
+  ---
+  delay: 5s
+  device: /dev/tty.usbmodem3b11
 
-react:
+  react:
 
-  - name: lines
-    condition: line is true
+    - name: lines
+      condition: line is true
 
-    rules:
+      rules:
 
-      - name: clean to beginning of line
-        plugin: TransformField
-        config:
-          source_field: line
-          regexp_search: '^.*\^'
+        - name: clean to beginning of line
+          plugin: TransformField
+          config:
+            source_field: line
+            regexp_search: '^.*\^'
 
-      - name: dump line
-        plugin: Dumper
-        config:
-          field: line
+        - name: dump line
+          plugin: Dumper
+          config:
+            field: line
 
-      - name: split
-        plugin: Split
-        config:
-          source_field: line
-          target_fields:
-            - source
-            - type
-            - value
-            - units
+        - name: split
+          plugin: Split
+          config:
+            source_field: line
+            target_fields:
+              - source
+              - type
+              - value
+              - units
 
-      - name: get rid of invalid fields
-        condition: source is false OR type is false OR value is false OR units is false
-        last_rule: 1
+        - name: get rid of invalid fields
+          condition: source is false OR type is false OR value is false OR units is false
+          last_rule: 1
 
-      - name: map key and value names
-        plugin: CopyField
-        config:
-          source_field: value
-          target_field_name: type
+        - name: map key and value names
+          plugin: CopyField
+          config:
+            source_field: value
+            target_field_name: type
 
------------------------------------------------------------------------------
+
 =head1 Alerts
 
 Up until this point we've just been focused on getting the data into
@@ -237,17 +237,18 @@ matches SerialPort' will not find these messages again!
           target_field: key
 
 
-Let's start with a simple warning.  If the temp gets above 85 degrees
-in the office, then generate an alert message.  There are computers in
-the office, so if the temerature starts to get too high, the one of
-them could overheat.  So let's look for any message that indicates a
-temperature of greater than 85 and set a few fields on the message.
-The 'subject' field will be used by notification plugins such as Growl
-and Console.  The 'sticky' field is used by Growl to cause the message
-to stick on the screen until it is dismissed.  The 'color' field can
-be used to colorize the notifications.  As long as we're in there,
-we'll set a 'heat_warning' field in case we want to use this in a
-future reaction.
+Let's start with a simple warning.  If you haven't looked at the
+L<Wubot::Guide::Notifications> doc yet, this might be a good time to
+take a look.  If the temp gets above 85 degrees in the office, then
+generate an alert message.  There are computers in the office, so if
+the temerature starts to get too high, the one of them could overheat.
+So let's look for any message that indicates a temperature of greater
+than 85 and set a few fields on the message.  The 'subject' field will
+be used by notification plugins such as Growl and Console.  The
+'sticky' field is used by Growl to cause the message to stick on the
+screen until it is dismissed.  The 'color' field can be used to
+colorize the notifications.  As long as we're in there, we'll set a
+'heat_warning' field in case we want to use this in a future reaction.
 
           - name: temp high
             condition: temp > 85
@@ -273,7 +274,6 @@ actually inclue the temperature sensor reading:
             config:
               target_field: subject
               template: warning: temperature is high: {$temp}
-                
 
 Now when the temperature is above 85 degrees in the office, I'll get a
 sticky notification telling me the current temperature.  Then I'll go

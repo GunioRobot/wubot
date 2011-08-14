@@ -13,7 +13,7 @@ There are a number of conditions that are available for the rules:
     - value of field {fieldname} matches specified regexp
 
   - {fieldname} imatches {regexp}
-    - case insensitve regexp match match
+    - case insensitve regexp match
 
   - contains {fieldname}
     - the message contains the field, the value of the field may be undefined or 0
@@ -28,8 +28,8 @@ You can also make numeric comparisons between fields and values or
 fields and other fields.
 
   - operators: <, <=, >, >=,
-  - {fieldname} {operator} {value}
-  - {fieldname} {operator} {fieldname}
+    - {fieldname} {operator} {value}
+    - {fieldname} {operator} {fieldname}
 
   - examples:
     - size > 300
@@ -61,8 +61,8 @@ Conditions are evaluated from left to right in order, e.g.
 
 The main mechanism for nesting conditions is to use rule trees.  Child
 rules are only evaluated if the parent rule matches, so parent and
-child rules can be though of being combined by AND.  So, for example,
-set the field 'foo' to the value '1' based on the following logic:
+child rules are logically combined by AND.  For example, set the field
+'foo' to the value '1' based on the following logic:
 
   ( x is true OR y is true ) AND ( a is true OR b is true )
 

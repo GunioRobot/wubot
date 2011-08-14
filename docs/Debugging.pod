@@ -8,7 +8,9 @@ The following document attempts to describe some steps you can take to
 create a new reaction or debug a reaction that isn't working properly.
 
 
-=head2 wubot-check
+=head1 wubot-check
+
+=over 2
 
 The wubot-check script lives in the bin directory.  It can be used to
 run a single check of an instance of a monitor.  Simply pass in
@@ -34,8 +36,11 @@ Any reactions defined directly in the monitor config will be executed,
 so this can be a great way to debug simple reactions like setting or
 modifying fields on the message.
 
+=back
 
-=head2 cache file
+=head1 Cache file
+
+=over 2
 
 Many monitor plugins cache data that has been seen in a cache file.
 The cache files live here:
@@ -55,8 +60,11 @@ happening, then you could edit the cache file, remove a single entry,
 and then re-run the wubot-check script to trigger that item to get
 re-processed.
 
+=back
 
-=head2 Dumper reactor plugin
+=head1 Dumper reactor plugin
+
+=over 2
 
 When the trouble is occurring in the reactor config, sometimes seeing
 the raw monitor data using wubot-check isn't so helpful.  In such
@@ -73,8 +81,11 @@ Dumper rule before that rule would show you the contents before the
 message was modified, and using the Dumper rule after the message
 modifying rule would show you the modified content.
 
+=back
 
-=head2 Logging
+=head1 Logging
+
+=over 2
 
 Both wubot-monitor and wubot-reactor write logs to ~/logs.  The logs
 are rotated a midnight each night.  Only the last 10 days of logs are
@@ -88,9 +99,11 @@ example:
   LOG_DEBUG=1 bin/wubot-monitor
   LOG_TRACE=1 bin/wubot-reactor
 
+=back
 
+=head1 wubot queue
 
-=head2 wubot queue
+=over 2
 
 Message queues in wubot are implemented using a SQLite database.  The
 contents of the message is serialized using YAML::XS and stored in the
@@ -137,3 +150,5 @@ performance seems to start to degrade at around 50k messages, and may
 use significantly more system resources if the queue grows beyond 100k
 messages.  Your mileage may vary.  After purging old seen messages, it
 will log the number of seen and unseen messages left in the queue.
+
+=back

@@ -5,12 +5,13 @@ Wubot::Guide::GettingStarted - monitoring and reacting to a feed
 =head1 DESCRIPTION
 
 This recipe downloads worldwide earthquake data from the USGS RSS
-feed.  The feed gives all earthquakes 5.0 and greater.  The recipe
-below filters out earthquakes that are less than 6.0, and sends them
-as console and growl notifications.  Earthquakes of 7 or greater get a
-colorized growl notification.  Earthquakes of 8 or greater get a
-sticky growl notification.  The filtered feed is then stored in a
-SQLite database and fed back out again to your favorite RSS reader.
+feed.  The feed contains an item for each earthquake 5.0 and greater.
+The recipe below filters out earthquakes that are less than 6.0, and
+sends a console and growl notification for each.  Earthquakes of 7 or
+greater get a colorized growl notification.  Earthquakes of 8 or
+greater get a sticky growl notification.  The filtered feed is then
+stored in a SQLite database and fed back out again to your favorite
+RSS reader.
 
 
 =head1 RSS Monitor
@@ -30,7 +31,8 @@ is an example of a minimalist RSS monitor config:
 
 
 The 'delay' param tells wubot-monitor how frequently to run the check,
-and the 'url' tag is the URL of the RSS/Atom feed.
+and the 'url' tag is the URL of the RSS/Atom feed.  For more info on
+the RSS monitor, see L<Wubot::Plugin::RSS>.
 
 After creating this config file, run wubot-monitor.  It will find the
 new config file and will schedule an immediate check of the RSS feed.

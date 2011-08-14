@@ -6,8 +6,8 @@ Wubot::Guide::Overview - wtf is wubot?
 
 'wubot' is the code name for a distributed personal reactive
 automation tool I've been working on for the last several years.  It
-is built in modern Perl 5 using Moose, AnyEvent, LWP::UserAgent, YAML,
-DBI/DBD::SQLite, Mojolicious, and many others.
+is built in modern Perl 5 using L<Moose>, L<AnyEvent>, L<LWP::UserAgent>, L<YAML>,
+L<DBI>, L<DBD::SQLite>, L<Mojolicious>, and many others.
 
 The simplest way to think of this project is to compare it to email
 filters.  Most email clients allow you to set rules to perform actions
@@ -16,73 +16,43 @@ when a new email arrives.
 This project allows you to have a set of monitors that collect data
 from a variety of sources, including:
 
-=over 4
+  - email boxes
+  - RSS/Atom feeds
+  - IM
+  - log files
+  - system monitors
+  - OS X idle time
+  - local sunrise/sunset times
+  - monitors running on remote hosts
+  - your own custom monitor plugin written in perl
 
-=item email boxes
-
-=item RSS/Atom feeds
-
-=item IM
-
-=item log files
-
-=item system monitors
-
-=item OS X idle time
-
-=item local sunrise/sunset times
-
-=item monitors running on remote hosts
-
-=item your own custom monitor plugin written in perl
-
-=item see: L<Wubot::Guide::MonitorPlugins>
-
-=back
+For more info, see: L<Wubot::Guide::MonitorPlugins>
 
 Data collected from each monitor is sent through a set of rules that
 can perform actions such as:
 
-=over 4
+  - pop up an alert, e.g. using Growl
+  - send a colorized message to stdout
+  - store the message in a mailbox
+  - add the message to a SQLite database
+  - store data from the message in RRD and graph the data over time
+  - add the message to outgoing RSS feeds
+  - send a private or public message to IRC
+  - forward the message to another host for further processing
+  - your own custom action written in perl
 
-=item pop up an alert, e.g. using Growl
-
-=item send a colorized message to stdout
-
-=item store the message in a mailbox
-
-=item add the message to a SQLite database
-
-=item store data from the message in RRD and graph the data over time
-
-=item add the message to outgoing RSS feeds
-
-=item send a private or public message to IRC
-
-=item forward the message to another host for further processing
-
-=item your own custom action written in perl
-
-=item see: L<Wubot::Guide::ReactorPlugins>
+For more info, see: L<Wubot::Guide::ReactorPlugins>
 
 =back
 
 Beyond just doing something with the message or portions of the
 message, you also have the option to modify the message, e.g.:
 
-=over 4
-
-=item set a color to be used for alerts
-
-=item transform some field in the message with a regexp
-
-=item capture data from a field and store it in another field
-
-=item strip images or HTML
-
-=item fetch related information from the web
-
-=back
+  - set a color to be used for alerts
+  - transform some field in the message with a regexp
+  - capture data from a field and store it in another field
+  - strip images or HTML
+  - fetch related information from the web
 
 Unlike previous generations of this project, the rules are entirely
 controlled by configuration.  So it is not necessary to write any perl

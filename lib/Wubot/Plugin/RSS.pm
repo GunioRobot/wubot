@@ -136,7 +136,7 @@ Wubot::Plugin::RSS - monitor an RSS feed
 =head1 DESCRIPTION
 
 Monitors an RSS/Atom feed (anything that can be parsed with
-XML::Feed).  Sends a message any time a new article shows up in the
+L<XML::Feed>).  Sends a message any time a new article shows up in the
 feed.  The message will contain the following fields:
 
   title: the article title

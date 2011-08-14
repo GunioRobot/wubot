@@ -85,8 +85,9 @@ need a reactor config to determine what action to take when the
 message arrives.
 
 The reactor is configured with a series of rules.  For a list of the
-properties of a rule, have a peak at [[rules.txt]].  For an overview
-of the available reactor plugins, see [[reactor_plugins.txt]].
+properties of a rule, have a peak at L<Wubot::Guide::Rules>.  For an
+overview of the available reactor plugins, see
+L<Wubot::Guide::ReactorPlugins>.
 
 Let's start with the individual rules and work up to the full rule
 tree.
@@ -148,7 +149,7 @@ set the 'sticky' and 'yellow' properties on the rule.
         sticky: 1
         color: yellow
 
-To enable the notifications, see [[notifications.txt]].
+To enable the notifications, see L<Wubot::Guide::Notifications>.
 
 After enabling the notifications, go to images.google.com and find a
 .png file that you would like to use for this feed (try searching for
@@ -166,7 +167,7 @@ So now let's put it all together.  The reactor config lives here:
   ~/wubot/config/reactor.yaml
 
 Here are the final contents of the reactor config, including some
-notifications rules discussed in [[notifications.txt]].
+notifications rules discussed in L<Wubot::Guide::Notifications>.
 
 Warning: if you are not familiar with YAML, it is extremely sensitive
 to whitespace!

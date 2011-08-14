@@ -41,7 +41,7 @@ Here are a few examples.
   ^garden, moisture, 60, percent
 
 Note that there is a carrot, '^', here at the beginning of the line to
-indicate 'beginning of a new record.  When an arduino is reset, a bit
+indicate the beginning of a new record.  When an arduino is reset, a bit
 of junk often comes through at the beginning.  The beginning-of-line
 field allows us to filter out any junk at the beginning of the line.
 
@@ -85,7 +85,8 @@ contain the string that was read.
 =head1 parsing the message
 
 Now that you have the sensor data coming in, the next step is to parse
-it.  To do that we need to define some rules.  See also: [[rules.txt]]
+it.  To do that we need to define some rules.  See also
+L<Wubot::Guide::Rules>.
 
 Remember that 'beginning-of-record' character I mentioned above?  This
 rule makes use of that.  Start by cleaning everything from the

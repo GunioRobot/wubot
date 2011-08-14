@@ -16,14 +16,14 @@ Rules may contain the following fields:
     - description: conditions that must be satisfied in order for the rule to fire
     - hints:
       - if condition is not defined in the rule, the rule will always run
-      - for more information, see [[conditions.txt]]
+      - for more information, see L<Wubot::Guide::Notifications>.
 
   - plugin:
     - optional
     - description: the name of a package in the Wubot::Reactor namespace
     - hints:
       - most plugins require 'config' to determine what to do with the message
-      - for an overview of plugins, see [[reactor_plugins.txt]]
+      - for an overview of plugins, see L<Wubot::Guide::ReactorPlugins>.
 
   - config:
     - optional

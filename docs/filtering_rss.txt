@@ -127,10 +127,7 @@ message out /dev/null.
 
   - name: suppress less than 6.0
     condition: size < 6
-    plugin: SetField
-    config:
-      field: last_rule
-      value: 1
+    last_rule: 1
 
 There are only an average of 134 earthquakes in the 6 to 7 range, so
 we'll let those through so we'll get notification for earthquakes in
@@ -186,10 +183,7 @@ rules:
 
       - name: suppress less than 6.0
         condition: size < 6
-        plugin: SetField
-        config:
-          field: last_rule
-          value: 1
+        last_rule: 1
 
       - name: sticky greater than 7.0
         condition: size >= 7

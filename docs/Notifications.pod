@@ -9,7 +9,7 @@ should not start at this document, as there will be no notifications
 unless you have figured out how to use the monitor and reactor.  A
 good place to start is probably L<Wubot::Guide::GettingStarted>.
 
-=head2 Notification reactors
+=head1 Notification reactors
 
 There are currently three notification reactors:
 
@@ -43,7 +43,7 @@ bottom.
     condition: subject is true
     rules:
 
-=head2 User
+=head1 User
 
 The User reactor will parse the username field and extract any
 information such as the domain name or full name from an email
@@ -53,7 +53,7 @@ username which works better in notifications and makes it easier to
 locate an icon for the user.
 
 
-=head2 Console
+=head1 Console
 
 Begin by enabing the 'Console' plugin.  This will send all subjects to
 stdout in the terminal that is running wubot-reactor.  If the message
@@ -64,17 +64,17 @@ the message in the closest ANSI color.
         plugin: Console
 
 
-=head2 Growl
+=head1 Growl
 
 If you have 'Growl' installed on OS X, and you have the 'growlnotify'
 command line tool installed, and the Growl::Tiny perl library
 installed, then wubot can send a growl notification.  Enabling the
 growl notifications is easy, just add a 'Growl' rule.
-        
+
       - name: growl notify
         plugin: Growl
 
-=head3 Icons
+=head2 Icons
 
 It is very nice to have icons, e.g. for the growl notifications or the
 web ui.  The Icon plugin can be used to locate one.  This plugin looks
@@ -87,7 +87,7 @@ your icons directory that is appropriate.
         config:
           image_dir: /Users/your_id/.icons
 
-=head3 Growl Colors
+=head2 Growl Colors
 
 It is also nice to have colorized growl messages.  Unfortunately you
 can't just pass a color into growl.  One trick I've found here is to
@@ -118,7 +118,7 @@ field to blue, this rule will set a field called 'growl_priority' in
 the message which will have the priority that corresponds to the color
 i set for that priority in the growl preferences.
 
-=head3 Growl identifier
+=head2 Growl identifier
 
 Growl has a feature called 'coalescing'.  This allows multiple
 notifications to re-use a sigle bubble for notifications, with the
@@ -160,13 +160,13 @@ notifications and non-sticky notifications.  That way a sticky window
 can nevery be cleared by a non-sticky window.
 
 
-=head2 IRC
+=head1 IRC
 
 The IRC notification lets you send a public IRC message to a channel
 or a private message to a user.  For more information, see
 L<Wubot::Guide::IRC>.
 
-=head2 subject_text field
+=head1 subject_text field
 
 If your message has a field 'subject_text', then that field will be
 used for the notifications instead of the 'subject' field.  This makes
@@ -190,7 +190,7 @@ the changed subject won't be reflected in the notification.  The
 easiest way to avoid this is simply to avoid using the subject_text
 field.
 
-=head2 Notifications Web UI
+=head1 Notifications Web UI
 
 The notifications web ui allows you to browse your notification
 history, and to mark notifications as 'seen', or apply tags to them.
@@ -265,8 +265,7 @@ should do two things:
 
 Lots more to come here!
 
-
-=head2 Reactor Config
+=head1 Reactor Config
 
 So now let's put it all together.  The reactor config lives here:
 
@@ -329,3 +328,8 @@ to whitespace!
           config:
             file: /Users/wu/wubot/sqlite/notify.sql
             tablename: notifications
+
+
+=head1 Starting the Reactor
+
+To start the reactor, simply run:  wubot-reactor

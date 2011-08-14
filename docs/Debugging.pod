@@ -12,9 +12,9 @@ create a new reaction or debug a reaction that isn't working properly.
 
 =over 2
 
-The wubot-check script lives in the bin directory.  It can be used to
-run a single check of an instance of a monitor.  Simply pass in
-the name of the plugin and the name of the instance config file, e.g.:
+The wubot-check script can be used to run a single check of an
+instance of a monitor.  Simply pass in the name of the plugin and the
+name of the instance config file, e.g.:
 
   wubot-check RSS usgs-m5
 

@@ -78,8 +78,6 @@ show up in the feed.  If you remove the cache file and restart
 wubot-monitor, it will schedule another immediate check and will
 re-send all the data from the feed.
 
-
-
 =head1 Rules
 
 Now that the messages have been delivered to the reactor queue, you
@@ -232,6 +230,9 @@ to whitespace!
         - name: growl notify
           plugin: Growl
 
+=head1 Starting the Reactor
+
+To start the reactor, simply run:  wubot-reactor
 
 =head1 Web UI
 

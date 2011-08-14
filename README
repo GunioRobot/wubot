@@ -9,15 +9,29 @@ Please see:
 
 INSTALLATION
 
-For the time being, you may want to just check out the source to a
-directory of your choosing (I use ~/projects/wubot), and set into that
-directory and run the scripts directly.
+To install wubot, use the standard CPAN installation methods:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+Or simply:
+
+  cpan Wubot
 
 Note that you will probably have to create a ~/wubot and ~/logs
 directory.  In the future these directories should be configurable.
 
-Also you will need to create ~/wubot/schemas, and copy the files from
+Also will also need to create ~/wubot/schemas, and copy the files from
 the 'config/schemas' directory into that directory.
+
+In order to install the webui, you will need the contents of the
+'webui' subdirectory in the wubot tarball.  You can copy this anywhere
+you want, or could simply expand the tarball, set into the 'webui'
+subdirectory of the expanded tarball, and start the webui by running:
+
+  ./wubot-webui
 
 
 COPYRIGHT AND LICENCE

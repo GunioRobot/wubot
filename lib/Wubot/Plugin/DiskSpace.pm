@@ -71,3 +71,55 @@ sub check {
 }
 
 1;
+
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::DiskSpace - monitor disk space
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/DiskSpace/myhostname.yaml
+
+  ---
+  command: df -k
+  critical_percent: 95
+  warning_percent: 90
+  skip:
+    '/dev': 1
+  delay: 15m
+
+=head1 DESCRIPTION
+
+Monitors disk space by parsing the output of 'df -k'.
+
+For each mounted filesystem that is not matched by one of the 'skip'
+entries, a message will be sent containing:
+
+  filesystem: /mount/point
+  percent: percent used
+
+The message will also contain a 'status' field that will be set to
+'ok' if the percent utilization is less than the warning threshold,
+'warning' if it is between the warning and critical thresholds, or
+'critical' if it is above the critical threshold.
+
+If the filesystem's percent utilization exceeds the warning_percent or
+critical_percent, then the message will contain a subject such as:
+
+  warning: disk use on /mount/point is 93%
+  critical: disk use on /mount/point is 99%
+
+
+=head1 HINTS
+
+This plugin can be used to monitor disk space on a remote system that
+is accessible by ssh.  Simply set the command like so:
+
+  ---
+  command: ssh somehost df -k
+
+
+

@@ -85,3 +85,53 @@ sub parse_uptime {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::Uptime - monitor system load
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/Uptime/myhostname.yaml
+
+  ---
+  command: /usr/bin/uptime
+  delay: 1m
+  warning_load: 2.0
+  critical_load: 3.0
+
+=head1 DESCRIPTION
+
+Monitors the system load by parsing the output of the 'uptime'
+command.  For example, if the uptime command produced this output:
+
+  12:06  up 4 days, 14:03, 15 users, load averages: 0.80 0.81 0.67
+
+Then results will be sent in a message containing:
+
+  load01: 0.80
+  load05: 0.81
+  load10: 0.67
+  status: ok
+
+The 'status' field will be set to 'ok' if the load is less than the
+warning threshold, 'warning' if it is between the warning and critical
+thresholds, or 'critical' if it is above the critical threshold.
+
+If the 1-minute load value exceeds the warning_load or critical_load
+threshold, then the message will contain a subject such as:
+
+  warning: load over last 1 minute is {$load}
+  critical: load over last 1 minute is {$load}
+
+
+=head1 HINTS
+
+This plugin can be used to monitor load on a remote system that is
+accessible by ssh.  Simply set the command like so:
+
+  ---
+  command: ssh somehost /bin/uptime
+

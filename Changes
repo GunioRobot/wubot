@@ -1,6 +1,13 @@
 Revision history for Wubot
 
-0.1_5 Fri Aug 12, 2011  6:52 pm
+0.1_6 Sun Aug 14, 2011 12:37 am
+
+  - update dist.ini to use 2-clause BSD license
+
+  - adding more docs, convert some text docs to POD
+
+
+0.1_5 Sat Aug 13, 2011  6:52 pm
 
   - XMPP plugin no longer forwards messages with noforward flag set
 

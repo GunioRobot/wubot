@@ -1,12 +1,15 @@
-* Notifications
+=head1 NAME
+
+Wubot::Guide::Notifications - guide to using notifications
+
+=head1 DESCRIPTION
 
 This document describes how to enable notifications.  You probably
 should not start at this document, as there will be no notifications
 unless you have figured out how to use the monitor and reactor.  A
 good place to start is probably [[filtering_rss.txt]].
 
-
-** Notification reactors
+=head2 Notification reactors
 
 There are currently three notification reactors:
 
@@ -40,7 +43,7 @@ bottom.
     condition: subject is true
     rules:
 
-** User
+=head2 User
 
 The User reactor will parse the username field and extract any
 information such as the domain name or full name from an email
@@ -50,7 +53,7 @@ username which works better in notifications and makes it easier to
 locate an icon for the user.
 
 
-** Console
+=head2 Console
 
 Begin by enabing the 'Console' plugin.  This will send all subjects to
 stdout in the terminal that is running wubot-reactor.  If the message
@@ -61,7 +64,7 @@ the message in the closest ANSI color.
         plugin: Console
 
 
-** Growl
+=head2 Growl
 
 If you have 'Growl' installed on OS X, and you have the 'growlnotify'
 command line tool installed, and the Growl::Tiny perl library
@@ -71,7 +74,7 @@ growl notifications is easy, just add a 'Growl' rule.
       - name: growl notify
         plugin: Growl
 
-*** Icons
+=head3 Icons
 
 It is very nice to have icons, e.g. for the growl notifications or the
 web ui.  The Icon plugin can be used to locate one.  This plugin looks
@@ -84,7 +87,7 @@ your icons directory that is appropriate.
         config:
           image_dir: /Users/your_id/.icons
 
-*** Growl Colors
+=head3 Growl Colors
 
 It is also nice to have colorized growl messages.  Unfortunately you
 can't just pass a color into growl.  One trick I've found here is to
@@ -115,7 +118,7 @@ field to blue, this rule will set a field called 'growl_priority' in
 the message which will have the priority that corresponds to the color
 i set for that priority in the growl preferences.
 
-*** Growl identifier
+=head3 Growl identifier
 
 Growl has a feature called 'coalescing'.  This allows multiple
 notifications to re-use a sigle bubble for notifications, with the
@@ -157,13 +160,13 @@ notifications and non-sticky notifications.  That way a sticky window
 can nevery be cleared by a non-sticky window.
 
 
-** IRC
+=head2 IRC
 
 The IRC notification lets you send a public IRC message to a channel
 or a private message to a user.  For more information, see
 [[irc.txt]].
 
-** subject_text field
+=head2 subject_text field
 
 If your message has a field 'subject_text', then that field will be
 used for the notifications instead of the 'subject' field.  This makes
@@ -187,7 +190,7 @@ the changed subject won't be reflected in the notification.  The
 easiest way to avoid this is simply to avoid using the subject_text
 field.
 
-** Notifications Web UI
+=head2 Notifications Web UI
 
 The notifications web ui allows you to browse your notification
 history, and to mark notifications as 'seen', or apply tags to them.
@@ -260,7 +263,7 @@ should do two things:
 Lots more to come here!
 
 
-** Reactor Config
+=head2 Reactor Config
 
 So now let's put it all together.  The reactor config lives here:
 
@@ -273,56 +276,53 @@ to whitespace!
 
 
 
----
-rules:
+  ---
+  rules:
 
-  - name: notifications
-    condition: subject is true
-    rules:
+    - name: notifications
+      condition: subject is true
+      rules:
 
-      - name: strip HTML from subject
-        condition: contains subject
-        plugin: HTMLStrip
-        config:
-          field: subject
-          target_field: subject_text
+        - name: strip HTML from subject
+          condition: contains subject
+          plugin: HTMLStrip
+          config:
+            field: subject
+            target_field: subject_text
 
-      - name: user field parser
-        plugin: User
+        - name: user field parser
+          plugin: User
 
-      - name: console
-        plugin: Console
+        - name: console
+          plugin: Console
 
-      - name: growl color
-        plugin: HashLookup
-        config:
-          source_field: color
-          target_field: growl_priority
-          lookup:
-            red: 2
-            yellow: 1
-            orange: 1
-            grey: 0
-            bold black: 0
-            green: -1
-            magenta: -2
-            purple: -2
-            blue: -2
-            cyan: -2
-    
-      - name: growl icon
-        plugin: Icon
-        config:
-          image_dir: /Users/your_id/.icons
+        - name: growl color
+          plugin: HashLookup
+          config:
+            source_field: color
+            target_field: growl_priority
+            lookup:
+              red: 2
+              yellow: 1
+              orange: 1
+              grey: 0
+              bold black: 0
+              green: -1
+              magenta: -2
+              purple: -2
+              blue: -2
+              cyan: -2
 
-      - name: growl notify
-        plugin: Growl
+        - name: growl icon
+          plugin: Icon
+          config:
+            image_dir: /Users/your_id/.icons
 
-      - name: notify sql table
-        plugin: SQLite
-        config:
-          file: /Users/wu/wubot/sqlite/notify.sql
-          tablename: notifications
+        - name: growl notify
+          plugin: Growl
 
-
-
+        - name: notify sql table
+          plugin: SQLite
+          config:
+            file: /Users/wu/wubot/sqlite/notify.sql
+            tablename: notifications

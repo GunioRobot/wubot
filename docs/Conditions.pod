@@ -1,4 +1,8 @@
-* Conditions
+=head1 NAME
+
+Wubot::Guide::Conditions - guide for using conditions in rules
+
+=head1 DESCRIPTION
 
 There are a number of conditions that are available for the rules:
 

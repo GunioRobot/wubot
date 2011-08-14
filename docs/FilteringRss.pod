@@ -1,4 +1,8 @@
-* filtering RSS feeds
+=head1 NAME
+
+Wubot::Guide::GettingStarted - monitoring and reacting to a feed
+
+=head1 DESCRIPTION
 
 This recipe downloads worldwide earthquake data from the USGS RSS
 feed.  The feed gives all earthquakes 5.0 and greater.  The recipe
@@ -9,7 +13,7 @@ sticky growl notification.  The filtered feed is then stored in a
 SQLite database and fed back out again to your favorite RSS reader.
 
 
-** RSS Monitor
+=head1 RSS Monitor
 
 Start by defining an RSS monitor config.
 
@@ -74,7 +78,7 @@ re-send all the data from the feed.
 
 
 
-** Rules
+=head1 Rules
 
 Now that the messages have been delivered to the reactor queue, you
 need a reactor config to determine what action to take when the
@@ -155,7 +159,7 @@ usgs).  Save the file as:
 Note that this matches the filename that was created in ~/wubot/config/plugins/RSS.
 
 
-*** final config
+=head1 final config
 
 So now let's put it all together.  The reactor config lives here:
 
@@ -167,66 +171,66 @@ notifications rules discussed in [[notifications.txt]].
 Warning: if you are not familiar with YAML, it is extremely sensitive
 to whitespace!
 
----
-rules:
+  ---
+  rules:
 
-  - name: earthquakes
-    condition: key matches ^RSS-usgs-m5
-    rules:
+    - name: earthquakes
+      condition: key matches ^RSS-usgs-m5
+      rules:
 
-      - name: size
-        plugin: CaptureData
-        config:
-          source_field: title
-          regexp: '^M ([\d\.]+),'
-          target_field: size
+        - name: size
+          plugin: CaptureData
+          config:
+            source_field: title
+            regexp: '^M ([\d\.]+),'
+            target_field: size
 
-      - name: suppress less than 6.0
-        condition: size < 6
-        last_rule: 1
+        - name: suppress less than 6.0
+          condition: size < 6
+          last_rule: 1
 
-      - name: sticky greater than 7.0
-        condition: size >= 7
-        plugin: SetField
-        config:
-          set:
-            sticky: 1
-            color: yellow
+        - name: sticky greater than 7.0
+          condition: size >= 7
+          plugin: SetField
+          config:
+            set:
+              sticky: 1
+              color: yellow
 
-  - name: notifications
-    condition: subject is true
-    rules:
+    - name: notifications
+      condition: subject is true
+      rules:
 
-      - name: console
-        plugin: Console
+        - name: console
+          plugin: Console
 
-      - name: growl color
-        plugin: HashLookup
-        config:
-          source_field: color
-          target_field: growl_priority
-          lookup:
-            red: 2
-            yellow: 1
-            orange: 1
-            grey: 0
-            bold black: 0
-            green: -1
-            magenta: -2
-            purple: -2
-            blue: -2
-            cyan: -2
-    
-      - name: growl icon
-        plugin: Icon
-        config:
-          image:dir: /Users/your_id/.icons
+        - name: growl color
+          plugin: HashLookup
+          config:
+            source_field: color
+            target_field: growl_priority
+            lookup:
+              red: 2
+              yellow: 1
+              orange: 1
+              grey: 0
+              bold black: 0
+              green: -1
+              magenta: -2
+              purple: -2
+              blue: -2
+              cyan: -2
 
-      - name: growl notify
-        plugin: Growl
+        - name: growl icon
+          plugin: Icon
+          config:
+            image:dir: /Users/your_id/.icons
+
+        - name: growl notify
+          plugin: Growl
 
 
-** Web UI
+=head1 Web UI
 
 The wubot-webui is the least developed component of the wubot project,
 but there are a few things it can do.  One of them is provide an RSS

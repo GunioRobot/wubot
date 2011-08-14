@@ -1,4 +1,8 @@
-* Building rules
+=head1 NAME
+
+Wubot::Guide::Rules - rule field description
+
+=head1 DESCRIPTION
 
 Rules may contain the following fields:
 
@@ -40,9 +44,4 @@ Rules may contain the following fields:
       - rules may be deeply nested
       - nesting rules makes the reactor more efficient, since not every rule needs to run on every message
 
-
-* See Also
-
-  - [[conditions.txt]]
-  - [[reactor_plugins.txt]]
 

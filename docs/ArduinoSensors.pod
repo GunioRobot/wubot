@@ -1,3 +1,9 @@
+=head1 NAME
+
+Wubot::Guide::ArduinoSensors - monitoring arduino sensor data
+
+=head1 DESCRIPTION
+
 This document describes how to read temperature, humidity, or other
 sensor data from an Arduino and feed it into wubot.  We are notified
 in the event of a significant change in the sensor data or when the
@@ -7,8 +13,7 @@ graphs are generated from the data.  Custom graphs are also
 illustrated.  There is also some discussion of monitoring a wireless
 sensor network built with XBee.
 
------------------------------------------------------------------------------
-* Arduino sensor data
+=head1 Arduino sensor data
 
 I won't discuss the process of wiring up a temperature sensor or
 programming an arduino here, as that is already covered in great
@@ -53,8 +58,7 @@ some useful examples in my farmbot project here:
   http://github.com/wu/farmbot
 
 
------------------------------------------------------------------------------
-* SerialPort monitor
+=head1 SerialPort monitor
 
 By the time you get to this point, you should have the arduino hooked
 up to the sensors and should be sending the data over the serial port
@@ -78,8 +82,7 @@ This will check the configured device every 5 seconds for sensor data.
 Each line of data will be put into a message.  The 'line' field will
 contain the string that was read.
 
------------------------------------------------------------------------------
-* parsing the message
+=head1 parsing the message
 
 Now that you have the sensor data coming in, the next step is to parse
 it.  To do that we need to define some rules.  See also: [[rules.txt]]
@@ -201,7 +204,7 @@ react:
           target_field_name: type
 
 -----------------------------------------------------------------------------
-* Alerts
+=head1 Alerts
 
 Up until this point we've just been focused on getting the data into
 the system.  Now it's time to set up the reactor config.
@@ -329,15 +332,14 @@ The State plugin will send a warning if you stop receiving data for
 any of the tracked datasets.
 
 
------------------------------------------------------------------------------
-* RRD and graphs
+=head1 RRD and graphs
 
 It's nice to get alerts when the values change or get outside of safe
 thresholds, but we also want to preserve historical data and generate
 some graphs.  This is where the RRD plugin comes in hand.  Here's an
 example RRD plugin that will take the 'value' and jam it into an RRD
 file and generate a daily, weekly, and monthly graph:
-          
+
       - name: rrd
         condition: source is true AND type is true AND value is true AND units is true
         plugin: RRD
@@ -363,15 +365,13 @@ and the graphs will be generated to:
   ~wubot/rrd/graphs/{key}
 
 
------------------------------------------------------------------------------
-* Graphs with multiple sources
+=head1 Graphs with multiple sources
 
 
 
 
 
------------------------------------------------------------------------------
-* SQLite
+=head1 SQLite
 
 Perhaps you have some other ideas for analyzing the sensor data.
 Well, just drop it in a SQLite database:
@@ -393,7 +393,6 @@ Well, just drop it in a SQLite database:
 
 
 
------------------------------------------------------------------------------
-* XBee and wireless sensor networks
+=head1 XBee and wireless sensor networks
 
 

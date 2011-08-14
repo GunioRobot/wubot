@@ -1,4 +1,8 @@
-An overview of the monitor plugins.
+=head1 NAME
+
+Wubot::Guide::MonitorPlugins - overview of the monitor plugins
+
+=head1 DESCRIPTION
 
   - web
     - RSS - monitor RSS/Atom feeds

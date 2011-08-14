@@ -1,0 +1,40 @@
+=head1 NAME
+
+Wubot::Guide - guide for using wubot
+
+=head1 DESCRIPTION
+
+This guide is new.  Lots more to come
+
+=head1 STARTING POINTS
+
+  - L<Wubot::Guide::GettingStarted> - monitoring and reacting to a feed
+
+
+=head1 MONITORING
+
+  - L<Wubot::Guide::MonitorPlugins> - overview of the monitor plugins
+
+  - L<Wubot::Guide::ArduinoSensors> - monitoring arduino sensor data
+
+=head1 REACTIONS
+
+  - L<Wubot::Guide::Conditions> - guide for using conditions in rules
+
+  - L<Wubot::Guide::Rules> - rule field description
+
+  - L<Wubot::Guide::ReactorPlugins> - overview of the reactor plugins
+
+  - L<Wubot::Guide::Notifications> - guide to using notifications
+
+
+=head1 GENERAL
+
+  - L<Wubot::Guide::Debugging> - guide for debugging feeds
+
+  - L<Wubot::Guide::MultipleBots> - guide for running multiple communicating bots
+
+
+
+
+

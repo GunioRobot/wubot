@@ -1,4 +1,8 @@
-* An overview of the reactor plugins.
+=head1 NAME
+
+Wubot::Guide::ReactorPlugins - overview of the reactor plugins
+
+=head1 DESCRIPTION
 
   - modify a field
     - SetField - set one or more fields to a configured value
@@ -42,8 +46,4 @@
 
 Each plugin has its own configuration schema.  More information coming on this soon.
 
-* See Also
-
-  - [[conditions.txt]]
-  - [[rules.txt]]
 

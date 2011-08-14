@@ -1,10 +1,14 @@
-* debugging
+=head1 NAME
+
+Wubot::Guide::Debugging - guide for debugging feeds
+
+=head1 DESCRIPTION
 
 The following document attempts to describe some steps you can take to
 create a new reaction or debug a reaction that isn't working properly.
 
 
-** wubot-check
+=head2 wubot-check
 
 The wubot-check script lives in the bin directory.  It can be used to
 run a single check of an instance of a monitor.  Simply pass in
@@ -31,7 +35,7 @@ so this can be a great way to debug simple reactions like setting or
 modifying fields on the message.
 
 
-** cache file
+=head2 cache file
 
 Many monitor plugins cache data that has been seen in a cache file.
 The cache files live here:
@@ -52,7 +56,7 @@ and then re-run the wubot-check script to trigger that item to get
 re-processed.
 
 
-** Dumper reactor plugin
+=head2 Dumper reactor plugin
 
 When the trouble is occurring in the reactor config, sometimes seeing
 the raw monitor data using wubot-check isn't so helpful.  In such
@@ -70,7 +74,7 @@ message was modified, and using the Dumper rule after the message
 modifying rule would show you the modified content.
 
 
-** Logging
+=head2 Logging
 
 Both wubot-monitor and wubot-reactor write logs to ~/logs.  The logs
 are rotated a midnight each night.  Only the last 10 days of logs are
@@ -86,7 +90,7 @@ example:
 
 
 
-** wubot queue
+=head2 wubot queue
 
 Message queues in wubot are implemented using a SQLite database.  The
 contents of the message is serialized using YAML::XS and stored in the

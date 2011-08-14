@@ -1,9 +1,13 @@
-* Multiple bots
+=head1 NAME
+
+Wubot::Guide::MultipleBots - guide for running multiple communicating bots
+
+=head1 DESCRIPTION
 
 This document describes how to set up bots on multiple servers and
 forward data between them.
 
-** overview
+=head2 overview
 
 wubot is designed to be able to run on multiple hosts, and to be able
 to send messages between bots.
@@ -37,7 +41,7 @@ that I can get to my load and idle graphs locally even while I'm
 offline, but then I can also see those stats from another workstation
 on the wubot server.
 
-** XMPP
+=head2 XMPP
 
 The mechanism for sending messages between wubot instances on separate
 hosts is XMPP.  This is not provided with wubot, nor is any
@@ -58,7 +62,7 @@ the message to determine when the message was originally generated.
 
 
 
-** wubot-monitor
+=head2 wubot-monitor
 
 XMPP messages is implemented as a plugin for wubot-monitor, not as
 part of the reactor.  So every host that wishes to participate in
@@ -104,7 +108,7 @@ monitor there.  For any host running the wubot-reactor process, then
 don't point them at the same place, or they will both by trying to
 pick up messages from the same queue.
 
-** wubot-reactor
+=head2 wubot-reactor
 
 The reactor cannot send a message over XMPP directly as there is no
 XMPP plugin for the reactor.  Instead, the reactor can save messages
@@ -124,7 +128,7 @@ Then configure the 'directory' param in the XMPP monitor to point to
 that same directory.
 
 
-** Avoiding infinite loops
+=head2 Avoiding infinite loops
 
 When deciding which hosts forward messages to other hosts, care must
 be taken not to create an infinite routing loop.  For example, if host
@@ -158,7 +162,7 @@ your MessageQueue rule is reached.  I usually make my MessageQueue
 forward rule be the very last rule in my list.
 
 
-** managing config files
+=head2 managing config files
 
 It may be a pain to manage your config files on each host separately.
 I prefer to manage all my wubot config files on my laptop.  You can
@@ -185,3 +189,4 @@ host.  An rsync command such as this will make that easy, just replace
 
 You will also probably want to sync the sql schema files which live in
 ~/wubot/schemas.
+

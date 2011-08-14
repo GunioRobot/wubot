@@ -67,12 +67,18 @@ the message in the closest ANSI color.
 =head1 Growl
 
 If you have 'Growl' installed on OS X, and you have the 'growlnotify'
-command line tool installed, and the Growl::Tiny perl library
+command line tool installed, and the L<Growl::Tiny> perl library
 installed, then wubot can send a growl notification.  Enabling the
 growl notifications is easy, just add a 'Growl' rule.
 
       - name: growl notify
         plugin: Growl
+
+Note that network notifications must be enabled in the growl
+configuration (System Preferences => Growl => Network => Listen for
+incoming notifications).  Otherwise some growl notifications may not
+be delivered.  For more information, please see the
+BUGS_AND_LIMITATIONS section in the L<Growl::Tiny> documentation.
 
 =head2 Icons
 

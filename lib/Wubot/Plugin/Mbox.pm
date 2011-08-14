@@ -74,3 +74,46 @@ sub check {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::Mbox - monitor an Mbox file
+
+
+=head1 SYNOPSIS
+
+   ~/wubot/config/plugins/Mbox/inbox.yaml
+
+  ---
+  delay: 60
+  path: /var/mail/wu
+
+
+=head1 DESCRIPTION
+
+This monitor uses L<Mail::MboxParser> to monitor for new emails in an
+mbox.  Each time a new email arrives in the mbox, a message will be
+sent containing:
+
+  subject: the email subject
+  username: the email 'from' field
+  cc: the email 'cc' field
+  to_user: the email 'to' field
+  date: the email 'date' field
+
+=head1 CACHE
+
+THe Mbox monitor uses the global cache mechanism, so each time the
+check runs, it will update a file such as:
+
+  ~/wubot/cache/Mbox-inbox.yaml
+
+The monitor caches all message IDs in the feed.  When a new
+(previously unseen) message id shows up on the feed, the message will
+be sent, and the cache will be updated.  Removing the cache file will
+cause all items in the feed to be sent again.
+

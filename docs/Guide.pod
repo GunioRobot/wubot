@@ -2,37 +2,69 @@
 
 Wubot::Guide - guide for using wubot
 
-=head1 DESCRIPTION
+=head1 GUIDES
 
-This guide is new.  Lots more to come
+The guides are under construction.  Lots more to come!
 
-=head1 STARTING POINTS
+=over 2
 
-  - L<Wubot::Guide::GettingStarted> - monitoring and reacting to a feed
+=item L<Wubot::Guide::GettingStarted>
 
+Guide to getting started monitoring an RSS feed and reacting to items
+in that feed.
 
-=head1 MONITORING
+=back
 
-  - L<Wubot::Guide::MonitorPlugins> - overview of the monitor plugins
+=head1 MONITORS
 
-  - L<Wubot::Guide::ArduinoSensors> - monitoring arduino sensor data
+=over 2
 
-=head1 REACTIONS
+=item L<Wubot::Guide::MonitorPlugins>
 
-  - L<Wubot::Guide::Conditions> - guide for using conditions in rules
+An overview of the monitor plugins
 
-  - L<Wubot::Guide::Rules> - rule field description
+=item L<Wubot::Guide::ArduinoSensors>
 
-  - L<Wubot::Guide::ReactorPlugins> - overview of the reactor plugins
+Monitoring arduino sensor data.
 
-  - L<Wubot::Guide::Notifications> - guide to using notifications
+=back
 
+=head1 REACTORS
+
+=over 2
+
+=item L<Wubot::Guide::Conditions>
+
+A guide for using conditions in rules.
+
+=item L<Wubot::Guide::Rules>
+
+A description of the possible fields on rules.
+
+=item L<Wubot::Guide::ReactorPlugins>
+
+An overview of the available reactor plugins.
+
+=item L<Wubot::Guide::Notifications>
+
+A guide to using notifications.
+
+=back
 
 =head1 GENERAL
 
-  - L<Wubot::Guide::Debugging> - guide for debugging feeds
+=over 2
 
-  - L<Wubot::Guide::MultipleBots> - guide for running multiple communicating bots
+=item L<Wubot::Guide::Debugging>
+
+A guide for debugging monitors and reactions.
+
+=item L<Wubot::Guide::MultipleBots>
+
+A guide for running multiple communicating bots
+
+=back
+
 
 
 

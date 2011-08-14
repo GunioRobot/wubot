@@ -1,0 +1,1139 @@
+#!/usr/local/bin/perl
+use Mojolicious::Lite;
+use strict;
+
+$| = 1;
+
+use Data::ICal;
+use Data::ICal::Entry::Alarm::Audio;
+use Data::ICal::Entry::Alarm::Display;
+use Data::ICal::Entry::Event;
+use Date::ICal;
+use Date::Manip;
+use DateTime;
+use Digest::MD5 qw( md5_hex );
+use FindBin;
+use POSIX qw(strftime);
+use URI::Escape;
+use XML::RSS;
+use YAML;
+
+use lib "$FindBin::Bin/../lib";
+
+use Wubot::Logger;
+use Wubot::SQLite;
+use Wubot::TimeLength;
+use Wubot::Util::XMLTV;
+
+# change log level from default of 'debug'
+app->log->level('info');
+
+use Mojolicious::Static;
+my $static = Mojolicious::Static->new();
+$static->root( 'public/' );
+app->static($static);
+
+
+my $tv = Wubot::Util::XMLTV->new();
+
+my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
+
+# solarized color schema: http://ethanschoonover.com/solarized
+my $pretty_colors = { pink      => '#FF33FF',
+                      yellow    => '#b58900',
+                      orange    => '#cb4b16',
+                      red       => '#dc322f',
+                      magenta   => '#770077',
+                      brmagenta => '#d33682',
+                      violet    => '#6c71c4',
+                      blue      => '#268bd2',
+                      cyan      => '#2aa198',
+                      green     => '#859900',
+                      black     => '#333333',
+                      brblack   => '#002b36',
+                      brgreen   => '#586e75',
+                      bryellow  => '#657b83',
+                      brblue    => '#839496',
+                      brcyan    => '#93a1a1',
+                      white     => '#eee8d5',
+                      brwhite   => '#fdf6e3',
+                      purple    => 'magenta',
+                      dark      => 'black',
+                  };
+
+# color aliases
+for my $color ( sort keys %{ $pretty_colors } ) {
+    my $value = $pretty_colors->{$color};
+    if ( $pretty_colors->{ $value } ) {
+        $pretty_colors->{$color} = $pretty_colors->{ $value };
+    }
+}
+
+
+my $schemas = { tv_data => { show             => 'VARCHAR(128)',
+                             id               => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                             color            => 'VARCHAR(16)',
+                             seen             => 'INT',
+                             episode          => 'VARCHAR(16)',
+                             myscore          => 'INT',
+                         },
+            };
+
+my $sqlite_rss     = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/rss.sql' } );
+my $sqlite_tv_data = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tv_data.sql' } );
+my $sqlite_tasks   = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tasks.sql' } );
+my $sqlite_notify  = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/notify.sql' } );
+my $sqlite_tv      = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/xmltv.sql' } );
+
+my $is_null = "IS NULL";
+
+my $timelength = Wubot::TimeLength->new();
+
+use Wubot::Util::Tasks;
+my $taskutil   = Wubot::Util::Tasks->new();
+
+get '/graphs' => sub {
+    my $self = shift;
+
+    my $graphs = [
+        { sensors => [
+            "http://wubot/wubot/graphs/Coopduino.now.png",
+            "http://wubot/wubot/graphs/Coopduino.png",
+            "http://wubot/wubot/graphs/Coopduino-week.png",
+            "http://wubot/wubot/graphs/Growbot.png",
+        ] },
+        { 'sensor-monthly' => [
+            "http://wubot/wubot/graphs/outside-temp/outside-temp-monthly.png",
+            "http://wubot/wubot/graphs/lab-temp/lab-temp-monthly.png",
+            "http://wubot/wubot/graphs/coop-temp/coop-temp-monthly.png",
+            "http://wubot/wubot/graphs/growbot-temp/growbot-temp-monthly.png",
+            "http://wubot/wubot/graphs/growbot-moisture/growbot-moisture-monthly.png",
+            "http://wubot/wubot/graphs/growbot-humidity/growbot-humidity-monthly.png",
+        ] },
+        { external => [
+            "http://wubot/wubot/graphs/WebFetch-qwest/WebFetch-qwest-daily.png",
+            "http://wubot/wubot/graphs/Ping-google/Ping-google-daily.png",
+            "http://wubot/wubot/graphs/Ping.png",
+            "http://wubot/wubot/graphs/Ping-router/Ping-router-daily.png",
+        ] },
+        { navi => [
+            "http://wubot/wubot/graphs/Uptime-navi/Uptime-navi-daily.png",
+            "http://wubot/wubot/graphs/Command-netstat-navi/Command-netstat-navi-daily.png",
+            "http://wubot/wubot/graphs/OsxIdle-navi/OsxIdle-navi-daily.png",
+            "http://wubot/wubot/graphs/OsxIdle-navi/OsxIdle-navi-weekly.png",
+            "http://wubot/wubot/graphs/WorkHours-navi/WorkHours-navi-daily.png",
+            "http://wubot/wubot/graphs/WorkHours-navi/WorkHours-navi-weekly.png",
+        ] },
+        { geektank => [
+            "http://wubot/wubot/graphs/Uptime-bsd-01/Uptime-bsd-01-daily.png",
+            "http://wubot/wubot/graphs/Uptime-bsd-02/Uptime-bsd-02-daily.png",
+            "http://wubot/wubot/graphs/Uptime-bsd-03/Uptime-bsd-03-daily.png",
+            "http://wubot/wubot/graphs/Uptime-navi2/Uptime-navi2-daily.png",
+            "http://wubot/wubot/graphs/Uptime-homework/Uptime-homework-daily.png",
+        ] },
+        { geekfarm => [
+            "http://wubot/wubot/graphs/FileRegexp-mail-rootbsd/FileRegexp-mail-rootbsd-daily.png",
+            "http://wubot/wubot/graphs/FileRegexp-mail-rootbsd/FileRegexp-mail-rootbsd-monthly.png",
+            "http://wubot/wubot/graphs/Uptime-rootbsd/Uptime-rootbsd-daily.png",
+            "http://wubot/wubot/graphs/Uptime-geekfarm/Uptime-geekfarm-daily.png",
+            "http://wubot/wubot/graphs/Ping-google-rootbsd/Ping-google-rootbsd-daily.png",
+        ] },
+        { weather => [
+          "http://image.weather.com/images/maps/current/acttemp_600x405.jpg",
+          "http://image.weather.com/images/maps/current/actheat_600x405.jpg",
+          "http://image.weather.com/web/radar/us_radar_plus_usen.jpg",
+          "http://image.weather.com/images/maps/boat-n-beach/us_wind_cur_600x405.jpg",
+          "http://image.weather.com/images/maps/special/norm_dep_hi_600x405.jpg",
+          "http://image.weather.com/images/maps/special/norm_dep_low_600x405.jpg",
+          "http://image.weather.com/images/maps/severe/map_light_ltst_4namus_enus_600x405.jpg",
+          "http://image.weather.com/images/maps/current/actchill_600x405.jpg",
+          "http://squall.sfsu.edu/gif/jetstream_init_00.gif",
+        ] },
+    ];
+
+    my $search_key = $self->param( 'key' ) || "sensors";
+
+    my @nav;
+    my @png;
+    for my $graph ( @{ $graphs } ) {
+        my ( $key ) = keys %{ $graph };
+        push @nav, $key;
+
+        if ( $search_key && $search_key eq $key ) {
+            for my $png ( @{ $graph->{$key} } ) {
+                push @png, $png;
+            }
+        }
+    }
+
+    $self->stash( 'nav', \@nav );
+    $self->stash( 'images', \@png );
+
+    $self->render( template => 'graphs' );
+
+};
+
+get '/tags' => sub {
+
+    my $self = shift;
+
+    my @tags;
+
+    my $now = time;
+
+    for my $tag ( $sqlite_notify->select( { tablename => 'tags',
+                                            fields    => 'distinct tag, lastupdate',
+                                            order     => 'lastupdate DESC',
+                                        } ) ) {
+
+        my $age = $now - $tag->{lastupdate};
+
+        $tag->{age} = $timelength->get_human_readable( $age );
+        $tag->{age_color} = $timelength->get_age_color( $age );
+
+        push @tags, $tag;
+    }
+
+    $self->stash( 'tags', \@tags );
+
+    $self->render( template => 'tags' );
+
+};
+
+any '/notify' => sub {
+    my $self = shift;
+
+    my $now = time;
+
+    my $where = { seen => \$is_null };
+
+    my $order = 'lastupdate DESC';
+    if ( $self->param( 'order' ) ) {
+        $order = $self->param( 'order' );
+    }
+
+    my $params = $self->req->params->to_hash;
+    for my $param ( sort keys %{ $params } ) {
+        next unless $params->{$param};
+        next unless $param =~ m|^tag_|;
+
+        my $tag = $params->{$param};
+
+        $param =~ m|^tag_(\d+)|;
+        my $id = $1;
+
+        if ( $tag eq "r" ) {
+            #print "Marking read: $id\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
+                                );
+
+        }
+        elsif ( $tag eq "rr" ) {
+            my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
+                                                      fields    => 'subject',
+                                                      where     => { id => $id },
+                                                  } );
+            #print "Marking read: $entry->{subject}\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => $entry->{subject} },
+                                );
+
+        }
+        elsif ( $tag eq "r.*" ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    {},
+                                );
+        }
+        elsif ( $tag =~ m|^r\.(.*)$| ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => { 'LIKE' => "%$1%" } },
+                                );
+        }
+        elsif ( $pretty_colors->{ $tag } ) {
+            $sqlite_notify->update( 'notifications',
+                                    { color => $tag },
+                                    { id    => $id  },
+                                );
+        }
+        elsif ( $tag =~ m|^-| ) {
+            $tag =~ s|^\-||;
+            print "Removing tag $tag on id $id\n";
+            $sqlite_notify->delete( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications' },
+                                );
+        }
+        else {
+            print "Setting tag $tag on id $id\n";
+            $sqlite_notify->insert( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
+                                );
+        }
+    }
+
+    my $seen_id      = $self->param( "seen" );
+    if ( $seen_id ) {
+        my @seen = split /,/, $seen_id;
+        $sqlite_notify->update( 'notifications',
+                                { seen => $now   },
+                                { id   => \@seen },
+                            );
+
+        $self->redirect_to( "/notify" );
+    }
+
+    my $key      = $self->param( "key" );
+    if ( $key ) {
+        $where = { key => $key, seen => undef };
+        unless ( $self->param( 'order' ) ) {
+            $order = "lastupdate";
+        }
+    }
+
+    my $seen_key      = $self->param( "seen_key" );
+    if ( $seen_key ) {
+        $sqlite_notify->update( 'notifications',
+                                { seen => $now },
+                                { key  => $seen_key },
+                            );
+
+        $self->redirect_to( "/notify" );
+    }
+
+
+    my $tag = $self->param( "tag" );
+    if ( $tag ) {
+        my @ids;
+        for my $row ( $sqlite_notify->select( { tablename => 'tags',
+                                               fieldname => 'remoteid',
+                                               where     => { tag => $tag },
+                                               order     => $order,
+                                           } ) ) {
+
+            push @ids, $row->{remoteid};
+        }
+
+        $where = { id => \@ids };
+    }
+
+    my @messages;
+    my @ids;
+    my $seen;
+
+  MESSAGE:
+    for my $message ( $sqlite_notify->select( { tablename => 'notifications',
+                                                where     => $where,
+                                                order     => $order,
+                                                limit     => 100,
+                                            } ) ) {
+
+        push @ids, $message->{id};
+
+        utf8::decode( $message->{subject} );
+
+        if ( ! $message->{link} && $message->{subject} =~ m|(https?\:\/\/\S+)| ) {
+            $message->{link} = $1;
+        }
+
+        unless ( $key ) {
+            if ( $seen->{ $message->{subject} } ) {
+                $seen->{ $message->{subject} } += 1;
+                next MESSAGE;
+            }
+            else {
+                $seen->{ $message->{subject} } = 1;
+            }
+        }
+
+        push @messages, $message;
+    }
+
+    for my $message ( @messages ) {
+        unless ( $message->{color} ) { $message->{color} = $pretty_colors->{black} }
+        if ( $pretty_colors->{ $message->{color} } ) { $message->{color} = $pretty_colors->{ $message->{color} } }
+
+        my $age = 0;
+        if ( $message->{lastupdate} ) {
+            $age = $now - $message->{lastupdate};
+            $message->{age} = $timelength->get_human_readable( $age );
+        }
+        $message->{age_color} = $timelength->get_age_color( $age );
+
+        $message->{icon} =~ s|^.*\/||;
+
+        $message->{count} = $seen->{ $message->{subject} };
+
+        if ( $message->{key} =~ m|^(.*?)\-(.*)| ) {
+            $message->{key1} = $1;
+            $message->{key2} = $2;
+        }
+        else {
+            $message->{key1} = $message->{key};
+        }
+
+    }
+
+    $self->stash( 'headers', [qw/cmd key1 key2 seen count username icon subject link age/ ] );
+
+    $self->stash( 'body_data', \@messages );
+
+    $self->stash( 'ids', join( ",", @ids ) );
+
+    my ( $total ) = $sqlite_notify->select( { fields    => 'count(*) as count',
+                                          tablename => 'notifications',
+                                          where     => { seen => \$is_null },
+                                      } );
+    $self->stash( 'count', $total->{count} );
+
+    $self->render( template => 'notify' );
+
+};
+
+
+get '/tasks' => sub {
+    my $self = shift;
+
+    my $due = $self->param( 'due' );
+
+    my @tasks = $taskutil->get_tasks( $due );
+
+    for my $task ( @tasks ) {
+
+        $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
+
+        if ( $pretty_colors->{ $task->{color} } ) {
+            $task->{color} = $pretty_colors->{ $task->{color} };
+        }
+
+        if ( $task->{duration} ) {
+            $task->{emacs_link} = join( "%20", $task->{duration}, $task->{title} );
+        }
+        else {
+            $task->{emacs_link} = $task->{title};
+        }
+        $task->{emacs_link} =~ s|\/|__SLASH__|g;
+        $task->{emacs_link} = uri_escape( $task->{emacs_link} );
+    }
+
+    $self->stash( 'headers', [qw/count lastupdate file title priority scheduled deadline/ ] );
+
+    $self->stash( 'body_data', \@tasks );
+
+    $self->render( template => 'tasks' );
+
+};
+
+get '/open/org/(.file)/(.link)' => sub {
+    my $self = shift;
+
+    my $filename = $self->stash( 'file' );
+    $filename =~ tr/A-Za-z0-9\.\-\_//cd;
+    print "FILENAME: $filename\n";
+
+    my $link = uri_unescape( $self->stash( 'link' ) );
+    $link =~ s|[\'\"]|.|g;
+    $link =~ s|__SLASH__|/|g;
+    $link = "file:/Users/wu/org/$filename\:\:$link";
+
+    my $command;
+    if ( $self->param('done') ) {
+        my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(org-todo)(save-buffer)(raise-frame)) };
+        $command = qq(emacsclient --socket-name /tmp/emacs501/server -e '$emacs_foo' &);
+    }
+    else {
+        my $emacs_foo = qq{ (progn (org-open-link-from-string "[[$link]]" )(pop-to-buffer "$filename")(delete-other-windows)(raise-frame)) };
+        $command = qq(emacsclient --socket-name /tmp/emacs501/server -e '$emacs_foo' &);
+    }
+
+    print "EMACS: $command\n";
+    system( $command );
+
+    # switch to x11 emacs
+    system( qq{osascript -e 'tell app "X11" to activate'} );
+
+    $self->redirect_to( "/tasks?due=1" );
+};
+
+get '/rss/(.mailbox).xml' => sub {
+    my $self = shift;
+
+    my $mailbox = $self->stash( 'mailbox' );
+
+    my $start = time - 24*60*60;
+
+    my $where = { mailbox    => $mailbox,
+                  lastupdate => { '>', $start },
+              };
+
+    my $rss = new XML::RSS( version => '1.0' );
+    $rss->channel(
+        title => "$mailbox (wubot)",
+        link  => "https://geektank.selfip.org/wubot",
+        description => "rss feed generated by wubot",
+    );
+
+    $rss->image(
+        title  => "$mailbox image",
+        url    => "/images/rss/$mailbox.png",
+    );
+
+    $sqlite_rss->select( { tablename => 'feeds',
+                           where     => $where,
+                           order     => [ 'lastupdate' ],
+                           limit     => $self->param('limit') || 100,
+                           callback  => sub { my $entry = $_[0];
+
+                                              my $site = $entry->{key};
+                                              my $title = $entry->{title} || $entry->{subject} || "no title";
+
+                                              my $article_title = "[$site] $title";
+                                              utf8::decode( $article_title );
+
+                                              my $link = $entry->{link} || "";
+
+                                              my $body = $entry->{body};
+                                              utf8::decode( $body );
+
+                                              $rss->add_item(
+                                                  title       => $article_title,
+                                                  link        => $link,
+                                                  description => $body,
+                                                  dc => {
+                                                      date => format_date_time( $entry->{lastupdate} )
+                                                  }
+                                              );
+                                          },
+                       } );
+
+    my $text = $rss->as_string;
+
+    # stash the feed content
+    $self->stash( 'feed' => $text );
+
+    $self->render( 'rss',
+                   format => 'xml',
+                   template => 'rss',
+                   handler => 'epl',
+               );
+
+
+};
+
+get '/atom/(.mailbox).xml' => sub {
+    my $self = shift;
+
+    use XML::Atom::SimpleFeed;
+
+    my $mailbox = $self->stash( 'mailbox' );
+
+    my $start = time - 24*60*60;
+
+    my $where = { mailbox    => $mailbox,
+                  lastupdate => { '>', $start },
+              };
+
+    my $feed = XML::Atom::SimpleFeed->new(
+        title   => "$mailbox (wubot)",
+        link    => 'https://geektank.selfip.org/wubot',
+        author  => 'Wu',
+        icon    => "http://localhost:3000/images/rss/$mailbox.ico",
+        logo    => "http://localhost:3000/images/rss/$mailbox.png",
+    );
+
+    $sqlite_rss->select( { tablename => 'feeds',
+                           where     => $where,
+                           order     => [ 'lastupdate' ],
+                           limit     => $self->param('limit') || 100,
+                           callback  => sub { my $entry = $_[0];
+
+                                              my $site = $entry->{key};
+                                              my $title = $entry->{title} || $entry->{subject} || "no title";
+
+                                              my $article_title = "[$site] $title";
+                                              utf8::decode( $article_title );
+
+                                              my $link = $entry->{link} || "";
+
+                                              my $body = $entry->{body};
+                                              utf8::decode( $body );
+
+
+                                              $feed->add_entry(
+                                                  title     => $article_title,
+                                                  link      => $link,
+                                                  content   => $body,
+                                              );
+
+                                          },
+                       } );
+
+    my $text = $feed->as_string;
+
+    # stash the feed content
+    $self->stash( 'feed' => $text );
+
+    $self->render( 'rss',
+                   format => 'xml',
+                   template => 'rss',
+                   handler => 'epl',
+               );
+
+
+};
+
+sub format_date_time {
+    my ( $time ) = @_;
+
+    unless ( $time ) { $time = time }
+
+    my $dt_start = DateTime->from_epoch( epoch => $time        );
+    my $start    = $dt_start->ymd('-') . 'T' . $dt_start->hms(':') . 'Z';
+
+    return $start;
+}
+
+
+get '/ical' => sub {
+    my $self = shift;
+
+    my $calendar = Data::ICal->new();
+
+    my $callback = sub {
+        my $entry = shift;
+
+        return unless $entry->{duration};
+
+        my @due;
+        if ( $entry->{deadline} ) {
+            push @due, $entry->{deadline};
+
+            if ( $entry->{deadline_recurrence} ) {
+                my $seconds = $timelength->get_seconds( $entry->{deadline_recurrence} );
+
+                for my $count ( 1 .. 5 ) {
+                    push @due, $entry->{deadline} + $seconds*$count;
+                }
+            }
+        }
+        elsif ( $entry->{scheduled} ) {
+            push @due, $entry->{scheduled};
+
+            if ( $entry->{scheduled_recurrence} ) {
+                my $seconds = $timelength->get_seconds( $entry->{scheduled_recurrence} );
+
+                for my $count ( 1 .. 3 ) {
+                    push @due, $entry->{scheduled} + $seconds;
+                }
+            }
+        }
+        else {
+            return;
+        }
+
+        my $duration = $timelength->get_seconds( $entry->{duration} );
+
+        for my $due ( @due ) {
+            # everything is off by an hour?
+            $due -= 60*60;
+
+            my $dt_start = DateTime->from_epoch( epoch => $due );
+            my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';
+
+            my $dt_end   = DateTime->from_epoch( epoch => $due + $duration );
+            my $end      = $dt_end->ymd('') . 'T' . $dt_end->hms('') . 'Z';
+
+            my $id = join "-", 'WUBOT', md5_hex( $entry->{taskid} ), $start;
+
+            my %event_properties = ( summary     => $entry->{taskid},
+                                     dtstart     => $start,
+                                     dtend       => $end,
+                                     uid         => $id,
+                                 );
+
+            $event_properties{description} = $entry->{body};
+            utf8::encode( $event_properties{description} );
+
+            my $vevent = Data::ICal::Entry::Event->new();
+            $vevent->add_properties( %event_properties );
+
+            if ( $entry->{status} eq "todo" ) {
+                for my $alarm ( 10 ) {
+
+                    my $alarm_time = $due - 60*$alarm;
+
+                    my $valarm_sound = Data::ICal::Entry::Alarm::Audio->new();
+                    $valarm_sound->add_properties(
+                        trigger   => [ Date::ICal->new( epoch => $alarm_time )->ical, { value => 'DATE-TIME' } ],
+                    );
+                    $vevent->add_entry($valarm_sound);
+                }
+            }
+
+            $calendar->add_entry($vevent);
+        }
+    };
+
+    # last 30 days worth of data
+    my $time = time - 60*60*24*30;
+
+    my $select = { tablename => 'tasks',
+                   callback  => $callback,
+                   where     => [ { scheduled => { '>', $time } }, { deadline => { '>', $time } } ],
+                   order     => 'deadline, scheduled',
+               };
+
+    if ( $self->param( 'status' ) ) {
+        $select->{where} = { status => $self->param( 'status' ) };
+    }
+
+    $sqlite_tasks->select( $select );
+
+    $self->stash( calendar => $calendar->as_string );
+
+    $self->render( template => 'calendar', format => 'ics', handler => 'epl' );
+};
+
+get '/tv/crew/(.first)/(.last)' => sub {
+    my $self = shift;
+
+    my $first = $self->stash( 'first' );
+    my $last  = $self->stash( 'last' );
+
+    my %program_ids;
+
+    for my $program_id ( $tv->get_roles( $first, $last ) ) {
+        $program_ids{ $program_id }++;
+    }
+
+    $self->stash( 'program_ids', [ sort keys %program_ids ] );
+
+    $self->render( template => 'crew' );
+
+
+};
+
+get '/tv/program/(.program_id)' => sub {
+    my $self = shift;
+
+    my $program_id = $self->stash( 'program_id' );
+
+    my ( $program_data ) = $tv->get_program_details( $program_id );
+
+    $program_data->{score} = $tv->get_score( $program_id );
+    $program_data->{color} = $tv->get_program_color( $program_id, $program_data->{score} );
+
+    my @crew;
+    for my $crew ( $tv->get_program_crew( $program_id ) ) {
+
+        my %other_titles;
+        my $title_counts;
+      OTHER:
+        for my $other_program_id ( $tv->get_roles( $crew->{givenname}, $crew->{surname} ) ) {
+            next OTHER if $other_program_id eq $program_id;
+            my ( $other_program_details ) = $tv->get_program_details( $other_program_id );
+
+            my $color = $tv->get_program_color( $other_program_id );
+
+            $title_counts->{ $other_program_details->{title} }++;
+
+            $other_titles{ $other_program_details->{title} } = { program_id => $other_program_id,
+                                                                 color      => $color,
+                                                                 date       => $other_program_details->{date},
+                                                                 year       => $other_program_details->{year},
+                                                                 rottentomato => $other_program_details->{rottentomato},
+                                                                 rottentomato_link => $other_program_details->{rottentomato_link},
+                                                                 count      => $title_counts->{ $other_program_details->{title} },
+                                                             };
+        }
+
+        $crew->{other} = \%other_titles;
+
+        utf8::decode( $crew->{givenname} );
+        utf8::decode( $crew->{surname} );
+
+        push @crew, $crew;
+    }
+    $program_data->{crew}  = \@crew;
+
+    my @episodes;
+    for my $episode_id ( $tv->get_episodes( $program_id ) ) {
+        my ( $episode_details ) = $tv->get_program_details( $episode_id );
+        push @episodes, $episode_details;
+    }
+    $program_data->{episodes} = \@episodes;
+
+    $self->stash( 'program', $program_data );
+
+    $self->render( template => 'program' );
+
+
+};
+
+
+get '/tv/seen/(.show_id)/(.episode_num)/(.seen)' => sub {
+    my $self = shift;
+
+    my $show    = $self->stash('show_id');
+    my $episode = $self->stash('episode_num');
+    my $seen    = $self->stash('seen');
+
+    $sqlite_tv_data->insert_or_update( 'tv_data',
+                                       { show => $show, episode => $episode, seen => $seen },
+                                       { show => $show, episode => $episode },
+                                       $schemas->{tv_data},
+                                   );
+
+    $self->redirect_to( "/tv/schedule" );
+};
+
+get '/tv/station/hide/(.station_id)/(.hide)' => sub {
+    my $self = shift;
+
+    my $station_id = $self->stash( 'station_id' );
+    my $hide_flag  = $self->stash( 'hide' );
+
+    $logger->info( "Station hide: $station_id => $hide_flag" );
+
+    $tv->hide_station( $station_id, $hide_flag );
+
+    $self->render( template => 'ok' );
+};
+
+get '/tv/score/(.show)/(.score)' => sub {
+    my $self = shift;
+
+    my $show  = $self->stash('show');
+    my $score = $self->stash('score');
+
+    $logger->info( "Setting score for $show to $score" );
+
+    if ( $score eq "D" ) {
+        $sqlite_tv_data->update( 'tv_data', { myscore => undef }, [ { show => $show }, { show => $show } ], $schemas->{tv_data} );
+        $tv->set_score( $show, undef );
+    }
+    else {
+        $sqlite_tv_data->insert_or_update( 'tv_data', { show => $show, myscore => $score }, { show => $show }, $schemas->{tv_data} );
+        $tv->set_score( $show, $score );
+    }
+
+    $self->render( template => 'ok' );
+};
+
+get '/tv/rt/(.program_id)' => sub {
+    my $self = shift;
+
+    my $program_id = $self->stash( 'program_id' );
+
+    $tv->fetch_rt_score( $program_id );
+
+    $self->redirect_to( "/tv/program/$program_id" );
+};
+
+
+get '/tv/schedule/crew/(.first)/(.last)' => sub {
+    my $self = shift;
+
+    my $first = $self->stash( 'first' );
+    my $last  = $self->stash( 'last' );
+
+    my @program_ids;
+
+    for my $program_id ( $tv->get_roles( $first, $last ) ) {
+        push @program_ids, $program_id;
+    }
+
+    my @display;
+    for my $program ( $tv->get_schedule( { start      => time-300,
+                                           program_id => \@program_ids,
+                                           all        => 1,
+                                           start      => $self->param( 'start'   )  || undef,
+                                       } ) ) {
+        push @display, $program;
+    }
+
+    $self->stash( 'body_data', \@display );
+
+    $self->render( template => 'newtv' );
+};
+
+
+get '/tv/schedule' => sub {
+    my $self = shift;
+
+    my @display;
+
+    for my $program ( $tv->get_schedule( { start   => $self->param( 'start'   ) || undef,
+                                           end     => $self->param( 'end'     ) || undef,
+                                           limit   => $self->param( 'limit'   ) || 100,
+                                           channel => $self->param( 'channel' ) || undef,
+                                           score   => $self->param( 'score'   ) || undef,
+                                           all     => $self->param( 'all'     ) || undef,
+                                           new     => $self->param( 'new'     ) || undef,
+                                           hd      => $self->param( 'hd'      ) || undef,
+                                           rated   => $self->param( 'rated'   ) || undef,
+                                           title   => $self->param( 'title'   ) || undef,
+                                           search  => $self->param( 'search'  ) || undef,
+                                       } ) ) {
+
+        push @display, $program;
+
+    }
+
+    $self->stash( 'body_data', \@display );
+
+    $self->render( template => 'newtv' );
+};
+
+get '/tv/schedule/(.program_id)' => sub {
+    my $self = shift;
+
+    my @display;
+
+    for my $program ( $tv->get_schedule( { start      => time-300,
+                                           program_id => $self->stash('program_id') || undef,
+                                           channel    => $self->param( 'channel' )  || undef,
+                                           all        => 1,
+                                           start      => $self->param( 'start'   )  || undef,
+                                       } ) ) {
+
+        push @display, $program;
+
+    }
+
+    $self->stash( 'body_data', \@display );
+
+    $self->render( template => 'newtv' );
+};
+
+get '/tv/ical' => sub {
+    my $self = shift;
+
+    my $calendar = Data::ICal->new();
+
+    my $seen;
+
+    # my @programs = $tv->get_schedule( { limit      => 100,
+    #                                     score      => 5,
+    #                                     start      => -12*60*60,
+    #                                 } );
+
+    my @programs = $tv->get_schedule( { limit      => 500,
+                                        new        => 1,
+                                        score      => 3,
+                                        start      => -12*60*60,
+                                    } );
+
+    push @programs, $tv->get_schedule( { limit      => 500,
+                                         new        => 1,
+                                         score      => 4,
+                                         start      => -12*60*60,
+                                     } );
+
+    for my $program ( @programs ) {
+
+        next if $seen->{ $program->{title} }->{ $program->{start} };
+        $seen->{ $program->{title} }->{ $program->{start} } = 1;
+
+        my $duration = 1800;
+        if ( $program->{duration} ) {
+            $duration = $timelength->get_seconds( $program->{duration} );
+        }
+
+        my $dt_start = DateTime->from_epoch( epoch => $program->{start}        );
+        my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';
+
+        my $dt_end   = DateTime->from_epoch( epoch => $program->{start} + $duration );
+        my $end      = $dt_end->ymd('') . 'T' . $dt_end->hms('') . 'Z';
+
+        my $id = join "-", 'TV', md5_hex( $program->{title} ), $program->{start};
+
+        my $title = $program->{title};
+        if ( $program->{new} ) {
+            $title = "$title NEW";
+        }
+        if ( $program->{hd} ) {
+            $title = "$title HD";
+        }
+        $title = "[$program->{score}] $title";
+        $title = "$title [$program->{channel}]";
+
+        my %event_properties = ( summary     => $title,
+                                 dtstart     => $start,
+                                 dtend       => $end,
+                                 uid         => $id,
+                                 description => $program->{description},
+                             );
+
+        utf8::encode( $event_properties{summary} );
+        utf8::encode( $event_properties{description} );
+
+        my $vevent = Data::ICal::Entry::Event->new();
+        $vevent->add_properties( %event_properties );
+
+        my $alarm_time = $program->{start} - 60*15;
+        my $valarm_sound = Data::ICal::Entry::Alarm::Audio->new();
+        $valarm_sound->add_properties(
+            trigger   => [ Date::ICal->new( epoch => $alarm_time )->ical, { value => 'DATE-TIME' } ],
+        );
+        $vevent->add_entry($valarm_sound);
+
+        $calendar->add_entry($vevent);
+    }
+
+    $self->stash( calendar => $calendar->as_string );
+
+    $self->render( template => 'calendar', format => 'ics', handler => 'epl' );
+};
+
+get '/tv/oldschedule' => sub {
+    my $self = shift;
+
+    my @shows;
+
+    my $now = time;
+
+    my $count = 1;
+
+    my $where;
+    if ( my $search = $self->param( 'search' ) ) {
+        $where->{title} = { -like => "%$search%"};
+    }
+    if ( my $channel = $self->param( 'channel' ) ) {
+        $where->{channel} = $channel;
+    }
+    if ( my $rating = $self->param( 'rating' ) ) {
+        $where->{rating} = $rating;
+    }
+    if ( my $video = $self->param( 'video' ) ) {
+        $where->{video} = $video;
+    }
+    if ( my $new = $self->param( 'new' ) ) {
+        $where->{fresh} = 'NEW';
+    }
+
+    my $start = $now - 300;
+    if ( my $start_param = $self->param( 'start' ) ) {
+        $start = $now + $timelength->get_seconds( $start_param );
+    }
+    $where->{start_utime} = { '>', $start };;
+
+    $sqlite_tv->select( { tablename => 'schedule',
+                          where     => $where,
+                          order     => [ 'start_utime' ],
+                          limit     => $self->param('limit') || 200,
+                          callback  => sub { my $show = $_[0];
+                                             $show->{count}      = $count++;
+
+                                             $show->{show_esc}   = $show->{title};
+                                             $show->{show_esc}   =~ s|\/|_SLASH_|g;
+                                             $show->{show_esc}   =~ s|\?|_QUESTION_|g;
+
+                                             $show->{color}      = 'grey';
+                                             $show->{date}       =~ s|^(\d\d\d\d)(\d\d)(\d\d)$|$1.$2.$3|g;
+
+                                             if ( $show->{episode_num} ) {
+                                                 my $episode = $show->{episode_num};
+
+                                                 if ( $show->{episode_num} =~ m|^([1-9]+)\0(\d\d)$| ) {
+                                                     $episode = "s$1e$2";
+                                                 }
+                                                 elsif ( $episode =~ m|^(\d)(\d\d)$| ) {
+                                                     $episode = "s$1e$2";
+                                                 }
+                                                 elsif ( $episode =~ m|^(\d\d)(\d\d)$| ) {
+                                                     if ( $1 < 9 ) {
+                                                         $episode = "s$1e$2";
+                                                     }
+                                                 }
+
+                                                 $show->{episode_num} = $episode;
+                                             }
+
+                                             if ( $show->{date} ) {
+                                                 if ( $show->{subtitle} || $show->{episode_num} ) {
+                                                     $show->{subtitle_date} .= $show->{date};
+                                                 }
+                                                 else {
+                                                     $show->{title_date} .= $show->{date};
+                                                 }
+                                             }
+
+
+                                             $show->{start}      = strftime( "%a %l:%M%p", localtime( $show->{start_utime} ) );
+                                             $show->{end}        = strftime( "%a %l:%M%p", localtime( $show->{end_utime} ) );
+
+                                             $show->{lastupdate} = strftime( "%m-%d %H:%M", localtime( $show->{lastupdate} ) );
+
+
+                                             push @shows, $show;
+                                         },
+                      } );
+
+    my @display;
+
+    my $score_colors = { 1 => 'dark', 2 => 'dark', 3 => 'yellow', 4 => 'orange', 5 => 'pink' };
+
+    my $cache;
+    my $score     = $self->param( 'score' );
+    my $show_seen = $self->param( 'seen' );
+    my $show_all  = $self->param( 'all' );
+  SHOW:
+    for my $show ( @shows ) {
+
+        $sqlite_tv_data->select( { tablename => 'tv_data',
+                                   where     => [ { show => $show->{show_id} }, { show => $show->{title} } ],
+                                   limit     => 1,
+                                   callback  => sub { my $data = $_[0];
+                                                      $show->{'#'} = $data->{myscore};
+                                                  },
+                               } );
+
+        if ( $score ) {
+            next SHOW unless $show->{'#'};
+            next SHOW unless $show->{'#'} >= $score;
+        }
+
+        if ( $show->{episode_num} ) {
+            $sqlite_tv_data->select( { tablename => 'tv_data',
+                                       where     => { show => $show->{show_id}, episode => $show->{episode_num} },
+                                       limit     => 1,
+                                       callback  => sub { my $data = $_[0];
+                                                          $show->{seen} = $data->{seen};
+                                                      },
+                                   } );
+
+        }
+        unless ( $show_seen || $show_all ) {
+            next SHOW if $show->{seen};
+        }
+
+        if ( $show->{'#'} ) {
+            $show->{color} = $pretty_colors->{ $score_colors->{ $show->{'#'} } };
+            if ( $show->{'#'} > 2 ) {
+                push @display, $show;
+            } else {
+                if ( $show_all ) {
+                    push @display, $show;
+                }
+            }
+        } else {
+            push @display, $show;
+        }
+
+
+    }
+
+    $self->stash( 'body_data', \@display );
+
+    $self->render( template => 'tv' );
+
+};
+
+app->start;
+
+
+__DATA__

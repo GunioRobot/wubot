@@ -413,13 +413,21 @@ sub connect {
 
     $self->logger->warn( "Opening sqlite file: $datafile" );
 
-    my $dbh = DBI->connect(
-        "dbi:SQLite:$datafile", "", "",
-        {
-            AutoCommit => 1,
-            RaiseError => 1,
-        }
-    ) or $self->logger->logcroak( "Unable to create database handle: $!" );
+    my $dbh;
+    eval {                          # try
+        $dbh = DBI->connect( "dbi:SQLite:$datafile", "", "",
+                             {
+                                 AutoCommit => 1,
+                                 RaiseError => 1,
+                             }
+                         );
+
+        1;
+    } or do {                       # catch
+        my $error = $@;
+
+        $self->logger->logcroak( "Unable to create database handle for $datafile: $error" );
+    };
 
     $sql_handles{ $datafile } = $dbh;
 

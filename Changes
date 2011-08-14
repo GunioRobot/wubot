@@ -1,5 +1,31 @@
 Revision history for Wubot
 
+0.1_5 Fri Aug 12, 2011  6:52 pm
+
+  - XMPP plugin no longer forwards messages with noforward flag set
+
+  - Command reactor - enable templating of commands with Text::Template
+
+  - WebFetch reactor to fetch data from a URL
+
+  - added a User reactor plugin to parse the username field
+    - removed username field parsing from Icon field
+    - use the User reactor before the Icon reactor
+
+  - replace 'no_more_rules' with 'last_rule' field
+
+  - HTMLStrip reactor plugin uses 'target_field' rather than 'newfield'
+
+  - database will not override autoincrementing 'id' field with an id in a message
+
+  - CaptureData reactor allows 'field' in config
+
+  - SQLite reports path and stack trace on failure to connect to file
+
+  - lots of updates to prototype notifications web ui, color tweaks
+
+  - added 'link' field to a few more plugins for the notification web ui
+
 0.1_4 Sun Aug  7, 2011  1:07 pm
 
   - working on a new 'notifications' web ui

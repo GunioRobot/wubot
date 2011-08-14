@@ -4,9 +4,6 @@ use Moose;
 # VERSION
 
 use Log::Log4perl;
-use LWP::UserAgent;
-use HTTP::Request::Common qw{ POST };
-use CGI;
 use YAML;
 
 use Wubot::LocalMessageStore;

@@ -8,6 +8,7 @@ use File::Path;
 use Log::Log4perl;
 use POSIX qw(strftime setsid :sys_wait_h);
 use Term::ANSIColor;
+use Text::Template;
 use YAML::XS;
 
 use Wubot::SQLite;
@@ -72,21 +73,19 @@ sub react {
         $self->logger->debug( "Running command field: $config->{command_field}: $command " );
     }
     elsif ( $config->{command_array} ) {
-        my @entries;
-        for my $entry ( @{ $config->{command_array} } ) {
-            if ( $entry =~ m|^\{\$([\w\d\-]+)\}| ) {
-                if ( $message->{ $1 } ) { $entry = $message->{ $1 } };
-            }
-            $entry =~ s|\'||;
-            #$entry = shell_quote( $entry );
-            push @entries, "'$entry'";
-        }
-        $command = join( " ", @entries );
+        $command = join( " ", @{ $config->{command_array} } );
     }
     else {
         $self->logger->error( "Command reactor error: no command or command_field specified in config" );
         return $message;
     }
+
+    my $template = Text::Template->new(TYPE => 'STRING', SOURCE => $command );
+    $command = $template->fill_in( HASH => $message );
+    $self->logger->debug( "COMMAND: $command\n" );
+
+    $command =~ s|\\|\\\\|g;
+    $command =~ s|\>|\\>|g;
 
     if ( $config->{command_noresults} ) {
         $message->{command_noresults} = 1;
@@ -345,7 +344,7 @@ sub enqueue {
     $self->logger->debug( "Command: queueing for: $id [$sqlid]" );
 
     $message->{sqlid}          = $sqlid;
-    $message->{command_queued} = 1;
+    $message->{command_queued} = $id;
     return $message;
 }
 

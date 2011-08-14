@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Differences;
-use Test::More tests => 24;
+use Test::More tests => 33;
 
 use File::Temp qw/ tempdir /;
 use Log::Log4perl qw(:easy);
@@ -73,7 +73,7 @@ $queuedb .= "/commands.sql";
     );
 
     is( $queue_results_h->{command_queued},
-        1,
+        $id,
         "Checking that command was queued"
     );
 
@@ -199,102 +199,70 @@ $queuedb .= "/commands.sql";
            );
 }
 
-# {
-#     my $id = 'multi';
+{
+    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb, fork => 'cache' } ),
+        "Creating new command reactor object"
+    );
 
-#     my $tempdir  = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-#     $tempdir .= "/tmp";
+    my $config = { command_array => [ 'echo', '{$abc}' ], fork => 'commandarray' };
 
-#     my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-#     $queuedir .= "/queue";
+    $command->react( { abc => 'xyz' }, $config );
 
-#     my $queuedb = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-#     $queuedb .= "/commands.sql";
+    ok( ! $command->monitor(),
+        "calling monitor() method to start first command in queue"
+    );
 
-#     my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedir => $queuedir, queuedb => $queuedb } );
+    sleep 1;
 
-#     my $results1_h = $command->react( { foo => 'abc' }, { command => 'sleep 1 && echo finished1', fork => $id } );
-#     my $results2_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished2', fork => $id } );
-#     my $results3_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished3', fork => $id } );
-#     my $results4_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished4', fork => $id } );
+    is_deeply( $command->monitor()->[0]->{command_output},
+               "xyz",
+               "Checking react() run with a configured_array command"
+           );
 
-#     ok( $results1_h->{command_pid},
-#         "Checking react() returned command_pid of forked process"
-#     );
+    $command->react( { abc => 'def' }, $config );
 
-#     ok( ! $results1_h->{command_queued},
-#         "Checking react() for first process was not queued"
-#     );
+    ok( ! $command->monitor(),
+        "calling monitor() method to start first command in queue"
+    );
 
-#     ok( ! $results2_h->{command_pid},
-#         "Checking react() for second process was not forked"
-#     );
+    sleep 1;
 
-#     ok( $results2_h->{command_queued},
-#         "Checking react() for second process was queued"
-#     );
-
-#     sleep 3;
-#     eq_or_diff( \$command->monitor(),
-#                \[
-#                    { command_output => 'finished1',
-#                      command_signal => 0,
-#                      command_status => 0,
-#                      foo            => 'abc',
-#                      subject        => "Command succeeded: $id",
-#                  },
-#                ],
-#                "Checking first background command results received when monitor() called"
-#            );
-
-#     sleep 3;
-#     eq_or_diff( \$command->monitor(),
-#                \[
-#                    { command_output => 'finished2',
-#                      command_signal => 0,
-#                      command_status => 0,
-#                      foo            => 'def',
-#                      subject        => "Command succeeded: $id",
-#                  },
-#                ],
-#                "Checking second background command results received when monitor() called"
-#            );
-
-#     sleep 3;
-#     eq_or_diff( \$command->monitor(),
-#                \[
-#                    { command_output => 'finished3',
-#                      command_signal => 0,
-#                      command_status => 0,
-#                      foo            => 'def',
-#                      subject        => "Command succeeded: $id",
-#                  },
-#                ],
-#                "Checking third background command results received when monitor() called"
-#            );
-
-#     sleep 3;
-#     eq_or_diff( \$command->monitor(),
-#                \[
-#                    { command_output => 'finished4',
-#                      command_signal => 0,
-#                      command_status => 0,
-#                      foo            => 'def',
-#                      subject        => "Command succeeded: $id",
-#                  },
-#                ],
-#                "Checking fourth background command results received when monitor() called"
-#            );
-
-#     sleep 3;
-#     eq_or_diff( $command->monitor(),
-#                [],
-#                "Checking that no processes remain"
-#            );
-# }
+    is_deeply( $command->monitor()->[0]->{command_output},
+               "def",
+               "Checking react() run with a configured_array command"
+           );
 
 
-# # TODO: duplicate command suppression
-# # TODO: test background command failure
-# # TODO: parent process exits and child keeps running and is picked up by next process
-# # TODO: start time, run time
+}
+
+{
+    my $tempdir  = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $queuedir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+
+    my $queuedb = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 ) . "command.sql";
+
+    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
+        "Creating new command reactor object"
+    );
+
+    my $string = 'x \ > \> y';
+
+    ok( $command->react( { abc => "echo $string" }, { command_field => 'abc', fork => 'safechar' } ),
+        "Queueing command"
+    );
+
+    ok( ! $command->monitor(),
+        "calling monitor() method to start first command in queue"
+    );
+
+    sleep 1;
+
+    is( $command->monitor()->[0]->{command_output},
+        $string,
+        "Checking react() removed unsafe characters"
+    );
+
+
+
+}

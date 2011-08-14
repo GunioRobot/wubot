@@ -51,21 +51,35 @@ sub check {
         # if there's no table to transmit data from, we're done here
         return {} unless $config->{directory};
 
+        my @count = 1 .. 10;
+
       MESSAGE:
-        for ( 1 .. 10 ) {
+        while ( @count ) {
+            pop @count;
+
             # get message from the queue
             my ( $message, $callback ) = $self->mailbox->get( $config->{directory} );
 
             last unless $message;
 
-            # set the 'noforward' flag when sending a message
-            $message->{noforward} = 1;
+            if ( $message->{noforward} ) {
 
-            # convert to text
-            my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
+                $self->logger->debug( "not forwarding message with 'noforward' flag" );
+                push @count, 1;
 
-            # send the message using YAML
-            $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
+            }
+            else {
+
+                # set the 'noforward' flag when sending a message
+                $message->{noforward} = 1;
+
+                # convert to text
+                my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
+
+                # send the message using YAML
+                $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
+
+            }
 
             # delete message from the queue
             $callback->();

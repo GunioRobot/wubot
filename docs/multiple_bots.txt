@@ -139,9 +139,11 @@ messages from host F to host A and then BLAM, you have created a
 routing loop.
 
 To help prevent this from happening, the XMPP monitor sets a field
-named 'noforward' any time it sends or receives a message.  You could
-make use of this by checking for the 'noforward' flag before adding a
-message to the XMPP message queue, e.g.:
+named 'noforward' any time it sends or receives a message.  When
+picking up a message from the queue, if the message contains a
+'noforward' field, it will not be forwarded.  To improve performance,
+use a condition to prevent the messages from being added to the queue
+if it contains the 'noforward' flag, e.g.:
 
   - name: forward
     condition: noforward is false
@@ -154,10 +156,6 @@ loop.  If you want for a bot to forward messages it received from
 other bots, simply add a rule to delete the 'noforward' field before
 your MessageQueue rule is reached.  I usually make my MessageQueue
 forward rule be the very last rule in my list.
-
-Important Note: This must be handled entirely in your rules, as the
-XMPP monitor will send any message in its queue whether the noforward
-flag is set or not.
 
 
 ** managing config files

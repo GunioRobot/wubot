@@ -98,3 +98,55 @@ sub check {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::SunRise - monitor the sunrise and sunset times
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/SunRise/home.yaml
+
+  ---
+  enable: 1
+  longitude: -123.4567890
+  latitude: 46.8002468
+  delay: 1m
+
+=head1 DESCRIPTION
+
+Uses Astro::Sunrise to monitor the sunrise and sunset times based on
+your location.
+
+A notification will be sent after a state change, and then each hour
+before the event.  For example, if the plugin is first run at 6:45pm,
+and the sunset is at 9:30pm, then the following messages would be
+sent:
+
+  6:45pm - 2h45m until sunset
+  7:30pm - 2h until sunset
+  8:30pm - 1h until sunset
+  9:30pm - sunset
+  9:31pm - XhYm until sunrise
+  ...
+
+=head1 HINTS
+
+If you find the monitor to be too noisy, the reactor could be used to
+suppress some notifications.
+
+=head1 CACHE
+
+The time of the next sunrise or sunset will be cached in the global
+cache.  This prevents needing to do the expensive calculation over and
+over.
+
+The cache file lives in:
+
+  ~/wubot/cache/SunRise-home.yaml
+

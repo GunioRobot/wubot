@@ -60,3 +60,26 @@ sub check {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::MoonPhase - monitor the phase of the moon
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/MoonPhase/home.yaml
+
+  ---
+  delay: 24h
+
+
+=head1 DESCRIPTION
+
+Reports the amount of time remaining until the next full or new moon,
+whichever is closer.
+

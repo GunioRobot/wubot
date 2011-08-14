@@ -191,3 +191,45 @@ sub check {
  }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::OsxIdle - monitor idle time on OS X
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/OsxIdle/myhost.yaml
+
+  ---
+  delay: 60
+
+
+=head1 DESCRIPTION
+
+Monitor user idle time on OS X.  Runs the command:
+
+  ioreg -c IOHIDSystem
+
+in order to determine the amount of time since the last input on any
+keyboard or mouse.
+
+Any time there has been more than 10 minutes of no activity, you will
+be considered idle.
+
+Each time your state changes between idle and active, a message will
+be sent informing you the amount of time you spent in the previous
+state.
+
+Also each hour you are idle or active, a message will be sent telling
+you the amount of time you have spent in that state.  This can be
+useful to remind you to stretch or take a break after a certain amount
+of time being active.
+
+This plugin is desiged to be run every 60 seconds.
+
+If anyone is aware of a command that can be run for other operating
+systems to provide idle time, please let me know.

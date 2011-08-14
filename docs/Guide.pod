@@ -8,6 +8,10 @@ The guides are under construction.  Lots more to come!
 
 =over 2
 
+=item L<Wubot::Guide::Overview>
+
+Wtf is wubot?
+
 =item L<Wubot::Guide::GettingStarted>
 
 Guide to getting started monitoring an RSS feed and reacting to items

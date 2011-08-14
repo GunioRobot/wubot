@@ -1,91 +1,13 @@
-'wubot' is the code name for a distributed personal reactive
-automation tool I've been working on for the last several years.  It
-is built in modern Perl 5 using Moose, AnyEvent, LWP::UserAgent, YAML,
-DBI/DBD::SQLite, Mojolicious, and many others.
+Please see:
 
-The simplest way to think of this project is to compare it to email
-filters.  Most email clients allow you to set rules to perform actions
-when a new email arrives.
+  - http://search.cpan.org/perldoc?Wubot::Guide
 
-This project allows you to have a set of monitors that collect data
-from a variety of sources, including:
+  - http://search.cpan.org/dist/wubot/
 
-  - email boxes
-  - RSS/Atom feeds
-  - IM
-  - log files
-  - system monitors
-  - OS X idle time
-  - local sunrise/sunset times
-  - monitors running on remote hosts
-  - your own custom monitor plugin written in perl
-  - see: http://github.com/wu/wubot/blob/master/docs/monitor_plugins.txt
-
-Data collected from each monitor is sent through a set of rules that
-can perform actions such as:
-
-  - pop up an alert, e.g. using Growl
-  - send a colorized message to stdout
-  - store the message in a mailbox
-  - add the message to a SQLite database
-  - store data from the message in RRD and graph the data over time
-  - add the message to outgoing RSS feeds
-  - send a private or public message to IRC
-  - forward the message to another host for further processing
-  - your own custom action written in perl
-  - see: http://github.com/wu/wubot/blob/master/docs/reactor_plugins.txt
-
-Beyond just doing something with the message or portions of the
-message, you also have the option to modify the message, e.g.:
-
-  - set a color to be used for alerts
-  - transform some field in the message with a regexp
-  - capture data from a field and store it in another field
-  - strip images or HTML
-  - fetch related information from the web
-
-Unlike previous generations of this project, the rules are entirely
-controlled by configuration.  So it is not necessary to write any perl
-code to use the rules.  In the future there will be a user interface
-for configuring the rules.
-
-  - http://github.com/wu/wubot/blob/master/docs/rules.txt
-
-Rules can be nested, so that when a rule matches, it can cause
-additional sub-rules to run.  Nesting rules makes the rules processing
-much more efficient so that not every rule needs to be run on every
-message.  Rules processing is recursive so rules can be nested
-arbitrarily deep.  For more information on rule conditions, see:
-
-  - http://github.com/wu/wubot/blob/master/docs/conditions.txt
-
-Distributed operation currently relies on XMPP.  Using XMPP, messages
-can be sent between wubot instances on multiple hosts.  Monitors
-generate messages that may be reacted upon locally, and/or may be
-forwarded to other hosts for further reaction.
-
-This project is still under construction.
-
-To get started document, see:
-
-  - http://github.com/wu/wubot/blob/master/docs/filtering_rss.txt
-
-Lots more to come...
+  - https://github.com/wu/wubot
 
 
 INSTALLATION
-
-I'm still in the process of creating the documentation before pushing
-this to CPAN.  Until it has been moved to CPAN, there is no convenient
-way to install all the prereqs (at least not as far as I know).  So
-unfortunately you will probably have to manaully install the very
-lengthy list of prereqs for now.  Note that many of the prereqs will
-be optional depending on which monitors or reactors you have enabled.
-
-Also not all test cases are guaranteed to pass on all operating
-systems at the moment.  Again the 'important' tests will vary
-depending on which monitors and reactors you have enabled.  All of
-this will hopefully be worked out much better before the CPAN release.
 
 For the time being, you may want to just check out the source to a
 directory of your choosing (I use ~/projects/wubot), and set into that

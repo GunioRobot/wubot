@@ -1,0 +1,77 @@
+=head1 NAME
+
+Wubot::Guide::Overview - wtf is wubot?
+
+=head1 DESCRIPTION
+
+'wubot' is the code name for a distributed personal reactive
+automation tool I've been working on for the last several years.  It
+is built in modern Perl 5 using Moose, AnyEvent, LWP::UserAgent, YAML,
+DBI/DBD::SQLite, Mojolicious, and many others.
+
+The simplest way to think of this project is to compare it to email
+filters.  Most email clients allow you to set rules to perform actions
+when a new email arrives.
+
+This project allows you to have a set of monitors that collect data
+from a variety of sources, including:
+
+=over 2
+
+=item email boxes
+=item RSS/Atom feeds
+=item IM
+=item log files
+=item system monitors
+=item OS X idle time
+=item local sunrise/sunset times
+=item monitors running on remote hosts
+=item your own custom monitor plugin written in perl
+=item see: http://search.cpan.org/perldoc?Wubot::Guide::MonitorPlugins
+
+Data collected from each monitor is sent through a set of rules that
+can perform actions such as:
+
+=item pop up an alert, e.g. using Growl
+=item send a colorized message to stdout
+=item store the message in a mailbox
+=item add the message to a SQLite database
+=item store data from the message in RRD and graph the data over time
+=item add the message to outgoing RSS feeds
+=item send a private or public message to IRC
+=item forward the message to another host for further processing
+=item your own custom action written in perl
+=item see: http://search.cpan.org/perldoc?Wubot::Guide::ReactorPlugins
+
+Beyond just doing something with the message or portions of the
+message, you also have the option to modify the message, e.g.:
+
+=item set a color to be used for alerts
+=item transform some field in the message with a regexp
+=item capture data from a field and store it in another field
+=item strip images or HTML
+=item fetch related information from the web
+
+Unlike previous generations of this project, the rules are entirely
+controlled by configuration.  So it is not necessary to write any perl
+code to use the rules.  In the future there will be a user interface
+for configuring the rules.  See L<Wubot::Guide::Rules>.
+
+Rules can be nested, so that when a rule matches, it can cause
+additional sub-rules to run.  Nesting rules makes the rules processing
+much more efficient so that not every rule needs to be run on every
+message.  Rules processing is recursive so rules can be nested
+arbitrarily deep.  For more information on rule conditions, see
+L<Wubot::Guide::Conditions>.
+
+Distributed operation currently relies on XMPP.  Using XMPP, messages
+can be sent between wubot instances on multiple hosts.  Monitors
+generate messages that may be reacted upon locally, and/or may be
+forwarded to other hosts for further reaction.  See
+L<Wubot::Guide::MultipleBots>.
+
+This project is still under construction.
+
+To get started, see L<Wubot::Guide::GettingStarted>.
+
+Lots more to come...

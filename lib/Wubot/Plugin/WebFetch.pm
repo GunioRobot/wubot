@@ -36,7 +36,9 @@ sub check {
         return { react => { subject => $subject } };
     };
 
-    return { react => { content => $content } };
+    my $field = $config->{field} || 'content';
+
+    return { react => { $field => $content } };
 }
 
 1;
@@ -56,14 +58,15 @@ Wubot::Plugin::WebFetch - fetch content from a URL
   ---
   delay: 24h
   url: http://myweb.com/somepage.html
-
+  field: content
 
 =head1 DESCRIPTION
 
 Fetch content from a web page at regular intervals.
 
-The generated message will contain a field called 'content' which
-contains the complete content fetched from the web page.
+The retrieved content will be stored in the 'field' specified in the
+config.  If no field is specified, the default target field will be
+'content'.
 
 =head1 GITHUB TRAFFIC
 

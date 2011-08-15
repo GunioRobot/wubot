@@ -7,8 +7,7 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-Log::Log4perl->easy_init($ERROR);
-my $logger = get_logger( 'default' );
+use Wubot::Logger;
 
 use Wubot::Plugin::WebFetch;
 
@@ -23,17 +22,33 @@ ok( my $check = Wubot::Plugin::WebFetch->new( { class      => 'Wubot::Plugin::Os
 
 {
     my $config = { url    => 'http://www.google.com/',
-                   regexp => { feeling => 'Feeling (\w+)' },
                };
 
     ok( my $results = $check->check( { config => $config } ),
         "Calling check() method"
     );
 
-    is( $results->{react}->{feeling},
-        'Lucky',
-        "Checking that 'feeling' regexp matched 'Lucky'"
+    like( $results->{react}->{content},
+          qr/Feeling Lucky/,
+          "Checking that content contains 'Feeling Lucky'"
+         );
+
+}
+
+
+{
+    my $config = { url    => 'http://www.google.com/',
+                   field  => 'foo'
+               };
+
+    ok( my $results = $check->check( { config => $config } ),
+        "Calling check() method"
     );
+
+    like( $results->{react}->{foo},
+          qr/Feeling Lucky/,
+          "Checking that 'foo' field contains 'Feeling Lucky'"
+         );
 
 }
 

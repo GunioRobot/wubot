@@ -1,8 +1,10 @@
 Revision history for Wubot
 
-0.1_10 Sun Aug 14, 2011  2:50 pm
+0.2_001 Sun Aug 14, 2011  2:50 pm
 
   - more work on documentation
+
+  - added logging message to WebFetch reactor
 
 0.1_9 Sun Aug 14, 2011  1:27 pm
 

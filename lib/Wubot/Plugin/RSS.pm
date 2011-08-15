@@ -173,3 +173,6 @@ unseen) subject shows up on the feed, the message will be sent, and
 the cache will be updated.  Removing the cache file will cause all
 items in the feed to be sent again.
 
+=head1 SEE ALSO
+
+This plugin uses L<Wubot::Util::WebFetcher>.

@@ -156,3 +156,7 @@ RRD:
         lower_limit: 0
         right-axis: 1:0
         width: 375
+
+=head1 SEE ALSO
+
+This plugin uses L<Wubot::Util::WebFetcher>.

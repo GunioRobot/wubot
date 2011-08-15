@@ -205,7 +205,7 @@ Wubot::Plugin::OsxIdle - monitor idle time on OS X
   ~/wubot/config/plugins/OsxIdle/myhost.yaml
 
   ---
-  delay: 60
+  delay: 1m
 
 
 =head1 DESCRIPTION
@@ -233,3 +233,44 @@ This plugin is desiged to be run every 60 seconds.
 
 If anyone is aware of a command that can be run for other operating
 systems to provide idle time, please let me know.
+
+=head1 GRAPHING
+
+If you want to build graphs of the amount of time you are spending
+active/idle, then you could use the following rule in the reactor:
+
+  - name: OS X Idle
+    condition: key matches ^OsxIdle
+    rules:
+      - name: add active_min and idle_min to rrd
+        plugin: RRD
+        last_rule: 1
+        config:
+          base_dir: /usr/home/wu/wubot/rrd
+          fields:
+            idle_min: GAUGE
+            active_min: GAUGE
+          period:
+            - day
+            - week
+          graph_options:
+            lower_limit: 0
+            upper_limit: 60
+            rigid: ""
+            sources:
+              - active_min
+              - idle_min
+            source_colors:
+              - FF9933
+              - 9933FF
+            source_drawtypes:
+              - AREA
+              - AREA
+            right-axis: 1:0
+            width: 375
+
+
+=head1 SEE ALSO
+
+If you use this plugin, you may also be interested in
+L<Wubot::Plugin::WorkHours>.

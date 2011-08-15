@@ -108,3 +108,82 @@ sub calculate_stats {
 }
 
 1;
+
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::WorkHours - track of the number of hours you are active/idle
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins//WorkHours/myhost.yaml
+
+  ---
+  tablename: idle
+  dbfile: /Users/wu/wubot/sqlite/idle.sql
+  delay: 10m
+
+=head1 DESCRIPTION
+
+In order to use this plugin, you must have enabled an idle plugin
+monitor such as L<Wubot::Plugin::OsxIdle>.
+
+You will also need a rule that saves the idle time into a sqlite
+database, e.g.:
+
+  - name: OS X Idle
+    condition: key matches ^OsxIdle
+    rules:
+      - name: store in SQLite database
+        plugin: SQLite
+        config:
+          file: /usr/home/wu/wubot/sqlite/idle.sql
+          tablename: idle
+
+The 'idle' table schema is distributed in the wubot tarball, in the
+config/schema subdirectory.  Please copy all schemas in that directory
+to ~/wubot/schemas/.
+
+Once you have the idle plugin saving data to a sqlite database, and
+you have enabled the WorkHours monitor using the config above, then
+you can use the following reactor rules to build the workhours graphs
+and to store your workhours data in a SQLite database.
+
+  - name: Work Hours
+    condition: key matches ^WorkHours
+    rules:
+
+      - name: store in SQLite
+        plugin: SQLite
+        config:
+          file: /usr/home/wu/wubot/sqlite/workhours.sql
+          tablename: workhours
+
+      - name: store and graph with RRD
+        plugin: RRD
+        config:
+          base_dir: /usr/home/wu/wubot/rrd
+          fields:
+            idle_hours: GAUGE
+            active_hours: GAUGE
+          period:
+            - day
+            - week
+            - month
+          heartbeat: 1800
+          graph_options:
+            sources:
+              - active_hours
+              - idle_hours
+            source_colors:
+              - FF9933
+              - 9933FF
+            source_drawtypes:
+              - AREA
+              - LINE
+            right-axis: 1:0
+            width: 375

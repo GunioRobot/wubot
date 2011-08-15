@@ -19,7 +19,7 @@ in that feed.
 
 =back
 
-=head1 MONITORS
+=head1 MONITORING
 
 =over 2
 
@@ -33,7 +33,7 @@ Monitoring arduino sensor data.
 
 =back
 
-=head1 REACTORS
+=head1 REACTIONS
 
 =over 2
 

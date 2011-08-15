@@ -16,7 +16,9 @@ Wubot - personal distributed reactive automation
 
 =head1 DESCRIPTION
 
-Please see the README for a full description.
+For an overview of wubot, please see L<Wubot::Guide::Overview>.
+
+For more information, see the L<Wubot::Guide>.
 
 =cut
 

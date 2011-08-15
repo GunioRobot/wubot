@@ -171,6 +171,104 @@ sub close {
     $self->con->disconnect;
 }
 
-
-
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::IRC - monitor IRC channels
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/IRC/mynet.yaml
+
+  ---
+  server: remotehost
+  port: 6667
+  nick: wu
+  channel: #somechannel
+
+  ---
+  server: 127.0.0.1
+  port: 2345
+  nick: wu
+  channel: #ut3
+  password: supersecret
+
+
+=head1 DESCRIPTION
+
+Monitor IRC.  A message will be sent for the following events:
+
+=over 2
+
+=item connected
+
+  subject: connected
+
+=item disconnected
+
+  subject: disconnected
+
+=item no response to ping
+
+  subject: ping: no response received
+
+A ping will be sent every 60 seconds.  If no ping response is
+receieved, the connection will be terminated and automatic reconnect
+will begin.
+
+=item publicmsg
+
+  subject: {user}: {channel}: {text}
+  text: message text
+  channel: channel where message was sent
+  username: nick of user who sent the message
+  userid: full IRC username
+  type: public
+
+=item privatemsg
+
+  subject: {user}: private: {text}
+  text: message text
+  username: nick of user who sent the private message
+  userid: full IRC username
+  type: private
+
+=item join
+
+  subject: join: {nick}: {channel}
+  username: irc nickname that joined the channel
+  channel: channel that was joined
+  type: join
+
+=item part
+
+  subject: part: {nick}: {channel}
+  username: irc nickname that parted the channel
+  channel: channel that was parted
+  type: part
+
+=item quit
+
+  subject: quit: {nick}: {message}
+  username: irc nickname that parted the channel
+  type: quit
+
+=item nick_change
+
+  subject: rename: {oldnick} => {newnick}
+  username: original nickname before rename
+  type: nick_change
+
+=item channel_topic
+
+  subject: topic: {channel} [[ {topic} ]]
+  username: username who set channel topic
+  channel: channel where topic was set
+  type: topic
+
+=back

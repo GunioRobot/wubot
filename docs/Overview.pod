@@ -40,6 +40,7 @@ can perform actions such as:
   - send a private or public message to IRC
   - forward the message to another host for further processing
   - your own custom action written in perl
+  - ignore the message, the equivalent of routing it to /dev/null
 
 For more info, see: L<Wubot::Guide::ReactorPlugins>
 
@@ -48,11 +49,11 @@ For more info, see: L<Wubot::Guide::ReactorPlugins>
 Beyond just doing something with the message or portions of the
 message, you also have the option to modify the message, e.g.:
 
-  - set a color to be used for alerts
+  - set a color to be used for notifications
   - transform some field in the message with a regexp
   - capture data from a field and store it in another field
   - strip images or HTML
-  - fetch related information from the web
+  - fetch related content, e.g. fetch a complete article if the feed only provides a summary
 
 Unlike previous generations of this project, the rules are entirely
 controlled by configuration.  So it is not necessary to write any perl

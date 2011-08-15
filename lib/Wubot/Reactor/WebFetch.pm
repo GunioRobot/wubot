@@ -36,6 +36,8 @@ sub react {
         return $message;
     }
 
+    $self->logger->debug( "Fetching content from $url" );
+
     my $content;
     eval {                          # try
         $content = $self->fetcher->fetch( $url, $config );

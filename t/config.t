@@ -1,12 +1,9 @@
 #!/perl
 use strict;
 
-use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
 
-Log::Log4perl->easy_init($WARN);
-my $logger = get_logger( 'default' );
-
+use Wubot::Logger;
 use Wubot::Config;
 
 ok( my $config = Wubot::Config->new( { root => 't/config' } ),

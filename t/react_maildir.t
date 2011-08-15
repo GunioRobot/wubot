@@ -6,6 +6,7 @@ use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 use YAML;
 
+use Wubot::Logger;
 use Wubot::Reactor::Maildir;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );

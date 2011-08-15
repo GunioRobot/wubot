@@ -2,11 +2,7 @@
 use strict;
 use warnings;
 
-use Log::Log4perl qw(:easy);
-use Test::More 'no_plan';
-
-Log::Log4perl->easy_init($INFO);
-
+use Wubot::Logger;
 use Wubot::Reactor::Console;
 
 ok( my $console = Wubot::Reactor::Console->new(),

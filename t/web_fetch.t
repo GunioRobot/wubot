@@ -2,13 +2,10 @@
 use strict;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
-use Test::Differences;
 use YAML;
 
 use Wubot::Logger;
-
 use Wubot::Plugin::WebFetch;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );

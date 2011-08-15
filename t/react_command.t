@@ -6,7 +6,6 @@ use Test::Differences;
 use Test::More tests => 33;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use YAML;
 
 use Wubot::Logger;

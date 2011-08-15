@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
 
 use Wubot::Logger;

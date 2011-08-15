@@ -1,10 +1,9 @@
 package Wubot::Plugin::OsxIdle;
 use Moose;
 
-use Log::Log4perl;
-
 # VERSION
 
+use Wubot::Logger;
 use Wubot::TimeLength;
 
 has 'timelength' => ( is => 'ro',

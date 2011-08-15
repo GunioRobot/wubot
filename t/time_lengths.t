@@ -4,6 +4,7 @@ use strict;
 use Test::Exception;
 use Test::More 'no_plan';
 
+use Wubot::Logger;
 use Wubot::TimeLength;
 
 ok( my $timelength = Wubot::TimeLength->new(),

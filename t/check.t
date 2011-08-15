@@ -4,7 +4,6 @@ use strict;
 use Test::More tests => 32;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::Differences;
 use YAML;
 

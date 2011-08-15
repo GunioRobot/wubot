@@ -3,14 +3,10 @@ use strict;
 use warnings;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::More 'no_plan';
 
 use Wubot::Logger;
 use Wubot::Reactor::SetField;
-
-Log::Log4perl->easy_init($INFO);
-my $logger = get_logger( 'default' );
 
 ok( my $setter = Wubot::Reactor::SetField->new(),
     "Creating new SetField reactor object"

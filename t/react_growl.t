@@ -4,6 +4,7 @@ use warnings;
 
 use Test::More 'no_plan';
 
+use Wubot::Logger;
 use Wubot::Reactor::Growl;
 
 ok( my $growl = Wubot::Reactor::Growl->new(),

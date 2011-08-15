@@ -5,7 +5,6 @@ use warnings;
 use Test::More tests => 29;
 
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 
 use Wubot::LocalMessageStore;
 use Wubot::Reactor::State;

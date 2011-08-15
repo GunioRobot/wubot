@@ -3,13 +3,11 @@ use strict;
 
 use Capture::Tiny qw/capture/;
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
-Log::Log4perl->easy_init($INFO);
-
+use Wubot::Logger;
 use Wubot::Tail;
 
 $| = 1;

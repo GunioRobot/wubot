@@ -2,8 +2,8 @@
 use strict;
 
 use Test::More 'no_plan';
-use YAML;
 
+use Wubot::Logger;
 use Wubot::Util::WebFetcher;
 
 ok( my $fetcher = Wubot::Util::WebFetcher->new(),

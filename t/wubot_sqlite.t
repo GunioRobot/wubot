@@ -3,7 +3,6 @@ use strict;
 
 use Capture::Tiny;
 use File::Temp qw/ tempdir /;
-use Log::Log4perl qw(:easy);
 use Test::Exception;
 use Test::More 'no_plan';
 use YAML;

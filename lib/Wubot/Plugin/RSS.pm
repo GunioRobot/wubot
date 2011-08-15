@@ -5,6 +5,7 @@ use Moose;
 
 use XML::Feed;
 
+use Wubot::Logger;
 use Wubot::Util::WebFetcher;
 
 with 'Wubot::Plugin::Roles::Cache';

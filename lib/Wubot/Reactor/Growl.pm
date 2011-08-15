@@ -10,6 +10,8 @@ my $growl_enabled = 1;
 eval "use Growl::Tiny";  ## no critic (ProhibitStringyEval)
 if ( $@ ) { $growl_enabled = 0 }
 
+use Wubot::Logger;
+
 sub react {
     my ( $self, $message, $config ) = @_;
 

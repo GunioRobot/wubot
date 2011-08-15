@@ -3,7 +3,7 @@ use Moose;
 
 # VERSION
 
-use Log::Log4perl;
+use Wubot::Logger;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',

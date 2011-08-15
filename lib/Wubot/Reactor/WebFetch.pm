@@ -3,10 +3,10 @@ use Moose;
 
 # VERSION
 
-use Wubot::Util::WebFetcher;
-
-use Log::Log4perl;
 use YAML;
+
+use Wubot::Logger;
+use Wubot::Util::WebFetcher;
 
 has 'fetcher' => ( is  => 'ro',
                    isa => 'Wubot::Util::WebFetcher',

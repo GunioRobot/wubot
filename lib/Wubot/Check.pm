@@ -4,9 +4,9 @@ use Moose;
 # VERSION
 
 use Benchmark;
-use Log::Log4perl;
 use YAML;
 
+use Wubot::Logger;
 use Wubot::LocalMessageStore;
 use Wubot::Reactor;
 use Wubot::SQLite;

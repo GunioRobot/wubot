@@ -5,6 +5,7 @@ use Moose;
 
 use POSIX qw(strftime);
 
+use Wubot::Logger;
 use Wubot::SQLite;
 
 has 'sql'    => ( is      => 'ro',

@@ -5,6 +5,7 @@ use Moose;
 
 # todo: select with xpath in addition to regexp
 
+use Wubot::Logger;
 use Wubot::Util::WebFetcher;
 
 with 'Wubot::Plugin::Roles::Cache';

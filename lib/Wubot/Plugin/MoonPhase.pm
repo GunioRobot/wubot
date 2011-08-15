@@ -5,6 +5,7 @@ use Moose;
 
 use Astro::MoonPhase;
 
+use Wubot::Logger;
 use Wubot::TimeLength;
 
 has 'timelength' => ( is => 'ro',

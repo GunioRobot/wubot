@@ -7,8 +7,7 @@ use Device::SerialPort qw( :PARAM :STAT :ALL );
 
 # VERSION
 
-use Log::Log4perl;
-
+use Wubot::Logger;
 use Wubot::Tail;
 
 has 'device'    => ( is      => 'rw',

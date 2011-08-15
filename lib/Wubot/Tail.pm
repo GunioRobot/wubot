@@ -5,6 +5,8 @@ use Moose;
 
 use Fcntl qw( SEEK_END SEEK_CUR SEEK_SET O_NONBLOCK O_RDONLY );
 
+use Wubot::Logger;
+
 has 'path'      => ( is       => 'rw',
                      isa      => 'Str',
                      required => 1,

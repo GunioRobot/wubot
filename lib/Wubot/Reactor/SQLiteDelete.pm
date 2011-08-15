@@ -3,9 +3,9 @@ use Moose;
 
 # VERSION
 
-use Log::Log4perl;
 use YAML;
 
+use Wubot::Logger;
 use Wubot::SQLite;
 
 has 'logger'  => ( is => 'ro',

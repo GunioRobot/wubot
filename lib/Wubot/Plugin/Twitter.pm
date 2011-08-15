@@ -6,6 +6,8 @@ use Moose;
 use Net::Twitter::Lite;
 use Storable;
 
+use Wubot::Logger;
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 

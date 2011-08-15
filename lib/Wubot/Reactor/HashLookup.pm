@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+use Wubot::Logger;
+
 sub react {
     my ( $self, $message, $config ) = @_;
 

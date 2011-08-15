@@ -4,9 +4,10 @@ use Moose;
 # VERSION
 
 use Class::Load qw/load_class/;
-use Log::Log4perl;
 use Scalar::Util qw/looks_like_number/;
 use YAML;
+
+use Wubot::Logger;
 
 has 'config' => ( is => 'ro',
                   isa => 'HashRef',

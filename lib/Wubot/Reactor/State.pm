@@ -6,8 +6,8 @@ use Moose;
 use File::Path;
 use YAML;
 
+use Wubot::Logger;
 use Wubot::TimeLength;
-
 
 has 'cache'   => ( is => 'ro',
                    isa => 'HashRef',

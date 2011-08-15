@@ -3,14 +3,15 @@ use Moose;
 
 # VERSION
 
-use DBI;
 use POSIX qw(strftime);
 
+use Wubot::Logger;
 use Wubot::Util::Tasks;
-my $taskutil   = Wubot::Util::Tasks->new();
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
+
+my $taskutil   = Wubot::Util::Tasks->new();
 
 sub check {
     my ( $self, $inputs ) = @_;

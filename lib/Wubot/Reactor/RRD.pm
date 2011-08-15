@@ -5,11 +5,12 @@ use Moose;
 
 use Capture::Tiny;
 use File::Path;
-use Log::Log4perl;
 use POSIX qw(strftime);
 use RRD::Simple;
 use RRDs;
 use YAML;
+
+use Wubot::Logger;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',

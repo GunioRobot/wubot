@@ -6,9 +6,10 @@ use Moose;
 use Date::Manip;
 use Encode;
 use HTML::TableExtract;
-use Log::Log4perl;
 use LWP::UserAgent;
 use YAML;
+
+use Wubot::Logger;
 
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';

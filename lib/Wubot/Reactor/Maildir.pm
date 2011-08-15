@@ -9,6 +9,7 @@ use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML;
 
+use Wubot::Logger;
 
 BEGIN {
     # temporarily disable warnings for redefine while we monkey-patch Maildir::Lite

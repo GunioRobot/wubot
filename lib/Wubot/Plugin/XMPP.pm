@@ -5,10 +5,10 @@ use Moose;
 
 use AnyEvent::XMPP::Client;
 use Encode;
-use Log::Log4perl;
 use MIME::Base64;
 use YAML;
 
+use Wubot::Logger;
 use Wubot::LocalMessageStore;
 
 has 'mailbox'   => ( is      => 'ro',

@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+use Wubot::Logger;
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 

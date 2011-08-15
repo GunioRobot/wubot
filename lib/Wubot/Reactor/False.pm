@@ -5,6 +5,8 @@ use Moose;
 
 use YAML;
 
+use Wubot::Logger;
+
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,

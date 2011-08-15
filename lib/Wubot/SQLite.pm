@@ -8,9 +8,10 @@ use DBI;
 use DBD::SQLite;
 use Devel::StackTrace;
 use FindBin;
-use Log::Log4perl;
 use SQL::Abstract;
 use YAML;
+
+use Wubot::Logger;
 
 # only initialize one connection to each database handle
 my %sql_handles;

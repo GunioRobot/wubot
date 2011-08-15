@@ -6,6 +6,8 @@ use Moose;
 use HTTP::Message;
 use LWP::UserAgent;
 
+use Wubot::Logger;
+
 sub fetch {
     my ( $self, $url, $config ) = @_;
 

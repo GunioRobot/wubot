@@ -5,6 +5,8 @@ use Moose;
 
 use YAML;
 
+use Wubot::Logger;
+
 sub react {
     my ( $self, $message, $config ) = @_;
 

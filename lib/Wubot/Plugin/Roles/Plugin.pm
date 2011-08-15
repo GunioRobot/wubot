@@ -3,7 +3,7 @@ use Moose::Role;
 
 # VERSION
 
-use Log::Log4perl;
+use Wubot::Logger;
 
 has 'key'      => ( is => 'ro',
                     isa => 'Str',

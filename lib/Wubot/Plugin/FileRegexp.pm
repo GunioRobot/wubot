@@ -3,8 +3,7 @@ use Moose;
 
 # VERSION
 
-use Log::Log4perl;
-
+use Wubot::Logger;
 use Wubot::Tail;
 
 has 'path'      => ( is      => 'rw',

@@ -5,6 +5,8 @@ use Moose;
 
 use Net::TiVo;
 
+use Wubot::Logger;
+
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 

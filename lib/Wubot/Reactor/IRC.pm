@@ -5,10 +5,10 @@ use Moose;
 
 use AnyEvent;
 use AnyEvent::IRC::Client;
-use Log::Log4perl;
 use POSIX qw(strftime);
 use YAML;
 
+use Wubot::Logger;
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',

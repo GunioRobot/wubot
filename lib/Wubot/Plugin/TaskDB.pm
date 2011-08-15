@@ -6,7 +6,9 @@ use Moose;
 use DBI;
 use POSIX qw(strftime);
 
+use Wubot::Logger;
 use Wubot::Util::Tasks;
+
 my $taskutil   = Wubot::Util::Tasks->new();
 
 with 'Wubot::Plugin::Roles::Cache';

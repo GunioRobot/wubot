@@ -5,6 +5,8 @@ use Moose::Role;
 
 use YAML;
 
+use Wubot::Logger;
+
 has 'cache_file' => ( is => 'ro',
                       isa => 'Str',
                       required => 1,

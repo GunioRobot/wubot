@@ -4,9 +4,9 @@ use Moose;
 # VERSION
 
 use Date::Manip;
-use Log::Log4perl;
 use YAML;
 
+use Wubot::Logger;
 use Wubot::SQLite;
 use Wubot::TimeLength;
 use Wubot::Util::XMLTV;

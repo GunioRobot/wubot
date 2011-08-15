@@ -5,6 +5,8 @@ use Moose;
 
 use Devel::Size;
 
+use Wubot::Logger;
+
 with 'Wubot::Plugin::Roles::Cache';
 
 sub check {

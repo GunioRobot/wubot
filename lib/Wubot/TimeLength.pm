@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+use Wubot::Logger;
+
 has 'space' => ( is => 'ro', isa => 'Bool', default => 0 );
 
 my $constants = { s => 1,

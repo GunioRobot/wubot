@@ -7,6 +7,7 @@ use Astro::Sunrise;
 use Date::Manip;
 use POSIX qw(strftime);
 
+use Wubot::Logger;
 use Wubot::TimeLength;
 
 has 'timelength' => ( is => 'ro',

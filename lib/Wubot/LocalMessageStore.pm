@@ -7,11 +7,11 @@ use Moose;
 
 use Digest::MD5 qw( md5_hex );
 use File::Path;
-use Log::Log4perl;
 use POSIX qw(strftime);
 use Sys::Hostname qw();
 use YAML::XS;
 
+use Wubot::Logger;
 use Wubot::Reactor;
 use Wubot::SQLite;
 

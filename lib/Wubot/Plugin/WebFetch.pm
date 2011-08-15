@@ -23,6 +23,8 @@ sub check {
 
     my $config = $inputs->{config};
 
+    $self->logger->debug( "Fetching content from: $config->{url}" );
+
     my $content;
     eval {                          # try
         $content = $self->fetcher->fetch( $config->{url}, $config );
@@ -34,19 +36,123 @@ sub check {
         return { react => { subject => $subject } };
     };
 
-    my $message;
-
-    for my $regexp_name ( keys %{ $config->{regexp} } ) {
-
-        my $regexp = $config->{regexp}->{ $regexp_name };
-        #print "Checking content for regexp: $regexp_name => $regexp\n";
-
-        if ( $content =~ m|$regexp|s ) {
-            $message->{ $regexp_name } = $1;
-        }
-    }
-
-    return { react => $message };
+    return { react => { content => $content } };
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::WebFetch - fetch content from a URL
+
+
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/WebFetch/mypage.yaml
+
+  ---
+  delay: 24h
+  url: http://myweb.com/somepage.html
+
+
+=head1 DESCRIPTION
+
+Fetch content from a web page at regular intervals.
+
+The generated message will contain a field called 'content' which
+contains the complete content fetched from the web page.
+
+=head1 GITHUB TRAFFIC
+
+I like to keep track of how many hits some of my projects have
+received on github.  I haven't found any sort of a feed that will
+provide that data.  The only place I have seen that is on the
+'traffic' graph page.  So I use the following config to pull that page
+once per day, grab the number of hits and send me a notification.
+
+  ---
+  delay: 24h
+  url: https://github.com/wu/wubot/graphs/traffic
+
+  react:
+
+    - name: content
+      condition: contains content
+      rules:
+
+        - name: get page views
+          plugin: CaptureData
+          config:
+            source_field: content
+            regexp: '^.*?Page Views \((\d+) over last 90 days\)'
+            target_field: hits
+
+        - name: build subject
+          plugin: Template
+          config:
+            template: wubot: hits last 90 days: {$hits}
+            target_field: subject
+
+        - name: color
+          plugin: SetField
+          config:
+            set:
+              color: purple
+              sticky: 1
+
+=head1 GRAPHING ROUTER TRAFFIC
+
+My DSL router does not provide any mechanism to graph the traffic sent
+or received.  However it does provide a web page where it lists the
+the total number of packeets sent and recieved.  So I use the
+following config which captures the sent and received packets every 5
+minutes.
+
+
+  ---
+  delay: 5m
+  url: http://192.168.1.98/cgi-bin/webcm?getpage=../html/lan_status.html
+
+  react:
+
+    - name: content
+      condition: contains content
+      rules:
+
+        - name: get packets sent
+          plugin: CaptureData
+          config:
+            source_field: content
+            regexp: '^.*?Packets Sent:</td>.*?<td\>(\d+)'
+            target_field: sent
+
+        - name: get packets received
+          plugin: CaptureData
+          config:
+            source_field: content
+            regexp: '^.*?Packets Received:</td>.*?<td>(\d+)'
+            target_field: recv
+
+
+Then I use the following rule in the reactor to graph the data using
+RRD:
+
+  - name: WebFetch RRD
+    condition: key matches ^WebFetch-router
+    plugin: RRD
+    config:
+      base_dir: /usr/home/wu/wubot/rrd
+      fields:
+        sent: COUNTER
+        recv: COUNTER
+      period:
+        - day
+        - week
+        - month
+      graph_options:
+        lower_limit: 0
+        right-axis: 1:0
+        width: 375

@@ -5,6 +5,7 @@ use Moose;
 
 use Wubot::Util::WebFetcher;
 
+use Log::Log4perl;
 use YAML;
 
 has 'fetcher' => ( is  => 'ro',
@@ -14,6 +15,15 @@ has 'fetcher' => ( is  => 'ro',
                        return Wubot::Util::WebFetcher->new();
                    },
                );
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
 
 sub react {
     my ( $self, $message, $config ) = @_;

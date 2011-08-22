@@ -270,6 +270,12 @@ active/idle, then you could use the following rule in the reactor:
             right-axis: 1:0
             width: 375
 
+
+See some example graphs here:
+
+  - http://www.geekfarm.org/wu/wubot/OsxIdle-navi-daily.png
+  - http://www.geekfarm.org/wu/wubot/OsxIdle-navi-weekly.png
+
 =head1 SEE ALSO
 
 If you use this plugin, you may also be interested in

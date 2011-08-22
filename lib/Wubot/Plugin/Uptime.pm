@@ -135,3 +135,6 @@ accessible by ssh.  Simply set the command like so:
   ---
   command: ssh somehost /bin/uptime
 
+=head1 EXAMPLE GRAPHS
+
+  - http://www.geekfarm.org/wu/wubot/Uptime-navi-daily.png

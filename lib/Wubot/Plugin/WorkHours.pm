@@ -188,3 +188,7 @@ and to store your workhours data in a SQLite database.
               - LINE
             right-axis: 1:0
             width: 375
+
+=head1 EXAMPLE GRAPHS
+
+  - http://www.geekfarm.org/wu/wubot/WorkHours-navi-weekly.png

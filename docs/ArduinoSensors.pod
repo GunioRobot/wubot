@@ -368,9 +368,12 @@ and the graphs will be generated to:
 
 =head1 Graphs with multiple sources
 
+Here are some example graphs:
 
-
-
+  - http://www.geekfarm.org/wu/wubot/Coopduino.now.png
+  - http://www.geekfarm.org/wu/wubot/Coopduino.png
+  - http://www.geekfarm.org/wu/wubot/Coopduino-week.png
+  - http://www.geekfarm.org/wu/wubot/Growbot.png
 
 =head1 SQLite
 

@@ -70,12 +70,14 @@ sub check {
 
         $self->cache_mark_seen( $cache, $status->{text} );
 
-        my $subject = join( ": ", $status->{user}->{screen_name}, $status->{text} );
+        my $subject = $status->{text};
+        my $username = lc($status->{user}->{screen_name});
 
-        my $entry = { subject  => $subject,
-                      text     => $status->{text},
-                      username => lc($status->{user}->{screen_name}),
+        my $entry = { subject           => $subject,
+                      text              => $status->{text},
+                      username          => $username,
                       profile_image_url => $status->{user}->{profile_image_url},
+                      coalesce          => "Twitter-$username",
                   };
 
         if ( $status->{text} =~ m|(https?\:\/\/\S+)| ) {

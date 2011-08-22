@@ -401,9 +401,21 @@ get '/tasks' => sub {
 
     my @tasks = $taskutil->get_tasks( $due );
 
+    my $now = time;
+
     for my $task ( @tasks ) {
 
         $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
+
+        if ( $task->{deadline_utime} ) {
+            my $diff = abs( $task->{deadline_utime} - $now );
+            if ( $diff < 3600 ) {
+                $task->{color} = "green";
+            }
+            elsif ( $diff < 900 ) {
+                $task->{color} = "pink";
+            }
+        }
 
         if ( $pretty_colors->{ $task->{color} } ) {
             $task->{color} = $pretty_colors->{ $task->{color} };
@@ -637,8 +649,6 @@ get '/ical' => sub {
         my $duration = $timelength->get_seconds( $entry->{duration} );
 
         for my $due ( @due ) {
-            # everything is off by an hour?
-            $due -= 60*60;
 
             my $dt_start = DateTime->from_epoch( epoch => $due );
             my $start    = $dt_start->ymd('') . 'T' . $dt_start->hms('') . 'Z';

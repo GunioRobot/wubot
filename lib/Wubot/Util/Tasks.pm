@@ -3,6 +3,7 @@ use Moose;
 
 # VERSION
 
+use Date::Manip;
 use POSIX qw(strftime);
 
 use Wubot::Logger;
@@ -24,6 +25,27 @@ has 'dbfile' => ( is      => 'rw',
                   },
               );
 
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+my $colors = { deadline => { 2  => '#CC3300',
+                             1  => '#BB2200',
+                             0  => '#AA1100',
+                             -1 => '#990000',
+                         },
+               due      => { 2  => '#CC9900',
+                             1  => '#BB8800',
+                             0  => '#AA7700',
+                             -1 => '#996600',
+                         },
+           };
+
+
 sub get_tasks {
     my ( $self, $due ) = @_;
 
@@ -34,18 +56,6 @@ sub get_tasks {
     my $count;
 
     my $seen;
-
-    my $colors = { deadline => { 2  => '#CC3300',
-                                 1  => '#BB2200',
-                                 0  => '#AA1100',
-                                 -1 => '#990000',
-                                 },
-                   due      => { 2  => '#CC9900',
-                                 1  => '#BB8800',
-                                 0  => '#AA7700',
-                                 -1 => '#996600',
-                             },
-               };
 
     $self->sql->select( { tablename => 'tasks',
                           where     => { 'deadline' => { '<', $start }, status => 'todo' },
@@ -61,7 +71,7 @@ sub get_tasks {
                               $task->{count} = $count;
                               $task->{deadline_utime} = $task->{deadline};
                               # fixme: due times are off by an hour?
-                              $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} - 3600 ) );
+                              $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} ) );
                               $task->{urgent} = 1;
                               push @tasks, $task;
                           },
@@ -81,7 +91,7 @@ sub get_tasks {
                               $count++;
                               $task->{count} = $count;
                               # fixme: due times are off by an hour?
-                              $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} - 3600 ) );
+                              $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );
                               push @tasks, $task;
                           },
                       } );
@@ -115,12 +125,12 @@ sub check_schedule {
 
     my @tasks;
     $self->sql->select( { tablename => 'tasks',
-                          where     => { deadline => { '>', $now - 60, '<', $now + 60*15 },
+                          where     => { deadline => { '>', $now, '<', $now + 60*15 },
                                          status => 'todo',
                                      },
                           order     => [ 'deadline', 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
-                                             my $due = strftime( "%l:%M %p", localtime( $task->{deadline} - 3600 ) );
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{deadline} ) );
                                              $task->{subject} = "Deadline: $task->{file}: $task->{title}";
                                              $task->{color}   = 'red';
                                              push @tasks, $task;
@@ -128,17 +138,121 @@ sub check_schedule {
                       } );
 
     $self->sql->select( { tablename => 'tasks',
-                          where     => { scheduled => { '>', $now - 60, '<', $now + 60*15 },
+                          where     => { scheduled => { '>', $now, '<', $now + 60*15 },
                                          status    => 'todo',
                                      },
                           order     => [ 'scheduled', 'priority DESC' ],
                           callback  => sub { my $task = shift;
-                                             my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} - 3600 ) );
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} ) );
                                              $task->{subject} = "Scheduled: $task->{file}: $task->{title}";
                                              $task->{color}   = 'yellow';
                                              push @tasks, $task;
                                          },
                       } );
+
+    return @tasks;
+}
+
+sub parse_emacs_org_page {
+    my ( $self, $orig_filename, $content ) = @_;
+
+    $self->logger->debug( "Parsing $orig_filename" );
+
+    my $filename = $orig_filename;
+    $filename =~ s|.org$||;
+
+    my $color = '';
+
+    my @tasks;
+
+  BLOCK:
+    for my $block ( split /(?:^|\n)\*+\s/, $content ) {
+        $self->logger->trace( "Parsing block: $block" );
+
+        $block =~ s|^\s*\*\s+||mg;
+
+        $block =~ m|^(\w+)|;
+        my $name = $1;
+
+        next unless $name;
+
+        if ( $name =~ m|meta|i ) {
+            if ( $block =~ m|^\s+\-\scolor\:\s([\w]+)$|m ) {
+                $color = "$1";
+            }
+            next BLOCK;
+        }
+
+        unless ( $name eq "TODO" || $name eq "DONE" ) {
+            next BLOCK;
+        }
+
+        $self->logger->trace( "Parsing $name item" );
+
+        $block =~ s|^\w+\s+||;
+
+        my $task;
+        $task->{type} = 'task';
+
+        my $priorities = { C => 0, B => 1, A => 2 };
+        if ( $block =~ s|^\[\#(\w)\]\s|| ) {
+            $task->{priority} = $priorities->{ $1 };
+        } else {
+            $task->{priority} = -1;
+        }
+
+        if ( $block =~ s|^((?:\d+[smhd])+)\s|| ) {
+            $task->{duration} = $1;
+        }
+
+        $task->{status} = lc( $name );
+
+        $task->{file} = $filename;
+
+        $block =~ s|^(.*)||;
+        $task->{title} = $1;
+
+        if ( $task->{title} =~ s|\s*\[(\d+.*?)\]\s*$|| ) {
+            $task->{progress} = $1;
+        }
+
+        $task->{taskid} = join( ".", $task->{file}, $task->{title} );
+
+        # deadline may be listed before or after schedule.
+        # this is an ugly solution that gets it either way
+        if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
+            $task->{deadline_text} = $1;
+            $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_recurrence}    = $2;
+        }
+        if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
+            $task->{scheduled_text} = $1;
+            $task->{scheduled}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{scheduled_recurrence}     = $2;
+        }
+        if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
+            $task->{deadline_text} = $1;
+            $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_recurrence}    = $2;
+        }
+
+        $block =~ s|^\s+\- State "DONE"\s+from "TODO"\s+\[.*$||mg;
+
+        $block =~ s|^\s+\n||s;
+
+        $task->{body} = $block;
+        $task->{body} =~ s|\s+$||s;
+
+        push @tasks, $task;
+    }
+
+    if ( $color ) {
+        for my $task ( @tasks ) {
+            unless ( $task->{color} ) {
+                $task->{colro} = $color;
+            }
+        }
+    }
 
     return @tasks;
 }

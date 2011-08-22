@@ -91,6 +91,7 @@ sub check {
                         subject    => $subject,
                         link       => $link,
                         body       => $body,
+                        coalesce   => $self->key,
                     };
 
         push @react, $article;

@@ -68,6 +68,9 @@ sub react {
     if ( $message->{growl_id} ) {
         $notification->{identifier} = $message->{growl_id};
     }
+    elsif ( $message->{coalesce} ) {
+        $notification->{identifier} = $message->{coalesce};
+    }
     else {
         my $id = $message->{key} || $subject;
 

@@ -58,6 +58,7 @@ sub check {
                         time => $time,
                         day  => $weekday,
                         age  => $age,
+                        coalesce => $self->key,
                     };
 
         push @messages, $message;

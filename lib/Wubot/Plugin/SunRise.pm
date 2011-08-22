@@ -26,7 +26,7 @@ sub check {
 
     my $now  = time;
 
-    my $message = {};
+    my $message = { coalesce => $self->key };
 
     # if the next sunrise/sunset event listed in the cache is in the
     # future, then use that date instead of re-calculating
@@ -48,6 +48,7 @@ sub check {
 
         my $diff_time = $self->timelength->get_human_readable( $mins*60 );
         $message->{subject} = "$cache->{next} in $diff_time";
+
         return { react => $message };
     }
 

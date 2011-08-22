@@ -39,7 +39,7 @@ sub check {
 
     my $count = scalar $self->get_msgids( $content );
 
-    my $message = { count => $count };
+    my $message = { count => $count, coalesce => $self->key };
 
     if ( $count ) {
         $message->{subject} = "$count messages in your inbox";

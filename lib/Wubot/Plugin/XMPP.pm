@@ -98,21 +98,26 @@ sub check {
                              my ($cl, $acc) = @_;
                              $self->{session_ready} = 1;
                              $self->logger->warn( "XMPP: connected to server" );
-                             $self->reactor->( { subject => "XMPP: session ready" } );
+                             $self->reactor->( { subject => "XMPP: session ready",
+                                                 coalesce => 'XMPP',
+                                             } );
                          },
                          disconnect => sub {
                              my ($cl, $acc, $h, $p, $reas) = @_;
                              my $details = "";
                              if ( $h && $p ) { $details = "($h:$p)" };
                              $self->logger->error( "XMPP: disconnect $details: $reas" );
-                             $self->reactor->( { subject => "XMPP: disconnect $details: $reas", noforward => 1 } );
+                             $self->reactor->( { subject   => "XMPP: disconnect $details: $reas",
+                                                 noforward => 1 } );
                              delete $self->{cl};
                              delete $self->{session_ready};
                          },
                          error => sub {
                              my ($cl, $acc, $err) = @_;
                              $self->logger->error( "XMPP: ERROR: " . $err->string );
-                             $self->reactor->( { subject => "XMPP: ERROR: " . $err->string } );
+                             $self->reactor->( { subject  => "XMPP: ERROR: " . $err->string,
+                                                 coalesce => 'XMPP',
+                                             } );
                          },
                          message => sub {
                              my ($cl, $acc, $msg) = @_;

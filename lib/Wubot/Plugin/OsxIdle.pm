@@ -75,6 +75,8 @@ sub check {
         }
     }
 
+    $results->{coalesce} = "OsxIdle";
+
     $self->logger->debug( "idle_min:$stats->{idle_min} idle_state:$stats->{idle_state} active_min:$stats->{active_min}" );
 
     return { cache => $cache, react => $results };
@@ -267,7 +269,6 @@ active/idle, then you could use the following rule in the reactor:
               - AREA
             right-axis: 1:0
             width: 375
-
 
 =head1 SEE ALSO
 

@@ -21,7 +21,7 @@ sub check {
     my $sqlite =  Wubot::SQLite->new( { file => $file } );
 
     if ( $config->{statements} ) {
-        my $return;
+        my $return = { coalesce => $self->key };
 
         for my $statement ( @{ $config->{statements} } ) {
             for my $row ( $sqlite->query( $statement ) ) {
@@ -41,6 +41,8 @@ sub check {
                 next if $self->cache_is_seen( $cache, $row->{id} );
                 $self->cache_mark_seen( $cache, $row->{id} );
             }
+
+            $row->{coalesce} = $self->key;
 
             push @react, $row;
         }

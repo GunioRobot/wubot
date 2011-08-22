@@ -35,7 +35,9 @@ sub check {
         my $pid = fork();
         if ( $pid ) {
             # parent process
-            return { react => { subject => "launched tivo child process: $pid" } }
+            return { react => { subject  => "launched tivo child process: $pid",
+                                coalesce => $self->key,
+                            } }
         }
     }
 
@@ -83,6 +85,7 @@ sub check {
                                     program_id  => $show->program_id(),
                                     series_id   => $show->series_id(),
                                     link        => $show->url(),
+                                    coalesce    => $self->key,
                                 } );
 
                 $cache->{shows}->{$show_string} = 1;

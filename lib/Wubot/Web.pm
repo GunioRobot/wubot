@@ -19,6 +19,9 @@ sub startup {
   $r->route('/open/org/(.file)/(.link)')->to('tasks#open');
 
   $r->route('/graphs')->to('graphs#graphs');
+
+  $r->route('/rss/:mailbox')->to('rss#rss');
+  $r->route('/atom/:mailbox')->to('rss#atom');
 }
 
 1;

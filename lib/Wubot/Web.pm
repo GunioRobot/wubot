@@ -1,6 +1,12 @@
 package Wubot::Web;
 use Mojo::Base 'Mojolicious';
 
+use YAML;
+
+my $config_file = join( "/", $ENV{HOME}, "wubot", "config", "webui.yaml" );
+
+my $config = YAML::LoadFile( $config_file );
+
 # This method will run once at server start
 sub startup {
   my $self = shift;
@@ -11,29 +17,17 @@ sub startup {
   # Routes
   my $r = $self->routes;
 
-  # Normal route to controller
-  $r->route('/notify')->to('notify#notify');
-  $r->route('/tags')->to('notify#tags');
+  for my $plugin ( keys %{ $config->{plugins} } ) {
 
-  $r->route('/tasks')->to('tasks#tasks');
-  $r->route('/ical')->to('tasks#ical');
-  $r->route('/open/org/(.file)/(.link)')->to('tasks#open');
+      for my $route ( keys %{ $config->{plugins}->{$plugin} } ) {
 
-  $r->route('/graphs')->to('graphs#graphs');
+          my $method = $config->{plugins}->{$plugin}->{$route};
 
-  $r->route('/rss/:mailbox')->to('rss#rss');
-  $r->route('/atom/:mailbox')->to('rss#atom');
+          $r->route( $route )->to( "$plugin#$method" );
 
-  $r->route('/tv/crew/(.first)/(.last)')->to('tv#crew');
-  $r->route('/tv/program/(.program_id)')->to('tv#program');
-  $r->route('/tv/seen/(.show_id)/(.episode_num)/(.seen)')->to('tv#seen');
-  $r->route('/tv/station/hide/(.station_id)/(.hide)')->to('tv#hide');
-  $r->route('/tv/score/(.show)/(.score)')->to('tv#score');
-  $r->route('/tv/rt/(.program_id)')->to('tv#rt');
-  $r->route('/tv/schedule/crew/(.first)/(.last)')->to('tv#schedule_crew');
-  $r->route('/tv/schedule')->to('tv#schedule');
-  $r->route('/tv/schedule/(.program_id)')->to('tv#schedule_program');
-  $r->route('/tv/ical')->to('tv#ical');
-  $r->route('/tv/oldschedule')->to('tv#oldschedule');
+      }
+
+
+  }
 }
 1;

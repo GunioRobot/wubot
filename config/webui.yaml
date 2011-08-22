@@ -1,0 +1,31 @@
+---
+plugins:
+
+  notify:
+    '/notify': notify
+    '/tags': tags
+
+  tasks:
+    '/tasks': tasks
+    '/ical': ical
+    '/open/org/(.file)/(.link)': open
+
+  graphs:
+    '/graphs': graphs
+
+  rss:
+    '/rss/:mailbox': rss
+    '/atom/:mailbox': atom
+
+  tv:
+    '/tv/crew/(.first)/(.last)': 'crew'
+    '/tv/program/(.program_id)': 'program'
+    '/tv/seen/(.show_id)/(.episode_num)/(.seen)': 'seen'
+    '/tv/station/hide/(.station_id)/(.hide)': 'hide'
+    '/tv/score/(.show)/(.score)': 'score'
+    '/tv/rt/(.program_id)': 'rt'
+    '/tv/schedule/crew/(.first)/(.last)': 'schedule_crew'
+    '/tv/schedule': 'schedule'
+    '/tv/schedule/(.program_id)': 'schedule_program'
+    '/tv/ical': 'ical'
+    '/tv/oldschedule': 'oldschedule'

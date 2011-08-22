@@ -2,6 +2,12 @@
 id: INTEGER PRIMARY KEY AUTOINCREMENT
 subject: TEXT
 subject_text: TEXT
-icon: varchar(256)
-username: varchar(64)
+coalesce: VARCHAR(256)
+link: VARCHAR(512)
+icon: VARCHAR(256)
+key: VARCHAR(32)
+username: VARCHAR(64)
+color: VARCHAR(16)
+seen: INTEGER
+score: INTEGER
 lastupdate: INTEGER

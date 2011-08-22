@@ -6,7 +6,8 @@ use XML::RSS;
 
 use Wubot::SQLite;
 
-my $sqlite_rss     = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/rss.sql' } );
+my $rss_file       = join( "/", $ENV{HOME}, "wubot", "sqlite", "rss.sql" );
+my $sqlite_rss     = Wubot::SQLite->new( { file => $rss_file } );
 
 sub rss {
     my $self = shift;

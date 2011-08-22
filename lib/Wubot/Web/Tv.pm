@@ -8,9 +8,12 @@ use Wubot::Util::XMLTV;
 
 my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
 
+my $tvdata_file    = join( "/", $ENV{HOME}, "wubot", "sqlite", "tv_data.sql" );
+my $xmltv_file     = join( "/", $ENV{HOME}, "wubot", "sqlite", "xmltv.sql" );
+
 my $tv = Wubot::Util::XMLTV->new();
-my $sqlite_tv_data = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tv_data.sql' } );
-my $sqlite_tv      = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/xmltv.sql' } );
+my $sqlite_tv_data = Wubot::SQLite->new( { file => $tvdata_file } );
+my $sqlite_tv      = Wubot::SQLite->new( { file => $xmltv_file } );
 my $colors         = Wubot::Util::Colors->new();
 my $timelength     = Wubot::TimeLength->new();
 

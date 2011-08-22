@@ -15,7 +15,8 @@ use Wubot::Util::Tasks;
 use Wubot::Util::Colors;
 use Wubot::TimeLength;
 
-my $sqlite_tasks = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/tasks.sql' } );
+my $tasks_file   = join( "/", $ENV{HOME}, "wubot", "sqlite", "tasks.sql" );
+my $sqlite_tasks = Wubot::SQLite->new( { file => $tasks_file } );
 my $taskutil     = Wubot::Util::Tasks->new();
 my $colors       = Wubot::Util::Colors->new();
 my $timelength   = Wubot::TimeLength->new();

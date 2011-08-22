@@ -13,7 +13,8 @@ my $is_not_null = "IS NOT NULL";
 
 my $timelength = Wubot::TimeLength->new();
 
-my $sqlite_notify  = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/notify.sql' } );
+my $notify_file    = join( "/", $ENV{HOME}, "wubot", "sqlite", "notify.sql" );
+my $sqlite_notify  = Wubot::SQLite->new( { file => $notify_file } );
 
 sub notify {
     my $self = shift;

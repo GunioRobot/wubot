@@ -447,9 +447,11 @@ sub get_schema {
     unless ( $table ) {
         $self->logger->logconfess( "ERROR: get_schema called but no table specified" );
     }
-    unless ( $table =~ m|^[\w\d\_]+$| ) {
-        $self->logger->logconfess( "ERROR: table name contains invalid characters: $table" );
-    }
+
+    # table name may contain 'join'
+    # unless ( $table =~ m|^[\w\d\_]+$| ) {
+    #     $self->logger->logconfess( "ERROR: table name contains invalid characters: $table" );
+    # }
 
     my $schema_file = join( "/", $self->schema_dir, "$table.yaml" );
     $self->logger->debug( "looking for schema file: $schema_file" );

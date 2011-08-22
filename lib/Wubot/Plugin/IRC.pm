@@ -72,6 +72,8 @@ sub check {
                                                my $user = $ircmsg->{prefix};
                                                $user =~ s|\!.*||;
 
+                                               $channel =~ s|^\#||;
+
                                                $self->reactor->( { subject  => "$user: $channel: $text",
                                                                    text     => $text,
                                                                    channel  => $channel,
@@ -100,6 +102,8 @@ sub check {
                     );
 
     $self->con->reg_cb( join          => sub { my ( $foo, $nick, $channel, $is_myself ) = @_;
+                                               $channel =~ s|^\#||;
+
                                                $self->reactor->( { subject  => "join: $nick: $channel",
                                                                    username => $nick,
                                                                    channel  => $channel,
@@ -109,6 +113,8 @@ sub check {
                     );
 
     $self->con->reg_cb( part          => sub { my ( $foo, $nick, $channel, $is_myself, $message ) = @_;
+
+                                               $channel =~ s|^\#||;
 
                                                my $subject = "part: $nick: $channel";
                                                if ( $message ) { $subject .= ": $message"; }
@@ -142,6 +148,8 @@ sub check {
                     );
 
     $self->con->reg_cb( channel_topic => sub { my ( $foo, $channel, $topic, $who ) = @_;
+
+                                               $channel =~ s|^\#||;
 
                                                my $subject = "topic: $channel [[ $topic ]]";
                                                if ( $who ) { $subject .= " ($who)"; }

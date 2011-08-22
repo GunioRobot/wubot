@@ -494,7 +494,7 @@ get '/open/org/(.file)/(.link)' => sub {
     $self->redirect_to( "/tasks?due=1" );
 };
 
-get '/rss/(.mailbox).xml' => sub {
+get '/rss/:mailbox' => sub {
     my $self = shift;
 
     my $mailbox = $self->stash( 'mailbox' );
@@ -559,7 +559,7 @@ get '/rss/(.mailbox).xml' => sub {
 
 };
 
-get '/atom/(.mailbox).xml' => sub {
+get '/atom/:mailbox' => sub {
     my $self = shift;
 
     use XML::Atom::SimpleFeed;

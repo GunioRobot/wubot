@@ -10,3 +10,4 @@ wubot-[0-9]*
 cover_db
 .build
 semantic.cache
+log

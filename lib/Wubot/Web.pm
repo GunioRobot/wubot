@@ -16,6 +16,7 @@ sub startup {
   $r->route('/tags')->to('notify#tags');
 
   $r->route('/tasks')->to('tasks#tasks');
+  $r->route('/ical')->to('tasks#ical');
   $r->route('/open/org/(.file)/(.link)')->to('tasks#open');
 
   $r->route('/graphs')->to('graphs#graphs');

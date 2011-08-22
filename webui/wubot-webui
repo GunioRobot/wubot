@@ -86,6 +86,7 @@ my $sqlite_notify  = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/notif
 my $sqlite_tv      = Wubot::SQLite->new( { file => '/Users/wu/wubot/sqlite/xmltv.sql' } );
 
 my $is_null = "IS NULL";
+my $is_not_null = "IS NOT NULL";
 
 my $timelength = Wubot::TimeLength->new();
 
@@ -183,7 +184,7 @@ get '/tags' => sub {
 
     for my $tag ( $sqlite_notify->select( { tablename => 'tags',
                                             fields    => 'distinct tag, lastupdate',
-                                            order     => 'lastupdate DESC',
+                                            order     => 'lastupdate DESC, id DESC',
                                         } ) ) {
 
         my $age = $now - $tag->{lastupdate};
@@ -205,9 +206,14 @@ any '/notify' => sub {
 
     my $now = time;
 
-    my $where = { seen => \$is_null };
+    my $seen = \$is_null;
+    if ( $self->param( 'old' ) ) {
+        $seen = \$is_not_null;
+    }
 
-    my $order = 'lastupdate DESC';
+    my $where = { seen => $seen };
+
+    my $order = 'lastupdate DESC, id DESC';
     if ( $self->param( 'order' ) ) {
         $order = $self->param( 'order' );
     }
@@ -288,9 +294,25 @@ any '/notify' => sub {
 
     my $key      = $self->param( "key" );
     if ( $key ) {
-        $where = { key => $key, seen => undef };
-        unless ( $self->param( 'order' ) ) {
-            $order = "lastupdate";
+        $where = { key => $key, seen => $seen };
+        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+            $order = "lastupdate, id";
+        }
+    }
+
+    my $username      = $self->param( "username" );
+    if ( $username ) {
+        $where = { username => $username, seen => $seen };
+        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+            $order = "lastupdate, id";
+        }
+    }
+
+    my $plugin      = $self->param( "plugin" );
+    if ( $plugin ) {
+        $where = { key => { LIKE => "$plugin%" }, seen => $seen };
+        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+            $order = "lastupdate, id";
         }
     }
 
@@ -322,7 +344,7 @@ any '/notify' => sub {
 
     my @messages;
     my @ids;
-    my $seen;
+    my $collapse;
 
   MESSAGE:
     for my $message ( $sqlite_notify->select( { tablename => 'notifications',
@@ -339,13 +361,14 @@ any '/notify' => sub {
             $message->{link} = $1;
         }
 
-        unless ( $key ) {
-            if ( $seen->{ $message->{subject} } ) {
-                $seen->{ $message->{subject} } += 1;
+        my $coalesce = $message->{coalesce} || $message->{subject};
+        unless ( $key || $plugin || $username ) {
+            if ( $collapse->{ $coalesce } ) {
+                $collapse->{ $coalesce }->{$message->{id}} = 1;
                 next MESSAGE;
             }
             else {
-                $seen->{ $message->{subject} } = 1;
+                $collapse->{ $coalesce }->{$message->{id}} = 1;
             }
         }
 
@@ -365,7 +388,9 @@ any '/notify' => sub {
 
         $message->{icon} =~ s|^.*\/||;
 
-        $message->{count} = $seen->{ $message->{subject} };
+        my $coalesce = $message->{coalesce} || $message->{subject};
+        $message->{count} = scalar keys %{ $collapse->{ $coalesce } || {} };
+        $message->{coalesced} = join( ",", keys %{ $collapse->{ $coalesce } || {} } );
 
         if ( $message->{key} =~ m|^(.*?)\-(.*)| ) {
             $message->{key1} = $1;
@@ -374,7 +399,6 @@ any '/notify' => sub {
         else {
             $message->{key1} = $message->{key};
         }
-
     }
 
     $self->stash( 'headers', [qw/cmd key1 key2 seen count username icon subject link age/ ] );

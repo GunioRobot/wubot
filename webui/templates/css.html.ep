@@ -1,0 +1,53 @@
+<style type="text/css">
+      
+a {
+  color: #cccccc;
+  text-decoration: none;
+}
+input {
+  color: #cccccc;
+}
+table {
+  width: 100%;
+  font-size: small;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+tr {
+  text-align: center
+}
+td {
+  border-color: #000;
+  border-width: 1px 0px 0 0;
+  border-style: solid;
+  margin: 0;
+  padding: 4px;
+  text-align: center;
+  color: #cccccc;
+}
+th {
+  background-color: purple;
+}
+th.key1, th.key2 {
+  width: 5%;
+}
+th.count, th.id {
+  width: 3%;
+}
+td.age {
+  color: #000000;
+  width: 4%;
+}
+td.seen, th.seen {
+  color: #000000;
+  width: 2%;
+}
+th.key, th.username {
+  width: 10%
+}
+th.subject {
+  width: 65%;
+}
+
+</style>
+

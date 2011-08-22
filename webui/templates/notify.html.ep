@@ -2,75 +2,21 @@
   <head>
     <title>wubot notifications</title>
     <meta http-equiv="refresh" content="60">
-    <style type="text/css">
-
-a {
-  color: #cccccc;
-  text-decoration: none;
-}
-input {
-  color: #cccccc;
-}
-table {
-  width: 100%;
-  font-size: small;
-  border-spacing: 0;
-  border-collapse: collapse;
-}
-tr {
-  text-align: center
-}
-td {
-  border-color: #000;
-  border-width: 1px 0px 0 0;
-  border-style: solid;
-  margin: 0;
-  padding: 4px;
-  text-align: center;
-  color: #cccccc;
-}
-th {
-  background-color: purple;
-}
-th.key1, th.key2 {
-  width: 5%;
-}
-th.count, th.id {
-  width: 3%;
-}
-td.age {
-  color: #000000;
-  width: 4%;
-}
-td.seen, th.seen {
-  color: #000000;
-  width: 2%;
-}
-th.key, th.username {
-  width: 10%
-}
-th.subject {
-  width: 65%;
-}
-
-    </style>
+    <%= include 'css' %>
   </head>
   <body bgcolor=black>
-    <form method="post">
 
-      <font size="-1" color="#FF00FF">
-        |
-        <a href="/notify"><%= $count %> unread</a>
-        |
-        <a href="/tags">tags</a>
-        |
-        <a href="/tasks">tasks</a>
-        |
-        <a href="/graphs">graphs</a>
-        |
-        <a href="?seen=<%= $ids %>">all seen</a>
-        |
-      </font>
+    <%= include 'nav' %>
+
+  <font size="-1" color="#FF00FF">
+    |
+    <a href="/notify"><%= $count %> unread</a>
+    |
+    <a href="?seen=<%= $ids %>">all seen</a>
+    |
+  </font>
+
+<form method="post">
 
     <table>
       <thead>
@@ -89,7 +35,7 @@ th.subject {
           <td><input type="text" name="tag_<%= $row->{id} %>" size="5" style="background-color: <%= $row->{color} %>; border: 1px solid black"></td>
 
           <td>
-            <a href="?key=<%= $row->{key} %>"><%= $row->{key1} %></a>
+            <a href="?plugin=<%= $row->{key1} %>"><%= $row->{key1} %></a>
           </td>
 
           <td>
@@ -101,11 +47,11 @@ th.subject {
           </td>
           <td align="center">
             <% if ( $row->{count} && $row->{count} > 1 ) { %>
-            <%= $row->{count} %>
+            <a href="?seen=<%= $row->{coalesced} %>"><%= $row->{count} %></a>
             <% } %>
           </td>
 
-          <td style="text-align: right"><%= $row->{username} %></td>
+          <td style="text-align: right"><a href="?username=<%= $row->{username} %>"><%= $row->{username} %></a></td>
 
           <td><img height="32" width="32" src="/images/<%= $row->{icon} %>"></td>
 

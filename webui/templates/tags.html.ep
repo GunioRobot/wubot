@@ -18,13 +18,7 @@ a {
 
   <body bgcolor=black>
 
-    <font size="-1" color="#FF00FF">
-      |
-      <a href="/notify">notifications</a>
-      |
-      <a href="/graphs">graphs</a>
-      |
-    </font>
+    <%= include 'nav' %>
 
     <table cellpadding="5">
       <% for my $tag_row ( @$tags ) { %>

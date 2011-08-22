@@ -5,28 +5,11 @@
     <script type='text/javascript' src='sort/common.js'></script>
     <script type='text/javascript' src='sort/css.js'></script>
     <script type='text/javascript' src='sort/standardista-table-sorting.js'></script>
-
-    <style>
-
-a {
-  color: #000000;
-  text-decoration: none;
-}
-
-    </style>
-
+    <%= include 'css' %>
   </head>
 <body bgcolor="#073642">
 
-  <font size="-1" color="#FF00FF">
-    |
-    <a href="/notify" style="color: #cccccc">notifications</a>
-    |
-    <a href="/tags" style="color: #cccccc">tags</a>
-    |
-    <a href="/graphs" style="color: #cccccc">graphs</a>
-    |
-  </font>
+  <%= include 'nav' %>
 
 <table class='sortable autostripe'>
 <thead>

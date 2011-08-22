@@ -23,6 +23,17 @@ sub startup {
 
   $r->route('/rss/:mailbox')->to('rss#rss');
   $r->route('/atom/:mailbox')->to('rss#atom');
-}
 
+  $r->route('/tv/crew/(.first)/(.last)')->to('tv#crew');
+  $r->route('/tv/program/(.program_id)')->to('tv#program');
+  $r->route('/tv/seen/(.show_id)/(.episode_num)/(.seen)')->to('tv#seen');
+  $r->route('/tv/station/hide/(.station_id)/(.hide)')->to('tv#hide');
+  $r->route('/tv/score/(.show)/(.score)')->to('tv#score');
+  $r->route('/tv/rt/(.program_id)')->to('tv#rt');
+  $r->route('/tv/schedule/crew/(.first)/(.last)')->to('tv#schedule_crew');
+  $r->route('/tv/schedule')->to('tv#schedule');
+  $r->route('/tv/schedule/(.program_id)')->to('tv#schedule_program');
+  $r->route('/tv/ical')->to('tv#ical');
+  $r->route('/tv/oldschedule')->to('tv#oldschedule');
+}
 1;

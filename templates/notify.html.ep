@@ -83,6 +83,8 @@
 
     </form>
 
+  <img src="/rrd/SQLite-notifyqueue/SQLite-notifyqueue-daily.png">
+  <img src="/rrd/SQLite-notify-day/SQLite-notify-day-daily.png">
   </body>
 </html>
 

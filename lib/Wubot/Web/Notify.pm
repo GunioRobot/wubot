@@ -21,17 +21,20 @@ sub notify {
 
     my $now = time;
 
-    my $seen = \$is_null;
-    if ( $self->param( 'old' ) ) {
-        $seen = \$is_not_null;
-    }
-
-    my $where = { seen => $seen };
-
     my $order = 'lastupdate DESC, id DESC';
     if ( $self->param( 'order' ) ) {
         $order = $self->param( 'order' );
     }
+
+    my $seen = \$is_null;
+
+    my $old = $self->param( 'old' );
+    if ( $old ) {
+        $seen = \$is_not_null;
+        $order = 'seen DESC';
+    }
+
+    my $where = { seen => $seen };
 
     my $params = $self->req->params->to_hash;
     for my $param ( sort keys %{ $params } ) {
@@ -110,7 +113,7 @@ sub notify {
     my $key      = $self->param( "key" );
     if ( $key ) {
         $where = { key => $key, seen => $seen };
-        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+        if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
         }
     }
@@ -118,7 +121,7 @@ sub notify {
     my $username      = $self->param( "username" );
     if ( $username ) {
         $where = { username => $username, seen => $seen };
-        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+        if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
         }
     }
@@ -126,7 +129,7 @@ sub notify {
     my $plugin      = $self->param( "plugin" );
     if ( $plugin ) {
         $where = { key => { LIKE => "$plugin%" }, seen => $seen };
-        if ( ! $self->param( 'old' ) && ! $self->param( 'order' ) ) {
+        if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
         }
     }
@@ -177,7 +180,7 @@ sub notify {
         }
 
         my $coalesce = $message->{coalesce} || $message->{subject};
-        unless ( $key || $plugin || $username ) {
+        unless ( $key || $plugin || $username || $old ) {
             if ( $collapse->{ $coalesce } ) {
                 $collapse->{ $coalesce }->{$message->{id}} = 1;
                 next MESSAGE;

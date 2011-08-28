@@ -165,7 +165,7 @@ If the feed contains no articles, the message will contain the text:
 
 =head1 CACHE
 
-THe RSS monitor uses the global cache mechanism, so each time the
+The RSS monitor uses the global cache mechanism, so each time the
 check runs, it will update a file such as:
 
   ~/wubot/cache/RSS-myfeed.yaml

@@ -168,7 +168,7 @@ config/schema/ directory into your ~/wubot/schemas.
 
 =head1 DOWNLOADING TIVO PROGRAMS
 
-Tivo programs can be downloaded from the link specified in the
+TiVo programs can be downloaded from the link specified in the
 message.  It is possible to use wubot to fully automate this process,
 although that is not yet documented.
 

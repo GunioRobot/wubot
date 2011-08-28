@@ -230,7 +230,7 @@ you the amount of time you have spent in that state.  This can be
 useful to remind you to stretch or take a break after a certain amount
 of time being active.
 
-This plugin is desiged to be run every 60 seconds.
+This plugin is designed to be run every 60 seconds.
 
 If anyone is aware of a command that can be run for other operating
 systems to provide idle time, please let me know.

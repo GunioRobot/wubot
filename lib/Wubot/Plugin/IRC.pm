@@ -226,7 +226,7 @@ Monitor IRC.  A message will be sent for the following events:
   subject: ping: no response received
 
 A ping will be sent every 60 seconds.  If no ping response is
-receieved, the connection will be terminated and automatic reconnect
+received, the connection will be terminated and automatic reconnect
 will begin.
 
 =item publicmsg

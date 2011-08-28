@@ -111,9 +111,8 @@ once per day, grab the number of hits and send me a notification.
 
 My DSL router does not provide any mechanism to graph the traffic sent
 or received.  However it does provide a web page where it lists the
-the total number of packeets sent and recieved.  So I use the
-following config which captures the sent and received packets every 5
-minutes.
+the total number of packets sent and received.  So I use the following
+config which captures the sent and received packets every 5 minutes.
 
 
   ---

@@ -29,11 +29,9 @@ For more information, see the L<Wubot::Guide>.
 
 __END__
 
-=back
+=head1 LICENSE AND COPYRIGHT
 
-=head1 LICENCE AND COPYRIGHT
-
-Copyright (c) 2009, VVu@geekfarm.org
+Copyright (c) 2011, VVu@geekfarm.org
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -33,8 +33,7 @@ BEGIN {
     my $log_name = $0;
     $log_name =~ s|^.*\/||;
 
-    my $conf = <<"EOT";
-        log4perl.category = TRACE, Screen, Logfile
+    my $conf = <<"END_SCREEN_CONF";
         log4perl.appender.Screen = $appender
         log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
         log4perl.appender.Screen.layout.ConversionPattern = %d> %m %n
@@ -46,6 +45,10 @@ BEGIN {
         log4perl.appender.Screen.color.error = yellow
         log4perl.appender.Screen.color.fatal = red
 
+END_SCREEN_CONF
+
+my $log_conf = <<"END_LOG_CONF";
+
         log4perl.appender.Logfile = Log::Dispatch::FileRotate
         log4perl.appender.Logfile.filename    = $ENV{HOME}/logs/$log_name.log
         log4perl.appender.Logfile.max         = 10
@@ -56,7 +59,14 @@ BEGIN {
         log4perl.appender.Logfile.layout.ConversionPattern = %d %m %n
         log4perl.appender.Logfile.Threshold    = DEBUG
 
-EOT
+END_LOG_CONF
+
+    if ( $log_name =~ m/^wubot\-(?:monitor|reactor)$/ ) {
+        $conf = join("\n", "log4perl.category = TRACE, Screen, Logfile", $conf, $log_conf );
+    }
+    else {
+        $conf = join("\n", "log4perl.category = TRACE, Screen", $conf );
+    }
 
     Log::Log4perl->init(\$conf);
 

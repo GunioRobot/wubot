@@ -7,6 +7,23 @@ use YAML;
 
 use Wubot::Logger;
 
+has 'userdb'  => ( is => 'ro',
+                   isa => 'HashRef',
+                   lazy => 1,
+                   default => sub {
+                       my $self = shift;
+                       $self->read_user_info();
+                   },
+               );
+
+has 'directory' => ( is => 'ro',
+                     isa => 'Str',
+                     lazy => 1,
+                     default => sub {
+                         return join( "/", $ENV{HOME}, "wubot", "userdb" );
+                     },
+                 );
+
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,
@@ -57,7 +74,58 @@ sub react {
         $message->{username_comment} = $2;
     }
 
+    if ( $self->userdb->{ $message->{username} } ) {
+
+        for my $param ( qw( username color image ) ) {
+
+            if (    $message->{$param}
+                 && ! $message->{"$param\_orig"}
+                 && $message->{$param} ne $self->userdb->{ $message->{username} }->{ $param } ) {
+                $message->{"$param\_orig"} = $message->{$param};
+            }
+            if ( $self->userdb->{ $message->{username} }->{ $param } ) {
+                $self->logger->trace( "Setting $param for $message->{username}" );
+                $message->{$param} = $self->userdb->{ $message->{username} }->{ $param };
+            }
+        }
+    }
+
     return $message;
+}
+
+sub read_user_info {
+    my ( $self ) = @_;
+
+    my $config = {};
+
+    my $directory = $self->directory;
+
+    my $dir_h;
+    opendir( $dir_h, $directory ) or die "Can't opendir $directory: $!";
+    while ( defined( my $entry = readdir( $dir_h ) ) ) {
+        next unless $entry;
+
+        my $path = join( "/", $directory, $entry );
+        next unless -f $path;
+
+        my $user = $entry;
+        $user =~ s|.yaml$||g;
+
+        my $user_info = YAML::LoadFile( $path );
+        $user_info->{username} = $user;
+
+        $config->{$user} = $user_info;
+
+        if ( $config->{$user}->{aliases} ) {
+            for my $alias ( keys %{ $config->{$user}->{aliases} } ) {
+
+                $config->{$alias} = $user_info;
+            }
+        }
+    }
+    closedir( $dir_h );
+
+    return $config;
 }
 
 1;

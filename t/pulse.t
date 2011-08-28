@@ -1,7 +1,7 @@
 #!/perl
 use strict;
 
-use Test::More tests => 38;
+use Test::More tests => 36;
 
 use File::Temp qw/ tempdir /;
 use YAML;
@@ -254,41 +254,6 @@ use Wubot::Plugin::Pulse;
     is( scalar @results,
         100,
         "Checking that 100 pulses were sent over 6000 seconds"
-    );
-
-}
-
-
-# missing times
-{
-    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-
-    ok( my $check = Wubot::Plugin::Pulse->new( { class      => 'Wubot::Plugin::Pulse',
-                                                 cache_file => "$tempdir/Pulse.cache.yaml",
-                                                 key        => 'Pulse-navi',
-                                             } ),
-        "Creating a new Pulse check instance"
-    );
-
-    # Fri Aug 26 16:48:40 2011 PDT
-    my $time = 1314402471;
-
-    # Fri Aug 26 16:43:40 2011 PDT
-    my $cache = { lastupdate => $time - 6000 * 60 };
-
-    my @results;
-
-    for my $minute ( reverse ( 0 .. 5999 ) ) {
-
-        my $results = $check->check( { cache => $cache, now => $time - $minute * 60 + int rand 60 } )->{react};
-        next unless $results;
-
-        push @results, @{ $results };
-    }
-
-    is( scalar @results,
-        6000,
-        "Checking that 6000 pulses were sent over 6000 minutes at a random second within each minute"
     );
 
 }

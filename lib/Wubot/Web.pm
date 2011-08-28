@@ -1,4 +1,7 @@
 package Wubot::Web;
+use strict;
+use warnings
+
 use Mojo::Base 'Mojolicious';
 
 use YAML;
@@ -26,8 +29,6 @@ sub startup {
           $r->route( $route )->to( "$plugin#$method" );
 
       }
-
-
   }
 }
 1;

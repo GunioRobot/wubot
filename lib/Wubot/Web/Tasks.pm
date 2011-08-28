@@ -1,4 +1,7 @@
 package Wubot::Web::Tasks;
+use strict;
+use warnings
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use Data::ICal;

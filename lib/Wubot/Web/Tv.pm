@@ -1,4 +1,7 @@
 package Wubot::Web::Tv;
+use strict;
+use warnings
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use Wubot::Logger;

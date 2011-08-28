@@ -1,4 +1,7 @@
 package Wubot::Web::Notify;
+use strict;
+use warnings
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use Wubot::Util::Colors;

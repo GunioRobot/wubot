@@ -1,4 +1,7 @@
 package Wubot::Web::Rss;
+use strict;
+use warnings
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use XML::Atom::SimpleFeed;

@@ -64,7 +64,7 @@ sub check {
 
         my $weekday = lc( strftime( "%A", localtime( $pulse_time ) ) );
 
-        $self->logger->info( "Sending pulse for: $date $time" );
+        $self->logger->debug( "Sending pulse for: $date $time" );
 
         my $message = { date => $date,
                         time => $time,

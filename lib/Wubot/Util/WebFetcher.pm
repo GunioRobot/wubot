@@ -55,7 +55,7 @@ sub fetch {
         return { react => { 'failure getting updates: ' . $res->status_line } };
     }
 
-	my $content = $res->decoded_content;
+    my $content = $res->decoded_content;
 
     utf8::encode( $content );
 

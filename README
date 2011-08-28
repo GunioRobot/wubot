@@ -1,5 +1,7 @@
 Please see:
 
+  - http://search.cpan.org/perldoc?Wubot::Guide::GettingStarted
+
   - http://search.cpan.org/perldoc?Wubot::Guide
 
   - http://search.cpan.org/dist/wubot/
@@ -26,12 +28,13 @@ directory.  In the future these directories should be configurable.
 Also will also need to create ~/wubot/schemas, and copy the files from
 the 'config/schemas' directory into that directory.
 
-In order to install the webui, you will need the contents of the
-'webui' subdirectory in the wubot tarball.  You can copy this anywhere
-you want, or could simply expand the tarball, set into the 'webui'
-subdirectory of the expanded tarball, and start the webui by running:
+The webui has been undergoing some changes.  In order to install the
+webui, follow these instructions:
 
-  ./wubot-webui
+  git clone git@github.com:wu/wubot.git
+  cd wubot
+  cp config/webui.yaml ~/wubot/config/
+  bin/wubot-webui daemon
 
 
 COPYRIGHT AND LICENCE

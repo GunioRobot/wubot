@@ -31,7 +31,7 @@ the 'config/schemas' directory into that directory.
 The webui has been undergoing some changes.  In order to install the
 webui, follow these instructions:
 
-  git clone git@github.com:wu/wubot.git
+  git clone git://github.com/wu/wubot.git
   cd wubot
   cp config/webui.yaml ~/wubot/config/
   bin/wubot-webui daemon

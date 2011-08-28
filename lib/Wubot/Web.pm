@@ -1,6 +1,6 @@
 package Wubot::Web;
 use strict;
-use warnings
+use warnings;
 
 use Mojo::Base 'Mojolicious';
 
@@ -15,7 +15,7 @@ sub startup {
   my $self = shift;
 
   # Documentation browser under "/perldoc" (this plugin requires Perl 5.10)
-  $self->plugin('pod_renderer');
+  #$self->plugin('PODRenderer');
 
   # Routes
   my $r = $self->routes;

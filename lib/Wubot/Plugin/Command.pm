@@ -72,3 +72,15 @@ sub check {
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Plugin::Command - run an external command and capture the output and exit status
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

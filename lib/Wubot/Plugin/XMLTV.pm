@@ -80,3 +80,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::XMLTV - fetch data from XMLTV and store in the wubot tv db
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

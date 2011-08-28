@@ -92,8 +92,15 @@ sub check {
     return { cache => $cache, react => \@react };
 }
 
-
-
-
-
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::Twitter - monitor twitter friends timeline
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

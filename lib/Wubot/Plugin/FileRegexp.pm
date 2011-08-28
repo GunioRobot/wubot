@@ -79,3 +79,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::FileRegexp - monitor number of lines matching regular expressions in a file
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

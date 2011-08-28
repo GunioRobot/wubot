@@ -104,3 +104,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::OsxMailApp - monitor OS X mailbox file for new messages
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

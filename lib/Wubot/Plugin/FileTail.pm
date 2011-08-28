@@ -76,3 +76,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::FileTail - monitor a log file for all new lines
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

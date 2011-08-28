@@ -38,5 +38,15 @@ sub check {
     return { react => \@tasks };
 }
 
-
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::TaskNotify - monitor for upcoming scheduled tasks
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

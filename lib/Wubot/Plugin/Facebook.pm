@@ -149,12 +149,16 @@ sub check {
         return { cache => $cache, react => \@return };
     }
 }
+
 1;
 
 __END__
 
-
 =head1 NAME
 
 Wubot::Plugin::Facebook - scrape facebook wall
+
+=head1 DESCRIPTION
+
+TODO: More to come...
 

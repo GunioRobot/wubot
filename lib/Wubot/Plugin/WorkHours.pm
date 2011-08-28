@@ -192,3 +192,4 @@ and to store your workhours data in a SQLite database.
 =head1 EXAMPLE GRAPHS
 
   - http://www.geekfarm.org/wu/wubot/WorkHours-navi-weekly.png
+

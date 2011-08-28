@@ -280,3 +280,4 @@ See some example graphs here:
 
 If you use this plugin, you may also be interested in
 L<Wubot::Plugin::WorkHours>.
+

@@ -110,3 +110,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::EmacsOrgMode - parse tasks from Emacs Org-Mode files
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

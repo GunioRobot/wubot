@@ -123,5 +123,3 @@ is accessible by ssh.  Simply set the command like so:
   ---
   command: ssh somehost df -k
 
-
-

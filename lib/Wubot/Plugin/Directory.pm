@@ -55,6 +55,15 @@ sub check {
     return { cache => $cache, react => \@react };
 }
 
-
-
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::Directory - monitor a directory for new files
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

@@ -40,3 +40,15 @@ sub check {
     return { react => { application => $output } };
 }
 
+1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::OsxActiveApp - monitor current active application in OS X
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

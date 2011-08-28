@@ -98,3 +98,13 @@ sub check {
 
 1;
 
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::SerialPort - monitor data received over a serial port
+
+=head1 DESCRIPTION
+
+More to come...
+

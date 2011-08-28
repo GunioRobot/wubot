@@ -92,3 +92,4 @@ If all packets were lost, the message will contain a subject field
 that contains the text:
 
   Unable to ping host {$host}
+

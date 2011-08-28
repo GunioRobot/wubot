@@ -97,3 +97,14 @@ sub get_content {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::Outlook - monitor number of emails in the inbox using Outlook Web
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

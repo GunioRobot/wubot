@@ -54,3 +54,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::SQLite - monitor results of SQLite queries
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

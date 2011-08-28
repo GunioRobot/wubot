@@ -30,3 +30,14 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::TestCase - a plugin for testing purposes
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+

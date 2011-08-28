@@ -1,5 +1,38 @@
 Revision history for Wubot
 
+0.2_002 Sun Aug 28, 2011  3:58 pm
+
+  - use Wubot::Logger across all test cases and libs
+    - prevent log files from being created for test cases
+
+  - added/tweaked a number of POD docs
+
+  - rework wubot web ui to use Mojolicious instead of Mojolicious::Lite
+    - remove code from wubot-web and move into Wubot::Web::*
+    - move Wubot::Web routes to external config file
+    - move graph links into web config file
+    - multiple improvements to notifications web ui
+
+  - rework EmacsOrgMode and Wubot::Util::Tasks
+    - sqlite sync done in EmacsOrgMode plugin rather than in reactor
+    - replace deadline and scheduled fields with deadline_utime and scheduled_utime
+    - add age coloring to task webui
+
+  - added a few prototypes for new plugins, not quite ready to go yet
+    - facebook wall scraper - monitor a facebook wall without logging into facebook
+    - active application in OS X
+
+  - userdb reactor - read user properties from user config files
+    - a work in progress
+
+  - resolve a bug in the Pulse reactor where the pulses for some minutes could be missed
+
+  - Wubot::SQLite - remove tablename validation, breaks if using a 'join' with SQL::Abstract
+
+  - IRC plugin - remove '#' character from channel
+
+  - adding 'coalesce' to some plugins for growl notifications and notifications web ui
+
 0.2_001 Sun Aug 14, 2011  2:50 pm
 
   - more work on documentation

@@ -58,8 +58,8 @@ sub get_tasks {
     my $seen;
 
     $self->sql->select( { tablename => 'tasks',
-                          where     => { 'deadline' => { '<', $start }, status => 'todo' },
-                          order     => [ 'priority DESC', 'deadline', 'scheduled', 'lastupdate DESC' ],
+                          where     => { 'deadline_utime' => { '<', $start }, status => 'todo' },
+                          order     => [ 'priority DESC', 'deadline_utime', 'scheduled_utime', 'lastupdate DESC' ],
                           callback  => sub {
                               my $task = shift;
                               $seen->{$task->{file}}->{$task->{title}} = 1;
@@ -69,17 +69,14 @@ sub get_tasks {
 
                               $count++;
                               $task->{count} = $count;
-                              $task->{deadline_utime} = $task->{deadline};
-                              # fixme: due times are off by an hour?
-                              $task->{deadline} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{deadline} ) );
                               $task->{urgent} = 1;
                               push @tasks, $task;
                           },
                       } );
 
     $self->sql->select( { tablename => 'tasks',
-                          where     => { 'scheduled' => { '<', $start }, status => 'todo' },
-                          order     => [ 'priority DESC', 'scheduled', 'lastupdate DESC' ],
+                          where     => { 'scheduled_utime' => { '<', $start }, status => 'todo' },
+                          order     => [ 'priority DESC', 'scheduled_utime', 'lastupdate DESC' ],
                           callback  => sub {
                               my $task = shift;
                               return if $seen->{$task->{file}}->{$task->{title}};
@@ -90,8 +87,6 @@ sub get_tasks {
 
                               $count++;
                               $task->{count} = $count;
-                              # fixme: due times are off by an hour?
-                              $task->{scheduled} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{scheduled} ) );
                               push @tasks, $task;
                           },
                       } );
@@ -99,7 +94,7 @@ sub get_tasks {
     my $priority_colors = { 2 => 'yellow', 1 => 'blue', 0 => 'green' };
     unless ( $due ) {
         $self->sql->select( { tablename => 'tasks',
-                              where     => { 'priority' => { '>', -1 }, scheduled => undef, deadline => undef, status => 'todo' },
+                              where     => { 'priority' => { '>', -1 }, scheduled_utime => undef, deadline_utime => undef, status => 'todo' },
                               order     => [ 'priority DESC', 'lastupdate DESC' ],
                               callback  => sub {
                                   my $task = shift;
@@ -115,7 +110,6 @@ sub get_tasks {
     }
 
     return @tasks;
-
 }
 
 sub check_schedule {
@@ -125,12 +119,12 @@ sub check_schedule {
 
     my @tasks;
     $self->sql->select( { tablename => 'tasks',
-                          where     => { deadline => { '>', $now, '<', $now + 60*15 },
+                          where     => { deadline_utime => { '>', $now, '<', $now + 60*15 },
                                          status => 'todo',
                                      },
-                          order     => [ 'deadline', 'scheduled', 'priority DESC' ],
+                          order     => [ 'deadline_utime', 'scheduled_utime', 'priority DESC' ],
                           callback  => sub { my $task = shift;
-                                             my $due = strftime( "%l:%M %p", localtime( $task->{deadline} ) );
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{deadline_utime} ) );
                                              $task->{subject} = "Deadline: $task->{file}: $task->{title}";
                                              $task->{color}   = 'red';
                                              push @tasks, $task;
@@ -138,12 +132,12 @@ sub check_schedule {
                       } );
 
     $self->sql->select( { tablename => 'tasks',
-                          where     => { scheduled => { '>', $now, '<', $now + 60*15 },
+                          where     => { scheduled_utime => { '>', $now, '<', $now + 60*15 },
                                          status    => 'todo',
                                      },
-                          order     => [ 'scheduled', 'priority DESC' ],
+                          order     => [ 'scheduled_utime', 'priority DESC' ],
                           callback  => sub { my $task = shift;
-                                             my $due = strftime( "%l:%M %p", localtime( $task->{scheduled} ) );
+                                             my $due = strftime( "%l:%M %p", localtime( $task->{scheduled_utime} ) );
                                              $task->{subject} = "Scheduled: $task->{file}: $task->{title}";
                                              $task->{color}   = 'yellow';
                                              push @tasks, $task;
@@ -151,6 +145,49 @@ sub check_schedule {
                       } );
 
     return @tasks;
+}
+
+sub sync_tasks {
+    my ( $self, $file, @tasks ) = @_;
+
+    my %existing_task_ids;
+
+    $self->sql->select( { tablename => 'tasks',
+                          where     => { file => $file },
+                          callback  => sub { my $task = shift;
+                                             $existing_task_ids{ $task->{taskid} } = 1;
+                                         },
+                      } );
+
+    my %inserted_task_ids;
+
+  TASK:
+    for my $task ( @tasks ) {
+
+        $task->{lastupdate} = time;
+
+        if ( $inserted_task_ids{ $task->{taskid} } ) {
+            $self->logger->warn( "Warn: duplicate task id: $task->{taskid}" );
+            next TASK;
+        }
+
+        $self->sql->insert_or_update( 'tasks',
+                                      $task,
+                                      { taskid => $task->{taskid} },
+                                  );
+
+
+        $inserted_task_ids{ $task->{taskid} } = 1;
+
+    }
+
+    for my $taskid ( keys %existing_task_ids ) {
+        unless ( $inserted_task_ids{ $taskid } ) {
+            $self->sql->delete( 'tasks', { taskid => $taskid } );
+        }
+    }
+
+    return 1;
 }
 
 sub parse_emacs_org_page {
@@ -222,17 +259,17 @@ sub parse_emacs_org_page {
         # this is an ugly solution that gets it either way
         if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
             $task->{deadline_text} = $1;
-            $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" );
             $task->{deadline_recurrence}    = $2;
         }
         if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
             $task->{scheduled_text} = $1;
-            $task->{scheduled}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{scheduled_utime}      = UnixDate( ParseDate( $1 ), "%s" );
             $task->{scheduled_recurrence}     = $2;
         }
         if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
             $task->{deadline_text} = $1;
-            $task->{deadline}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" );
             $task->{deadline_recurrence}    = $2;
         }
 
@@ -249,7 +286,7 @@ sub parse_emacs_org_page {
     if ( $color ) {
         for my $task ( @tasks ) {
             unless ( $task->{color} ) {
-                $task->{colro} = $color;
+                $task->{color} = $color;
             }
         }
     }

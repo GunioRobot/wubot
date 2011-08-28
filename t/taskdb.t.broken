@@ -11,15 +11,14 @@ use Wubot::Plugin::TaskDB;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-
-ok( my $check = Wubot::Plugin::TaskDB->new( { class      => 'Wubot::Plugin::OsxIdle',
-                                            cache_file => '/dev/null',
-                                            key        => 'OsxIdle-testcase',
-                                        } ),
+ok( my $check = Wubot::Plugin::TaskDB->new( { class      => 'Wubot::Plugin::TaskDB',
+                                              cache_file => '/dev/null',
+                                              key        => 'TaskDB-testcase',
+                                          } ),
     "Creating a new TaskDB check instance"
 );
 
-my $config = { dbfile    => '/Users/wu/wubot/sqlite/tasks.sql',
+my $config = { dbfile    => "$tempdir/tasks.ql",
                tablename => 'tasks',
            };
 

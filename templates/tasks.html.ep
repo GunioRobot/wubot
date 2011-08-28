@@ -25,13 +25,12 @@
   <% for my $row ( @{ $body_data } ) { %>
     <tr bgcolor="<%= $row->{color} %>">
       <td><%= $row->{count} %></td>
-      <td><%= $row->{lastupdate} %></td>
+      <td bgcolor="<%= $row->{lastupdate_color} %>"><%= $row->{lastupdate} %></td>
       <td><a href='/open/org/<%= $row->{file} %>.org/<%= $row->{emacs_link} %>'><%= $row->{file} %></a></td>
       <td><%= $row->{title} %><a href='/open/org/<%= $row->{file} %>.org/<%= $row->{emacs_link} %>?done=1'>*</a></td>
       <td><%= $row->{priority} %></td>
-      <td><%= $row->{scheduled} %></td>
-      <td><%= $row->{deadline} %></td>
-
+      <td bgcolor="<%= $row->{scheduled_color} %>"><%= $row->{scheduled} %></td>
+      <td bgcolor="<%= $row->{deadline_color} %>"><%= $row->{deadline} %></td>
     </tr>
     <% } %>
 

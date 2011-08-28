@@ -1,6 +1,6 @@
 package Wubot::Web::Tasks;
 use strict;
-use warnings
+use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
 
@@ -35,20 +35,28 @@ sub tasks {
 
     for my $task ( @tasks ) {
 
-        $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
+        $task->{lastupdate_color} = $timelength->get_age_color( $now - $task->{lastupdate} );
 
-        if ( $task->{deadline_utime} ) {
-            my $diff = abs( $task->{deadline_utime} - $now );
-            if ( $diff < 3600 ) {
-                $task->{color} = "green";
-            }
-            elsif ( $diff < 900 ) {
-                $task->{color} = "pink";
-            }
-        }
+        $task->{lastupdate} = strftime( "%Y-%m-%d %H:%M", localtime( $task->{lastupdate} ) );
 
         if ( $colors->get_color( $task->{color} ) ) {
             $task->{color} = $colors->get_color( $task->{color} );
+            $task->{deadline_color} = $task->{color};
+            $task->{scheduled_color} = $task->{color};
+        }
+
+        for my $type ( qw( deadline scheduled ) ) {
+            next unless $task->{"$type\_utime"};
+
+            my $diff = abs( $task->{"$type\_utime"} - $now );
+            if ( $diff < 3600 ) {
+                $task->{color} = "green";
+            } elsif ( $diff < 900 ) {
+                $task->{color} = "pink";
+            }
+            $task->{$type} = $task->{"$type\_text"};
+
+            $task->{"$type\_color"} = $timelength->get_age_color( $now - $task->{"$type\_utime"} );
         }
 
         if ( $task->{duration} ) {
@@ -80,25 +88,25 @@ sub ical {
         return unless $entry->{duration};
 
         my @due;
-        if ( $entry->{deadline} ) {
-            push @due, $entry->{deadline};
+        if ( $entry->{deadline_utime} ) {
+            push @due, $entry->{deadline_utime};
 
             if ( $entry->{deadline_recurrence} ) {
                 my $seconds = $timelength->get_seconds( $entry->{deadline_recurrence} );
 
                 for my $count ( 1 .. 5 ) {
-                    push @due, $entry->{deadline} + $seconds*$count;
+                    push @due, $entry->{deadline_utime} + $seconds*$count;
                 }
             }
         }
-        elsif ( $entry->{scheduled} ) {
-            push @due, $entry->{scheduled};
+        elsif ( $entry->{scheduled_utime} ) {
+            push @due, $entry->{scheduled_utime};
 
             if ( $entry->{scheduled_recurrence} ) {
                 my $seconds = $timelength->get_seconds( $entry->{scheduled_recurrence} );
 
                 for my $count ( 1 .. 3 ) {
-                    push @due, $entry->{scheduled} + $seconds;
+                    push @due, $entry->{scheduled_utime} + $seconds;
                 }
             }
         }
@@ -152,8 +160,8 @@ sub ical {
 
     my $select = { tablename => 'tasks',
                    callback  => $callback,
-                   where     => [ { scheduled => { '>', $time } }, { deadline => { '>', $time } } ],
-                   order     => 'deadline, scheduled',
+                   where     => [ { scheduled_utime => { '>', $time } }, { deadline_utime => { '>', $time } } ],
+                   order     => 'deadline_utime, scheduled_utime',
                };
 
     if ( $self->param( 'status' ) ) {

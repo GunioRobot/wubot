@@ -82,6 +82,8 @@ sub check {
 
         my @tasks = $self->taskutil->parse_emacs_org_page( $entry, $content );
 
+        $self->taskutil->sync_tasks( $entry, @tasks );
+
         push @react, { name      => $filename,
                        file      => $filename,
                        type      => 'org',

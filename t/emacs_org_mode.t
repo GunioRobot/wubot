@@ -6,6 +6,10 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
+BEGIN {
+    $ENV{TZ} = "America/Los_Angeles";
+}
+
 use Wubot::Logger;
 use Wubot::Plugin::EmacsOrgMode;
 use Wubot::Reactor;
@@ -188,15 +192,15 @@ my $cache_file = "$tempdir/storage.yaml";
             "Checking that recurring task time is parsed properly"
         );
 
-        # is( $results->{react}->[9]->{deadline},
-        #     1293046200,
-        #     "Checking that recurring task unix time is parsed properly"
-        # );
+        is( $results->{react}->[9]->{deadline_utime},
+            1293049800,
+            "Checking that recurring task unix time is parsed properly"
+        );
 
-        # is( scalar localtime $results->{react}->[9]->{deadline},
-        #     'Wed Dec 22 12:30:00 2010',
-        #     "Checking that recurring task local time is parsed properly"
-        # );
+        is( scalar localtime $results->{react}->[9]->{deadline_utime},
+            'Wed Dec 22 12:30:00 2010',
+            "Checking that recurring task local time is parsed properly"
+        );
 
         is( $results->{react}->[10]->{deadline_text},
             '2010-12-22 Wed 12:30',

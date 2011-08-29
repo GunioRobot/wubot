@@ -84,3 +84,13 @@ Wubot::Plugin::MoonPhase - monitor the phase of the moon
 Reports the amount of time remaining until the next full or new moon,
 whichever is closer.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

@@ -236,41 +236,19 @@ To start the reactor, simply run:  wubot-reactor
 
 =head1 Web UI
 
-The wubot-webui is the least developed component of the wubot project,
-but there are a few things it can do.  One of them is provide an RSS
-feed of any of the data you received.  You can take data from one or
-more feeds, filter it, modify it (e.g. strip html or images), and so
-forth.  You can combine multiple feeds together into a single RSS feed
-or you can take a single RSS feed and split it out into multiple
-feeds.  You can even take data from other sources (e.g. an mbox, irc),
-use some rules to adapt the schema, and then send it out as an RSS
-feed.
+For more information on the wubot webui, please see the document
+L<Wubot::Guides::WebUI>.
 
 The Web UI reads the data out of the rss SQLite database, so before we
 can use the Web UI, we need to go back to the reactor and add some
-rules to store the message.  You can easily stick any data from the
-monitors into a SQLite database using the SQLite reactor plugin.  You
-just need to give it the path to a SQLite database, the name of the
-table, and the schema to be used for the table.  Here is a rule that
-would add the SQLite data to the RSS database, along with a schema
-that is appropriate for the webui.
-
+rules to store the message.
 
     - name: rss sqlite
-      condition: key matches ^RSS
+      condition: key matches ^RSS AND mailbox is true
       plugin: SQLite
       config:
         file: /home/myuserid/wubot/sqlite/rss.sql
         tablename: feeds
-        schema:
-          id: INTEGER PRIMARY KEY AUTOINCREMENT
-          subject: varchar(256)
-          title: varchar(256)
-          body: text
-          link: varchar(256)
-          lastupdate: int
-          mailbox: varchar(16)
-          key: varchar(32)
 
 The SQLite plugin will look at the schema to determine which message
 fields you are interested in, and will then attempt to insert a new
@@ -283,28 +261,7 @@ plugin goes to insert the data, it will catch the error that the
 column does not exist, and will then attempt to alter the table and
 add the row.  Note that it will not change the type on a column that
 has already been created in the table, or remove a column that was
-previously added.
-
-If you already ran the wubot-monitor after defining the RSS monitor
-but before adding this rule, then the monitor has already pulled all
-the items from the RSS feed and cached them.  So when you add this
-rule to the reactor, your database will not even get created until the
-first new entry shows up in the feed.  You could remove the monitor
-cache file (see above in the monitor section) and restart the monitor,
-and it will send all the items back through the feed again.  Thus your
-database will contain all the items that are currently available in
-the feed.
-
-Note that one of the fields on the sqlite table is the 'mailbox'.
-This is very important for outgoing RSS feed, since it determines the
-name of the outgoing feed.  For example, if you set the 'mailbox'
-field in your message to be 'news', then once the wubot-webui process
-has been started, you could access your feed in an RSS reader here:
-
-  http://localhost:3000/rss/news.xml
-
-If you don't give your data a mailbox, then you won't be able to
-access it through the Web UI!
+previously added.  For more information, see L<Wubot::SQLite>.
 
 You could easily add a rule in the reactor to select the RSS-usgs-m5
 key and then add a 'mailbox' field.  But this is a good opportunity to
@@ -335,6 +292,16 @@ And add a 'react' section to define your rules.  We'll use the
         field: mailbox
         value: earthquake
 
+If you already ran the wubot-monitor after defining the RSS monitor
+but before adding this rule, then the monitor has already pulled all
+the items from the RSS feed and cached them.  So when you add this
+rule to the reactor, your database will not even get created until the
+first new entry shows up in the feed.  You could remove the monitor
+cache file (see above in the monitor section) and restart the monitor,
+and it will send all the items back through the feed again.  Thus your
+database will contain all the items that are currently available in
+the feed.
+
 The monitor config is a great place to define simple reactions for a
 monitor, e.g. adding or modifying fields on the message.  But there
 are some limitations to be aware of.  First, you can only define
@@ -350,9 +317,8 @@ reactor are separate processes is by design.  This ensures that the
 monitors can continually gather data on schedule and won't get hung up
 waiting for a reaction to occur.
 
-To start the webui process, copy the 'webui' directory out of the
-distribution tarball, set into the 'webui' directory, and run the
-script ./wubot-webui.  Once the process is started up, point your RSS
-reader here, and enjoy your filtered feed:
+See the L<Wubot::Guides::WebUI> document for more information on
+starting up the web ui.  Once the process is started up, point your
+RSS reader here, and enjoy your filtered feed:
 
   http://localhost:3000/rss/earthquake.xml

@@ -139,3 +139,13 @@ accessible by ssh.  Simply set the command like so:
 
   - http://www.geekfarm.org/wu/wubot/Uptime-navi-daily.png
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

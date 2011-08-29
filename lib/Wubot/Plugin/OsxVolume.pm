@@ -74,3 +74,13 @@ necessary to mute or lower the volume.  This monitor can alert you
 when you have accidentally left the volume too low so and thus may not
 be able to hear voice notifications.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

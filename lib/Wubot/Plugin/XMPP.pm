@@ -177,3 +177,13 @@ Sends and receive messages between wubot instances over XMPP.
 
 For more information, see L<Wubot::Guides::MultipleBOts>.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

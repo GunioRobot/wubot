@@ -72,3 +72,13 @@ Wubot::Reactor::SetField - set one or more fields on the message to a configured
         x: 123
         y: 456
         z: 789
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

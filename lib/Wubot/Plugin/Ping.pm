@@ -93,3 +93,13 @@ that contains the text:
 
   Unable to ping host {$host}
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

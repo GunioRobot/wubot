@@ -84,3 +84,13 @@ Wubot::Plugin::Command - run an external command and capture the output and exit
 
 TODO: More to come...
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

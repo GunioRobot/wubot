@@ -173,3 +173,12 @@ Eventually this plugin will be adapted to identify a user in a
 database of contacts, and optionally apply configuration data from the
 contact db, e.g. a nickname or a username_color.
 
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

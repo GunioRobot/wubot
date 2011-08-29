@@ -13,6 +13,50 @@ use YAML;
 
 use Wubot::Logger;
 
+1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::SQLite - the wubot library for working with SQLite
+
+
+=head1 SYNOPSIS
+
+    use Wubot::SQLite;
+
+=head1 DESCRIPTION
+
+Wubot uses SQLite for a wide variety of uses, including:
+
+  - asynchronous message queues
+  - monitors
+  - reactions
+  - viewing data in the web interface
+
+Most of the heavy lifting is accomplished by L<SQL::Abstract>.  See
+the documentation there for more information.
+
+Wubot::SQLite adds a number of features including:
+
+  - allow schema to be define in external config files
+  - add missing tables if schema is available
+  - add missing columns that are defined in schema but missing from a table
+
+Schema files are read from ~/wubot/schemas.  Each table's schema lives
+in a file named {tablename}.yaml.  Each time a table schema is needed,
+the schema config file will be checked to see if it has been updated;
+if so, the schema file will be re-read.  This allows you to change the
+schema without re-starting the process.  Note that while missing
+columns can be added, but columns are not dynamically removed, and an
+existing column type is never altered.
+
+
+
+=cut
+
 # only initialize one connection to each database handle
 my %sql_handles;
 
@@ -62,6 +106,21 @@ has 'logger'  => ( is => 'ro',
 
 
 
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item create_table( $tablename, $schema )
+
+Create a table using the specified schema.
+
+If no schema is provided, the schema directory will be checked for a
+schema file named '{tablename}.yaml'.
+
+If no schema is found, a fatal error will be thrown.
+
+=cut
+
 sub create_table {
     my ( $self, $table, $schema_h ) = @_;
 
@@ -93,6 +152,15 @@ sub create_table {
     $self->dbh->do( $command );
 }
 
+=item get_tables()
+
+Get a list of all tables defined in the SQLite database.
+
+If the database contains a table named 'sqlite_sequence', then that
+table will be omitted from the returned list of tables.
+
+=cut
+
 sub get_tables {
     my ( $self, $table ) = @_;
 
@@ -107,6 +175,23 @@ sub get_tables {
 
     return @tables;
 }
+
+=item check_schema( $table, $schema, $failok )
+
+Check the schema for a given tablename.  Returns the schema.
+
+The schema is option.  If a schema is passed into the method, then
+that schema will be used; otherwise the schema directory will be
+checked for a file named {tablename}.yaml.  If the file has changed
+since the last time the file was read, then the file will be re-read.
+
+If no schema is found, a 'no schema specified or found for table'
+exception will be thrown.
+
+If the 'failok' flag is true, then failure to find a schema will not
+throw an exception, but will simly write a log message at debug level.
+
+=cut
 
 sub check_schema {
     my ( $self, $table, $schema_h, $failok ) = @_;
@@ -135,6 +220,28 @@ sub check_schema {
 
     return $schema_h;
 }
+
+=item insert( $table, $entry_h, $schema_h )
+
+Insert a single row into the named table.
+
+Only columns defined in the schema will be inserted.  Any keys in the
+entry hash that are not found in the schema will be ignored.
+
+If an 'id' field is defined in the entry, it will be ignored even if
+the id is defined in the schema.  Wubot expects that an 'id' field is
+always of the type 'INTEGER PRIMARY KEY AUTOINCREMENT'.
+
+This method uses the 'insert' method on L<SQL::Abstract>.  See the
+documentation there for more information.
+
+The 'id' of the row that was inserted will be returned.
+
+The get_prepared method is used to prepare the statement handle, so a
+missing table or any missing columns will be added.  See the
+get_prepared method documentation for more information.
+
+=cut
 
 sub insert {
     my ( $self, $table, $entry, $schema_h ) = @_;
@@ -174,6 +281,27 @@ sub insert {
     return $self->dbh->last_insert_id( "", "", $table, "");
 }
 
+
+=item update( $table, $entry_h, $where, $schema_h )
+
+Update a row in the table described by the 'where' clause.
+
+This method uses the 'update' method on L<SQL::Abstract>.  See the
+documentation there for more information.
+
+Only columns defined in the schema will be udpated.  Any keys in the
+entry hash that are not found in the schema will be ignored.
+
+If an 'id' field is defined in the entry, it will be ignored even if
+the id is defined in the schema.  Wubot expects that an 'id' field is
+always of the type 'INTEGER PRIMARY KEY AUTOINCREMENT'.
+
+The get_prepared method is used to prepare the statement handle, so a
+missing table or any missing columns will be added.  See the
+get_prepared method documentation for more information.
+
+=cut
+
 sub update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
 
@@ -207,6 +335,15 @@ sub update {
     return 1;
 }
 
+=item insert_or_update( $table, $entry_h, $where, $schema_h )
+
+If a row exists in the table that matches the 'where' clause, then
+calls the update() method on that row.  If not, then calls the
+insert() method.  See the documentation on the 'update' and 'insert'
+methods for more information.
+
+=cut
+
 sub insert_or_update {
     my ( $self, $table, $update, $where, $schema_h ) = @_;
 
@@ -228,6 +365,29 @@ sub insert_or_update {
 
     return 1;
 }
+
+=item select( $options_h )
+
+This method takes the following options:
+
+  - fields - a list of fields to return, defaults to *
+  - where - SQL::Abstract 'where'
+  - order - SQL::Abstract 'order'
+  - limit - maximum number of rows to return
+  - callback - method to be executed on all matching rows
+
+This method uses the L<SQL::Abstract> 'select' method to return one or
+more rows.  See the documentation there for more details.
+
+If no callback() method is defined, then all matching rows will be
+returned.  Using a callback() may be more efficient if a large dataset
+is returned since it does not require all rows to be stored in memory.
+
+The get_prepared method is used to prepare the statement handle, so a
+missing table or any missing columns will be added.  See the
+get_prepared method documentation for more information.
+
+=cut
 
 sub select {
     my ( $self, $options ) = @_;
@@ -287,6 +447,20 @@ sub select {
     }
 }
 
+=item query( $statement, $callback )
+
+Execute the specified SQL statement.
+
+If no callback() method is defined, then all matching rows will be
+returned.  Using a callback() may be more efficient if a large dataset
+is returned since it does not require all rows to be stored in memory.
+
+Note that this method does not do any quoting of the statement, so if
+it contains any data from external sources, it may be vulnerable to a
+SQL injection attack!
+
+=cut
+
 sub query {
     my ( $self, $statement, $callback ) = @_;
 
@@ -312,6 +486,13 @@ sub query {
 
     return @return;
 }
+
+=item delete( $table, $conditions )
+
+Delete rows from a table that match the specified conditions.  See the
+'delete' method on L<SQL::Abstract> for more details.
+
+=cut
 
 sub delete {
     my ( $self, $table, $conditions ) = @_;
@@ -339,6 +520,18 @@ sub delete {
 
 }
 
+=item get_prepared( $table, $schema, $command )
+
+Given a SQL command, attempt to prepare the statement.
+
+If the prepare() method throws a 'no such table' error, then the
+table will be created using the specified schema.
+
+If the prepare() method throws a 'no such column' error, then if the
+column is defined in the schema, then the add_column method will be
+called to add the missing column.
+
+=cut
 
 sub get_prepared {
     my ( $self, $table, $schema, $command ) = @_;
@@ -397,11 +590,31 @@ sub get_prepared {
     $self->logger->logcroak( "ERROR: unable to prepare statement, exceeded maximum retry limit" );
 }
 
+=item add_column( $table, $column, $type )
+
+Add a column with the specified name and type to the schema by calling:
+
+  ALTER TABLE $table ADD COLUMN $column $type
+
+=cut
+
 sub add_column {
     my ( $self, $table, $column, $type ) = @_;
     my $command = "ALTER TABLE $table ADD COLUMN $column $type";
     $self->dbh->do( $command );
 }
+
+=item connect()
+
+Calls the DBI->connect method to open a handle to the SQLite database
+file.
+
+The open database handles are cached in a global variable, so multiple
+attempts to call connect() on the same database file will return the
+same database handle rather than creating multiple handles to the same
+file.
+
+=cut
 
 sub connect {
     my ( $self ) = @_;
@@ -435,11 +648,30 @@ sub connect {
     return $dbh;
 }
 
+=item disconnect()
+
+Close the database handle for a database by calling the disconnect()
+method on the database handle.
+
+=cut
+
 sub disconnect {
     my ( $self ) = @_;
 
     $self->dbh->disconnect;
 }
+
+=item get_schema( $table )
+
+Given the name of a table, get the schema for that table.
+
+The schema will be cached in memory, along with the timestamp on the
+schema config file.  Any time this method is called, it will look at
+the timestamp on the schema file to see if it has changed.  If so, the
+schema file will be reloaded.  This allows you to dynamically change
+the schema without having to restart the wubot processes.
+
+=cut
 
 sub get_schema {
     my ( $self, $table ) = @_;
@@ -493,3 +725,5 @@ sub get_schema {
 }
 
 1;
+
+=back

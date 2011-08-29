@@ -193,3 +193,13 @@ and to store your workhours data in a SQLite database.
 
   - http://www.geekfarm.org/wu/wubot/WorkHours-navi-weekly.png
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

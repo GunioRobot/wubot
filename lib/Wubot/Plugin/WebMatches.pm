@@ -157,3 +157,13 @@ cause all matching items to be sent again.
 
 This plugin uses L<Wubot::Util::WebFetcher>.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

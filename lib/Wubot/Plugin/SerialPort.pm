@@ -108,3 +108,13 @@ Wubot::Plugin::SerialPort - monitor data received over a serial port
 
 More to come...
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

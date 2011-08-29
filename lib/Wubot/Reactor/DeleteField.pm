@@ -34,3 +34,13 @@ Wubot::Reactor::DeleteField - remove a field from the message
 =head1 DESCRIPTION
 
 Removes a field and its value from a message.
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

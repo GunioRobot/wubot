@@ -87,3 +87,13 @@ Wubot::Plugin::FileTail - monitor a log file for all new lines
 
 TODO: More to come...
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

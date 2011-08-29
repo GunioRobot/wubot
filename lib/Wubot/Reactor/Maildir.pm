@@ -108,3 +108,24 @@ sub react {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Reactor::Maildir - store messages in maildir format
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

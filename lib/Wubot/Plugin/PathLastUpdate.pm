@@ -89,3 +89,13 @@ know when the feed is not being updated:
   age: 1w1d
   delay: 15m
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

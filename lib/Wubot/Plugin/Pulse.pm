@@ -145,3 +145,13 @@ minutes old that the message was at the time it was generated.  If the
 'age' field is false, that indicates that the message was sent during
 the minute that was indicated on the message.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

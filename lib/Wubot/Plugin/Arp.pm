@@ -111,3 +111,12 @@ could use a rule such as this in the reactor:
 The 'mac_address' schema is distributed in the config/schemas/
 directory in the wubot distribution.
 
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

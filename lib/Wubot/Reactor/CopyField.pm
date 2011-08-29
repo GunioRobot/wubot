@@ -100,3 +100,13 @@ that to the field named in myfield2 (bar):
   myfield1: foo
   myfield2: bar
   bar: foo
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

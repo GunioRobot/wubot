@@ -63,3 +63,13 @@ but ends in _text.  If you specify a 'newfield' in the config, then
 the image-stripped text will be stored in that field.  If you want to
 replace the contents of an existing field with the image-stripped
 content, then use the same field for both 'field' and 'newfield'.
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

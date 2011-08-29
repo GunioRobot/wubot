@@ -28,14 +28,9 @@ directory.  In the future these directories should be configurable.
 Also will also need to create ~/wubot/schemas, and copy the files from
 the 'config/schemas' directory into that directory.
 
-The webui has been undergoing some changes.  In order to install the
-webui, follow these instructions:
+To get the web interface up and going, see here:
 
-  git clone git://github.com/wu/wubot.git
-  cd wubot
-  cp config/webui.yaml ~/wubot/config/
-  bin/wubot-webui daemon
-
+  - http://search.cpan.org/perldoc?Wubot::Guide::WebUI
 
 COPYRIGHT AND LICENCE
 

@@ -281,3 +281,13 @@ See some example graphs here:
 If you use this plugin, you may also be interested in
 L<Wubot::Plugin::WorkHours>.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

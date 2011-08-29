@@ -144,3 +144,62 @@ sub get_plugin_config {
 }
 
 1;
+
+__END__
+
+
+=head1 NAME
+
+Wubot::Config - read wubot plugin configuration
+
+
+=head1 SYNOPSIS
+
+    use Wubot::Config
+
+=head1 DESCRIPTION
+
+Reads configuration files for plugins for wubot-monitor from
+~/wubot/config/plugins.
+
+Each config file should live in a directory named after the plugin.
+For example, the configuration files for the Wubot::Plugin::RSS plugin
+will be read from ~/wubot/config/plugins/RSS.
+
+Within each plugin directory, any files that end in .yaml will be
+read.  The combination of the plugin directory and the filename will
+be used to build a unique 'key' for each plugin.  For example, within
+the RSS directory, a file named 'slashdot.yaml' would be given the
+unique key 'RSS-slashdot'.
+
+In additional to loading all .yaml files in the plugin directory, any
+files that end in the short hostname will also be loaded.  For
+example, on a host named host1, the file slashdot.yaml.host1 would
+also be loaded.  This makes it easy to sync a single configuration
+tree between multiple machines, but have some monitors only active on
+some machines.  For more information, see also
+L<Wubot::Guide::MultipleBots>.
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item read_config()
+
+Read all plugin configuration files from the config directories and
+load all config files ending in .yaml or .yaml.hostname into memory.
+
+Config files are not automatically re-read on change.  It is necessary
+to restart wubot-monitor to pick up a plugin configuration change.
+
+=item get_plugins()
+
+Get a list of all plugin instance keys that are configurated to run on
+the current machine.
+
+=item get_plugin_config( $plugin_key, $param )
+
+Given a plugin key and a config param, return the configuration for
+that plugin instance.
+
+=back

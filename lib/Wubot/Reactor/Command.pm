@@ -476,3 +476,24 @@ sub check_process {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Reactor::Command - run an external command using data from the message
+
+=head1 DESCRIPTION
+
+TODO: More to come...
+
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

@@ -123,3 +123,13 @@ is accessible by ssh.  Simply set the command like so:
   ---
   command: ssh somehost df -k
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

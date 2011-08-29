@@ -3,8 +3,6 @@ use Moose;
 
 # VERSION
 
-# todo - warn if queue length above a certain size
-
 use Digest::MD5 qw( md5_hex );
 use File::Path;
 use POSIX qw(strftime);
@@ -14,6 +12,53 @@ use YAML::XS;
 use Wubot::Logger;
 use Wubot::Reactor;
 use Wubot::SQLite;
+
+=head1 NAME
+
+Wubot::LocalMessageStore - add or remove messages from a local wubot SQLite message queue
+
+=head1 SYNOPSIS
+
+    use Wubot::LocalMessageStore;
+
+    my $messenger = Wubot::LocalMessageStore->new();
+    my $directory = "/path/to/queue/directory";
+
+    $messenger->store( { %{ $message } }, $directory );
+
+    # scalar context, get the message, immediately deleting it from
+    # the queue
+    my $got_message = $messenger->get( $directory ),
+
+    # array context, get the message and return a callback that can be
+    # called to delete the message after it has been successfully
+    # processed.
+    my ( $got_message, $callback ) = $messenger->get( $directory );
+    # do something here to process the message
+    # delete the message after processing
+    $callback->();
+
+
+=head1 DESCRIPTION
+
+Wubot uses LocalMessageStore to add messages to a FIFO queue
+implemented in SQLite for asynchronous processing.
+
+Common uses of LocalMessageStore include the queue where wubot-monitor
+stores messages for reactions by wubot-reactor.
+
+When a message in the queue has been processed, it will not be
+immediately removed from the queue.  Instead, the 'seen' flag will be
+set to the timestamp when the message was marked as processed.
+
+The callback mechanism (see the example above) is used to ensure that
+the message has been successfully processed before it is deleted.  If
+the wubot process gets shut down in the middle of processing a
+message, the message will not be removed from the queue.  This could
+sometimes lead to reacting to a message more than once, but ensures
+that the reaction will always occur.
+
+=cut
 
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
@@ -42,6 +87,25 @@ has 'reactor' => ( is => 'ro',
                    default => undef,
                );
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item initialize_db( $directory )
+
+This will get called the first time a queue is accessed in a running
+process.  A Wubot::SQLite object will be created for the queue.
+
+When initializing the database connection, all items that were marked
+'seen' more than 24 hours ago will be deleted from the queue, and the
+current number of messages reamining in the queue in the 'seen' and
+'unseen' state will be logged.  Since the wubot processes
+autoamtically restart every night just after midnight, this ensures
+that the queue will not get too long, since long queues can
+significantly degrade performance.
+
+=cut
 
 sub initialize_db {
     my ( $self, $directory ) = @_;
@@ -79,6 +143,19 @@ sub initialize_db {
     }
 
 }
+
+=item store( $message, $directory )
+
+Given a message (a simple or multi-level hash), store it in the queue
+in the specified directory.
+
+If the message does not already have a checksum, lastupdate, or
+hostname, then those fields will be determined.
+
+The message will be serialized using YAML::XS, and the result will be
+stored in the 'data' column.
+
+=cut
 
 sub store {
     my ( $self, $message, $directory ) = @_;
@@ -133,6 +210,14 @@ sub store {
     return 1;
 }
 
+=item delete_seen( $directory, $age )
+
+Delete all queue items where the 'seen' time is older than the
+specified 'age' in seconds.
+
+
+=cut
+
 sub delete_seen {
    my ( $self, $directory, $age ) = @_;
 
@@ -154,6 +239,17 @@ sub delete_seen {
    my $conditions = { seen => { '<' => $time } };
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );
 }
+
+=item get( $directory )
+
+Get the oldest unseen item in the queue, deserialize the message, and
+return the message data structure.
+
+If called in array context, will also return a callback which can be
+used to delete the message (i.e. mark it 'seen') after it has been
+processed.
+
+=cut
 
 sub get {
     my ( $self, $directory ) = @_;
@@ -209,6 +305,16 @@ sub get {
     return $message;
 }
 
+=item get_counts( $directory )
+
+Given the directory of a queue, return three statistics:
+
+  - number of messages in the queue marked 'seen'
+  - number of messsages in the queue left to be processed
+  - total number of messages in the queue
+
+=cut
+
 sub get_counts {
     my ( $self, $directory ) = @_;
 
@@ -233,6 +339,16 @@ sub get_counts {
     return ( $seen_count, $unseen_count, $seen_count + $unseen_count );
 }
 
+=item checksum( $message )
+
+Given a message, calculate the md5sum of the message.  This involves
+serializing the message with YAML::XS and then calculating the md5_hex
+of the serialized message.  The generated 'checksum' field can be
+useful to detect duplicate messages.
+
+=cut
+
+
 sub checksum {
     my ( $self, $message ) = @_;
 
@@ -246,3 +362,7 @@ sub checksum {
 }
 
 1;
+
+__END__
+
+=back

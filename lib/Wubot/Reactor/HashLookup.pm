@@ -47,3 +47,13 @@ Wubot::Reactor::HashLookup - map the value of one field to a value for another u
 
 Look up the value for a target field in a configured hash using the
 value of another field as the key.
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=back

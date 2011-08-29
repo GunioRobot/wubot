@@ -119,3 +119,13 @@ The monitor caches all message IDs in the feed.  When a new
 be sent, and the cache will be updated.  Removing the cache file will
 cause all items in the feed to be sent again.
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

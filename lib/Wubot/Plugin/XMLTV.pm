@@ -91,3 +91,13 @@ Wubot::Plugin::XMLTV - fetch data from XMLTV and store in the wubot tv db
 
 TODO: More to come...
 
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

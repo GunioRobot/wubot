@@ -9,11 +9,6 @@ use YAML;
 
 use Wubot::Logger;
 
-1;
-
-__END__
-
-
 =head1 NAME
 
 Wubot::Reactor - runs reactive rules on a message
@@ -322,7 +317,6 @@ sub find_plugins {
 
     my @keys = sort keys %plugins;
     return @keys;
-
 }
 
 =item monitor()

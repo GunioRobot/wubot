@@ -13,11 +13,6 @@ use YAML;
 
 use Wubot::Logger;
 
-1;
-
-__END__
-
-
 =head1 NAME
 
 Wubot::SQLite - the wubot library for working with SQLite

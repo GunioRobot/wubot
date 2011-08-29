@@ -316,7 +316,6 @@ either 'plugin' or 'key' is already defined, they will not be
 overwritten.  This ensures that results that are produced by one
 plugin and then collected by another plugin (e.g. on a remote host).
 
-
 =cut
 
 sub enqueue_results {
@@ -350,9 +349,3 @@ __END__
 
 =back
 
-=head1 BUGS AND LIMITATIONS
-
-There are no known bugs in this module. Please report problems to
-VVu@geekfarm.org
-
-Patches are welcome.

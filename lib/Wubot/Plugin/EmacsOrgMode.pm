@@ -30,9 +30,13 @@ sub check {
 
     my @react;
 
-  FILE:
+    my $page_count = 0;
+
     opendir( $dir_h, $config->{directory} ) or die "Can't opendir $config->{directory}: $!";
+
+  FILE:
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
+
         next unless $entry;
         next if $entry =~ m|^\.|;
         next unless $entry =~ m|org$|;
@@ -42,6 +46,11 @@ sub check {
         next if exists $cache->{files}->{$entry}->{lastupdate} && $updated == $cache->{files}->{$entry}->{lastupdate};
 
         $cache->{files}->{$entry}->{lastupdate} = $updated;
+
+        if ( $page_count++ > 100 ) {
+            $self->logger->info( "Reached maximum page count: 100" );
+            last FILE;
+        }
 
         $self->logger->info( "Checking updated file: $config->{directory}/$entry => $updated" );
 
@@ -82,7 +91,7 @@ sub check {
 
         my @tasks = $self->taskutil->parse_emacs_org_page( $entry, $content );
 
-        $self->taskutil->sync_tasks( $entry, @tasks );
+        $self->taskutil->sync_tasks( $filename, @tasks );
 
         push @react, { name      => $filename,
                        file      => $filename,
@@ -108,7 +117,14 @@ sub check {
     }
     closedir( $dir_h );
 
-    return { cache => $cache, react => \@react };
+    my $results = { cache => $cache, react => \@react };
+
+    if ( $page_count > 100 ) {
+        $self->logger->info( "Max count reached, rescheduling next check in 5 seconds" );
+        $results->{delay} = 5;
+    }
+
+    return $results;
 }
 
 1;

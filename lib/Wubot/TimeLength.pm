@@ -3,6 +3,12 @@ use Moose;
 
 # VERSION
 
+#
+# NOTE: this module duplicates features from Convert::Age
+#
+#  - http://search.cpan.org/perldoc?Convert::Age
+#
+
 use Wubot::Logger;
 
 has 'space' => ( is => 'ro', isa => 'Bool', default => 0 );

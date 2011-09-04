@@ -81,7 +81,7 @@ ok( my $user = Wubot::Reactor::User->new( { directory => $tempdir } ),
            );
 }
 
-# read_user_info
+# _read_user_info
 {
     #use File::Temp qw/ tempdir /;
 
@@ -102,7 +102,7 @@ ok( my $user = Wubot::Reactor::User->new( { directory => $tempdir } ),
 
     my $reactor = Wubot::Reactor::User->new( { directory => $tempdir } );
 
-    my $results = $reactor->read_user_info();
+    my $results = $reactor->_read_user_info();
 
     is_deeply( $results->{dude},
                $dude,

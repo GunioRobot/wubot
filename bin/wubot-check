@@ -69,3 +69,23 @@ eval {                          # try
 
 
 $j->wait;
+
+__END__
+
+=head1 NAME
+
+ wubot-check - perform a single check of an instance of a plugin
+
+=head1 SYNOPSIS
+
+  wubot-check Plugin id
+
+  # example
+  wubot-check RSS slashdot
+
+=head1 DESCRIPTION
+
+This script makes it easy to perform a single check of an instance of
+a monitor.
+
+See also: L<Wubot::Guide::Debugging>

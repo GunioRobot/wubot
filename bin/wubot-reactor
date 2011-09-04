@@ -156,3 +156,19 @@ sub react {
     $logger->debug( "Message received from: $message->{key}" );
     $reactor->react( $message );
 }
+
+__END__
+
+=head1 NAME
+
+ wubot-reactor - start the wubot reactor process
+
+=head1 SYNOPSIS
+
+  wubot-reactor
+  wubot-reactor -v
+
+=head1 DESCRIPTION
+
+Start up the wubot reactor process.
+

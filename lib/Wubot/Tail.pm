@@ -7,6 +7,37 @@ use Fcntl qw( SEEK_END SEEK_CUR SEEK_SET O_NONBLOCK O_RDONLY );
 
 use Wubot::Logger;
 
+=head1 NAME
+
+Wubot::Tail - follow the tail of a growing file
+
+
+=head1 SYNOPSIS
+
+    use Wubot::Tail;
+
+    # for a complete example, see Wubot::Plugin::FileTail
+
+
+=head1 DESCRIPTION
+
+This class helps build plugins that need to monitor a log file that is
+being continuously updated, and execute a bit of code for each new
+line.
+
+Once initialized, it holds the filehandle open while wubot is running.
+The position in the file can be cached using the standard wubot
+caching mechanism.
+
+Plugins that use this library can call get_lines() in the check()
+method to process all lines that showed up in the file since the last
+time check() was called.  This will execute a callback for each new
+line.  In addition, a callback can be defined to run if the filehandle
+was reset (i.e. the filehandle was reopened or the file was
+truncated).
+
+=cut
+
 has 'path'      => ( is       => 'rw',
                      isa      => 'Str',
                      required => 1,
@@ -54,6 +85,24 @@ has 'leftover'  => ( is      => 'rw',
 has 'position'  => ( is      => 'rw',
                      default => undef,
                  );
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item $obj->get_lines();
+
+Look for new lines in the file, and run the callback on each.
+
+If no new lines are found in the file, then the filehandle is checked
+to see if the file was truncated or the filehandle was closed and then
+a new one was re-opened.  In either case, the reset_callback is
+executed and is passed the appropriate text:
+
+  filehandle was truncated: {$path}
+  file was renamed: {$path}
+
+=cut
 
 sub get_lines {
     my ( $self ) = @_;
@@ -104,6 +153,13 @@ sub get_lines {
     return 0;
 }
 
+=item $obj->get_fh()
+
+Use sysopen to open the filehandle in non-blocking read-only mode.  If
+a position was defined on the object, seeks to that position.
+
+=cut
+
 sub get_fh {
     my ( $self ) = @_;
 
@@ -124,7 +180,14 @@ sub get_fh {
     return $fh;
 }
 
-# adapted from: http://www.perlmonks.org/?node_id=55241
+=item $obj->_get_lines_nonblock( $fh )
+
+Private method, code adapted from:
+
+  http://www.perlmonks.org/?node_id=55241
+
+=cut
+
 sub _get_lines_nonblock {
   my ( $self, $fh ) = @_;
 
@@ -171,3 +234,34 @@ sub _get_lines_nonblock {
 
 1;
 
+__END__
+
+=back
+
+=head1 SIMILAR MODULES
+
+I looked at a lot of other similar modules, but ended up having to
+roll my own due some some specific requirements of wubot.
+
+L<File::Tail> - I was unable to tweak the frequency at which this
+module checks for updates or filehandle resets to work the way I
+wanted.  I wanted to do this reliably every time the check() method
+was executed.
+
+L<POE::Wheel::FollowTail> - I have used this module in the past and
+love it.  While old versions of wubot were based on POE, the current
+version of wubot uses AnyEvent.
+
+L<File::Tail> - this module has great mechanisms for detecting if the
+file was replaced or the file was truncated, but unfortunately it does
+pass that information on to programs that use the module.
+
+=begin Pod::Coverage
+
+  SEEK_END
+  SEEK_CUR
+  SEEK_SET
+  O_NONBLOCK
+  O_RDONLY
+
+=cut

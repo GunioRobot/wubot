@@ -44,7 +44,7 @@ sub check {
 
     my $new = {};
 
-    $self->parse_data( $data, $cache, $new );
+    $self->_parse_data( $data, $cache, $new );
 
     my @react;
 
@@ -70,22 +70,22 @@ sub check {
     return { cache => $cache, react => \@react };
 }
 
-sub parse_data {
+sub _parse_data {
     my ( $self, $data, $cache, $new ) = @_;
 
     if ( ref $data eq "ARRAY" ) {
         for my $subdata ( @{ $data } ) {
-            $self->parse_data( $subdata, $cache, $new );
+            $self->_parse_data( $subdata, $cache, $new );
         }
         return;
     }
 
     if ( $data->{dict} ) {
-        $self->parse_data( $data->{dict}, $cache, $new );
+        $self->_parse_data( $data->{dict}, $cache, $new );
     }
 
     if ( $data->{array} ) {
-        $self->parse_data( $data->{array}, $cache, $new );
+        $self->_parse_data( $data->{array}, $cache, $new );
     }
 
     if ( $data->{string} ) {

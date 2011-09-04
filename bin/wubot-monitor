@@ -178,3 +178,19 @@ sub create_plugin_instance {
 
     $count++;
 }
+
+__END__
+
+=head1 NAME
+
+ wubot-monitor - start the wubot monitoring process
+
+=head1 SYNOPSIS
+
+  wubot-monitor
+  wubot-monitor -v
+
+=head1 DESCRIPTION
+
+Start up the wubot monitoring process.
+

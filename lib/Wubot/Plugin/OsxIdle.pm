@@ -60,7 +60,7 @@ sub check {
     my $results;
 
     my $stats;
-    ( $stats, $cache ) = $self->calculate_idle_stats( time, $idle_sec, $config, $cache );
+    ( $stats, $cache ) = $self->_calculate_idle_stats( time, $idle_sec, $config, $cache );
 
     # add all stats to both the cache and results
     for my $stat ( keys %{ $stats } ) {
@@ -82,7 +82,7 @@ sub check {
     return { cache => $cache, react => $results };
 }
 
- sub calculate_idle_stats {
+ sub _calculate_idle_stats {
      my ( $self, $now, $seconds, $config, $cache ) = @_;
 
      my $stats;

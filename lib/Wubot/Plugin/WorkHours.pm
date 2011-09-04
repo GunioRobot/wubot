@@ -52,10 +52,10 @@ sub check {
                           callback  => sub { push @rows, $_[0] },
                       } );
 
-    return { react => $self->calculate_stats( \@rows ) };
+    return { react => $self->_calculate_stats( \@rows ) };
 }
 
-sub calculate_stats {
+sub _calculate_stats {
     my ( $self, $rows ) = @_;
 
     my $data;

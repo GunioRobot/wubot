@@ -9,6 +9,26 @@ use POSIX qw(strftime);
 use Wubot::Logger;
 use Wubot::SQLite;
 
+=head1 NAME
+
+Wubot::Util::Tasks - utility for dealing with the Emacs Org-Mode files and tasks database
+
+=head1 SYNOPSIS
+
+    use Wubot::Util::Tasks;
+
+=head1 DESCRIPTION
+
+The wubot tasks libraries are still under development.  I am using
+them now, but there are still a few rough edges.  More documentation
+will be published once the rough edges can be smoothed over a bit.
+
+For more details on Emacs org-mode, see:
+
+  http://orgmode.org/
+
+=cut
+
 has 'sql'    => ( is      => 'ro',
                   isa     => 'Wubot::SQLite',
                   lazy    => 1,
@@ -45,6 +65,15 @@ my $colors = { deadline => { 2  => '#CC3300',
                          },
            };
 
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item $obj->get_tasks()
+
+TODO: documentation this method
+
+=cut
 
 sub get_tasks {
     my ( $self, $due ) = @_;
@@ -112,6 +141,12 @@ sub get_tasks {
     return @tasks;
 }
 
+=item $obj->check_schedule()
+
+TODO: documentation this method
+
+=cut
+
 sub check_schedule {
     my ( $self ) = @_;
 
@@ -146,6 +181,12 @@ sub check_schedule {
 
     return @tasks;
 }
+
+=item $obj->sync_tasks()
+
+TODO: documentation this method
+
+=cut
 
 sub sync_tasks {
     my ( $self, $file, @tasks ) = @_;
@@ -197,6 +238,12 @@ sub sync_tasks {
 
     return 1;
 }
+
+=item $obj->parse_emacs_org_page()
+
+TODO: documentation this method
+
+=cut
 
 sub parse_emacs_org_page {
     my ( $self, $orig_filename, $content ) = @_;
@@ -314,3 +361,6 @@ sub parse_emacs_org_page {
 
 1;
 
+__END__
+
+=back

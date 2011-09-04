@@ -212,8 +212,17 @@ sub cache_is_seen {
 
 =item $obj->cache_expire( $cache )
 
-Expire all items in the cache where the 'lastseen' time is older than
+Expire all items in the cache where the last update time is older than
 the expire_age.  By default this is 7 days.
+
+To override the default expire_age, define an expire_age moose param
+in your plugin to the number of seconds to keep untouched cache
+entries.  For example,
+
+    has 'expire_age' => ( is => 'ro',
+                          isa => 'Num',
+                          default => 3600,
+                      );
 
 =cut
 

@@ -47,7 +47,7 @@ sub init {
     return;
 }
 
-sub initalize_serial_port {
+sub _initialize_serial_port {
     my ( $self ) = @_;
 
     $self->port( Device::SerialPort->new( $self->device ) );
@@ -68,7 +68,7 @@ sub check {
     my ( $self, $inputs ) = @_;
 
     unless ( $self->port ) {
-        $self->initalize_serial_port();
+        $self->_initialize_serial_port();
     }
 
     my @react;
@@ -112,6 +112,10 @@ More to come...
 =head1 SUBROUTINES/METHODS
 
 =over 8
+
+=item init( $inputs )
+
+The standard monitor init() method.
 
 =item check( $inputs )
 

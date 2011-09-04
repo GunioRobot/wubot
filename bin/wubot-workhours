@@ -24,3 +24,19 @@ my $config = { tablename  => 'idle',
            };
 
 print YAML::Dump $check->check( { config => $config } );
+
+__END__
+
+=head1 NAME
+
+ wubot-workhours - display summary information about active/idle time over the last 7 days
+
+=head1 SYNOPSIS
+
+  wubot-workhours
+
+=head1 DESCRIPTION
+
+If you are using the OsxIdle and WorkHours plugins, this script will
+print a summary of the number of active and idle hours over the last 7
+days.

@@ -12,7 +12,7 @@ has 'userdb'  => ( is => 'ro',
                    lazy => 1,
                    default => sub {
                        my $self = shift;
-                       $self->read_user_info();
+                       $self->_read_user_info();
                    },
                );
 
@@ -93,7 +93,7 @@ sub react {
     return $message;
 }
 
-sub read_user_info {
+sub _read_user_info {
     my ( $self ) = @_;
 
     my $config = {};

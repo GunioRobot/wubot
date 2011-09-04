@@ -27,7 +27,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         24,
@@ -57,7 +57,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         24,
@@ -95,7 +95,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
         }
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         1,
@@ -125,7 +125,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         1,
@@ -156,7 +156,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         3,
@@ -186,7 +186,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         1,
@@ -217,7 +217,7 @@ ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::W
                   };
     }
 
-    my $stats = $check->calculate_stats( \@rows  );
+    my $stats = $check->_calculate_stats( \@rows  );
 
     is( $stats->{total_hours},
         1,

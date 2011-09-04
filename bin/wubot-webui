@@ -26,3 +26,18 @@ $ENV{MOJO_APP} ||= 'Wubot::Web';
 
 # Start commands
 Mojolicious::Commands->start;
+
+__END__
+
+=head1 NAME
+
+ wubot-webui - start the Mojolicious wubot web interface
+
+=head1 SYNOPSIS
+
+  wubot-webui
+
+=head1 DESCRIPTION
+
+Start up the wubot web interface.
+

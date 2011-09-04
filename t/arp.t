@@ -49,7 +49,7 @@ my $cache_file = "$tempdir/storage.yaml";
     for my $mac ( keys %{ $test_macs } ) {
         my $expected = $test_macs->{$mac};
 
-        is( $check->standardize_mac( $mac ),
+        is( $check->_standardize_mac( $mac ),
             $expected,
             "Checking standardized mac $mac is $expected"
         );

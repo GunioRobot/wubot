@@ -25,7 +25,7 @@ sub check {
 
         my ( $name, $ip, $mac ) = ( $1, $2, $3 );
 
-        $mac = $self->standardize_mac( $mac );
+        $mac = $self->_standardize_mac( $mac );
 
         $self->logger->debug( "LINE: $line" );
         $self->logger->debug( "\tname:$name ip:$ip mac:$mac" );
@@ -43,7 +43,7 @@ sub check {
     return { cache => $cache, react => \@react };
 }
 
-sub standardize_mac {
+sub _standardize_mac {
     my ( $self, $mac ) = @_;
 
     # add leading 0 to single-digit fields in mac address

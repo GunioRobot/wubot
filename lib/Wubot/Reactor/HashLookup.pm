@@ -21,14 +21,11 @@ sub react {
 
 1;
 
-
 __END__
-
 
 =head1 NAME
 
 Wubot::Reactor::HashLookup - map the value of one field to a value for another using a lookup table
-
 
 =head1 SYNOPSIS
 

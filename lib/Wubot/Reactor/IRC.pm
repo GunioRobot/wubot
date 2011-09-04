@@ -61,7 +61,7 @@ sub react {
     return $message if $message->{irc_quiet};
 
     unless ( $self->initialized ) {
-        $self->init( $config );
+        $self->_init( $config );
     }
 
     my $subject = $message->{subject_text} || $message->{subject};
@@ -86,7 +86,7 @@ sub react {
 
 
 
-sub init {
+sub _init {
     my ( $self, $config ) = @_;
 
     $self->con->reg_cb( registered  => sub { $self->logger->info( "reactor connected to IRC: $config->{server}:$config->{port}" );
@@ -111,7 +111,7 @@ sub init {
     $self->logger->info( "Initialized connection $config->{server}:$config->{port} => $config->{nick}" );
 }
 
-sub close {
+sub _close {
     my ( $self ) = @_;
     $self->con->disconnect;
 }

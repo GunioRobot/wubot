@@ -24,6 +24,11 @@ sub notify {
 
     my $now = time;
 
+    my $expand;
+    if ( $self->param('expand') ) {
+        $expand = 1;
+    }
+
     my $order = 'lastupdate DESC, id DESC';
     if ( $self->param( 'order' ) ) {
         $order = $self->param( 'order' );
@@ -33,6 +38,7 @@ sub notify {
 
     my $old = $self->param( 'old' );
     if ( $old ) {
+        $expand = 1;
         $seen = \$is_not_null;
         $order = 'seen DESC';
     }
@@ -81,7 +87,7 @@ sub notify {
                                     { subject => { 'LIKE' => "%$1%" } },
                                 );
         }
-        elsif ( $colors->get_color( $tag ) ) {
+        elsif ( $colors->get_color( $tag ) ne $tag ) {
             $sqlite_notify->update( 'notifications',
                                     { color => $tag },
                                     { id    => $id  },
@@ -92,6 +98,22 @@ sub notify {
             print "Removing tag $tag on id $id\n";
             $sqlite_notify->delete( 'tags',
                                     { remoteid => $id, tag => $tag, tablename => 'notifications' },
+                                );
+        }
+        elsif ( $tag eq "x" ) {
+            print "Removing tag readme from id $id\n";
+            $sqlite_notify->delete( 'tags',
+                                    { remoteid => $id, tag => 'readme', tablename => 'notifications' },
+                                );
+        }
+        elsif ( $tag eq "m" ) {
+            print "Setting README tag on id $id and marking seen\n";
+            $sqlite_notify->insert( 'tags',
+                                    { remoteid => $id, tag => 'readme', tablename => 'notifications', lastupdate => time },
+                                );
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
                                 );
         }
         else {
@@ -115,6 +137,7 @@ sub notify {
 
     my $key      = $self->param( "key" );
     if ( $key ) {
+        $expand = 1;
         $where = { key => $key, seen => $seen };
         if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
@@ -123,6 +146,7 @@ sub notify {
 
     my $username      = $self->param( "username" );
     if ( $username ) {
+        $expand = 1;
         $where = { username => $username, seen => $seen };
         if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
@@ -131,6 +155,7 @@ sub notify {
 
     my $plugin      = $self->param( "plugin" );
     if ( $plugin ) {
+        $expand = 1;
         $where = { key => { LIKE => "$plugin%" }, seen => $seen };
         if ( ! $old && ! $self->param( 'order' ) ) {
             $order = "lastupdate, id";
@@ -150,6 +175,7 @@ sub notify {
 
     my $tag = $self->param( "tag" );
     if ( $tag ) {
+        $expand = 1;
         my @ids;
         for my $row ( $sqlite_notify->select( { tablename => 'tags',
                                                fieldname => 'remoteid',
@@ -183,7 +209,7 @@ sub notify {
         }
 
         my $coalesce = $message->{coalesce} || $message->{subject};
-        unless ( $key || $plugin || $username || $old ) {
+        unless ( $expand ) {
             if ( $collapse->{ $coalesce } ) {
                 $collapse->{ $coalesce }->{$message->{id}} = 1;
                 next MESSAGE;
@@ -249,7 +275,8 @@ sub tags {
     my $now = time;
 
     for my $tag ( $sqlite_notify->select( { tablename => 'tags',
-                                            fields    => 'distinct tag, lastupdate',
+                                            fields    => 'count(*) as count, tag, lastupdate',
+                                            group     => 'tag',
                                             order     => 'lastupdate DESC, id DESC',
                                         } ) ) {
 

@@ -23,6 +23,7 @@ a {
     <table cellpadding="5">
       <% for my $tag_row ( @$tags ) { %>
       <tr bgcolor="purple">
+        <td><%= $tag_row->{count} %></a></td>
         <td width="300px">
           <a href="/notify?tag=<%= $tag_row->{tag} %>"><%= $tag_row->{tag} %></a>
         </td>

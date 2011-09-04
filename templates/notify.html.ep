@@ -7,14 +7,20 @@
   <body bgcolor=black>
 
     <%= include 'nav' %>
-
-  <font size="-1" color="#FF00FF">
-    |
-    <a href="/notify"><%= $count %> unread</a>
-    |
-    <a href="?seen=<%= $ids %>">all seen</a>
-    |
-  </font>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <font size="-1" color="#FF00FF">
+      |
+      <a href="/notify"><%= $count %> unread</a>
+      |
+      <a href="?expand=1">expand</a>
+      |
+      <a href="?old=1">old</a>
+      |
+      <a href="?tag=readme">readme</a>
+      |
+      <a href="?seen=<%= $ids %>">all seen</a>
+      |
+    </font>
 
 <form method="post">
 
@@ -53,7 +59,7 @@
 
           <td style="text-align: right"><a href="?username=<%= $row->{username} %>"><%= $row->{username} %></a></td>
 
-          <td><img height="32" width="32" src="/images/<%= $row->{icon} %>"></td>
+          <td><img height="24" width="24" src="/images/<%= $row->{icon} %>"></td>
 
           <td style="text-align: left">
             <% if ( $row->{link} ) { %>
@@ -80,7 +86,6 @@
 
     <br><br>
     <input type="image" src="images/wubot.png" border=0 height=32 width=32 alt="submit">
-
     </form>
 
   <img src="/rrd/SQLite-notifyqueue/SQLite-notifyqueue-daily.png">

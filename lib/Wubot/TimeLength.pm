@@ -3,13 +3,48 @@ use Moose;
 
 # VERSION
 
-#
-# NOTE: this module duplicates features from Convert::Age
-#
-#  - http://search.cpan.org/perldoc?Convert::Age
-#
-
 use Wubot::Logger;
+
+=head1 NAME
+
+Wubot::TimeLength - utilities for dealing with time durations
+
+
+=head1 SYNOPSIS
+
+    use Wubot::TimeLength;
+
+    my $timelength = Wubot::TimeLength->new();
+
+    # returns '1h1m'
+    $timelength->get_human_readable( 3601 );
+
+    # returns 1.5
+    $timelength->get_hours( 60*60*1.5 );
+
+    # returns 3601
+    $timelength->get_seconds( '1h1s' );
+
+    # rounds 1.5 days, 1 minute, and 10 seconds to nearest hour: 1d12h
+    $timelength->get_human_readable( 60*60*24*1.5+70 )
+
+    # use a space delimiter
+    my $timelength = Wubot::TimeLength->new( space => 1 ),
+
+    # returns '1h 1s' with space delimiter
+    $timelength->get_human_readable( 3601 );
+
+
+=head1 DESCRIPTION
+
+This class provides some utilities for dealing with time durations.
+It supports the 'compact' form used by Convert::Age, but with a few
+variations.
+
+For the sake of simplicity, one month is always treated as 30 days,
+and one year is always represented as 365 days.
+
+=cut
 
 has 'space' => ( is => 'ro', isa => 'Bool', default => 0 );
 
@@ -21,6 +56,17 @@ my $constants = { s => 1,
                   M => 60*60*24*30,
                   y => 60*60*24*365,
               };
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item $obj->get_seconds( $time );
+
+When given a date in the 'compact' form (e.g. '1h1m' or '1h 1m'),
+returns the number of seconds.
+
+=cut
 
 sub get_seconds {
     my ( $self, $time ) = @_;
@@ -51,6 +97,22 @@ sub get_seconds {
     return $seconds;
 
 }
+
+=item $obj->get_human_readable( $seconds );
+
+Given a number of seconds, return the time in 'compact' form.  For
+example, '3601' seconds returns '1h1s'.
+
+Time lengths are rounded to the most significant two fields.  For
+example, 1 day, 1 hour, 1 minute, and 1 second would be rounded to
+1d1h.  Obviously this method is not intended for precise time
+calculations, but rather for human-friendly ones.  If you need a more
+precise calculation, feel free to use L<Convert::Agent>.
+
+If the 'space' option was set at construction time, then a space
+delimiter will be used in the resulting string, e.g. '1h 1m'.
+
+=cut
 
 sub get_human_readable {
     my ( $self, $time ) = @_;
@@ -103,6 +165,13 @@ sub get_human_readable {
     return $sign . join( $join, @string );
 }
 
+=item $obj->get_hours( $seconds )
+
+Given a number of seconds, return the number of hours rounded to a
+single digit.
+
+=cut
+
 sub get_hours {
     my ( $self, $seconds ) = @_;
 
@@ -112,35 +181,59 @@ sub get_hours {
 
 }
 
+=item $obj->get_age_color( $seconds )
+
+Given a number of seconds, return a color representing the age.  This
+helps to very quickly assess the age of an item by looking at the
+color.  A steady stream of items with evenly spaced ages will create a
+smooth gradient of color.  Different colors are used to represent the
+age in minutes, hours, days, or months.
+
+If the age is younger than 1 hour, the color will be somewhere in the
+spectrum from light pink (brand new) to dark purple (1 hour old).
+
+If the age is between 1 hour and 1 day old, the color will vary from
+light blue to dark blue.
+
+If the age is between 1 day and 1 month, the color will vary from a
+rather light grey to black.
+
+If the age is greater than 1 month year, the color will be an
+increasingly dark yellow color.
+
+This should be configurable in the future.
+
+=cut
+
 sub get_age_color {
     my ( $self, $seconds ) = @_;
 
     if ( $seconds < $constants->{h} ) {
         # minutes
-        my $r = $self->range_map( $seconds, $constants->{m}, $constants->{h}, 255, 110 );
-        my $b = $self->range_map( $seconds, $constants->{m}, $constants->{h}, 255, 170 );
-        return $self->get_hex_color( $r, 0, $b );
+        my $r = $self->_range_map( $seconds, $constants->{m}, $constants->{h}, 255, 110 );
+        my $b = $self->_range_map( $seconds, $constants->{m}, $constants->{h}, 255, 170 );
+        return $self->_get_hex_color( $r, 0, $b );
 
     }
     elsif ( $seconds < $constants->{d} ) {
         # hours
-        my $r = $self->range_map( $seconds, $constants->{h}, $constants->{d},  90,  40 );
-        my $g = $self->range_map( $seconds, $constants->{h}, $constants->{d}, 100,   0 );
-        my $b = $self->range_map( $seconds, $constants->{h}, $constants->{d}, 255, 170 );
-        return $self->get_hex_color( $r, $g, $b );
+        my $r = $self->_range_map( $seconds, $constants->{h}, $constants->{d},  90,  40 );
+        my $g = $self->_range_map( $seconds, $constants->{h}, $constants->{d}, 100,   0 );
+        my $b = $self->_range_map( $seconds, $constants->{h}, $constants->{d}, 255, 170 );
+        return $self->_get_hex_color( $r, $g, $b );
     }
     elsif ( $seconds < $constants->{M} ) {
         # days
-        my $c = $self->range_map( $seconds, $constants->{d},  $constants->{M}, 240,  120 );
-        return $self->get_hex_color( $c, $c, $c );
+        my $c = $self->_range_map( $seconds, $constants->{d},  $constants->{M}, 240,  120 );
+        return $self->_get_hex_color( $c, $c, $c );
     }
 
     # months
-    my $c = $self->range_map( $seconds, $constants->{M}, $constants->{y}, 250,  0 );
+    my $c = $self->_range_map( $seconds, $constants->{M}, $constants->{y}, 250,  0 );
     return $self->get_hex_color( $c, $c, 0 );
 }
 
-sub get_hex_color {
+sub _get_hex_color {
     my ( $self, $r, $g, $b ) = @_;
 
     my $color = "#";
@@ -152,7 +245,7 @@ sub get_hex_color {
     return $color;
 }
 
-sub range_map {
+sub _range_map {
     my ( $self, $value, $low1, $high1, $low2, $high2 ) = @_;
 
     my $orig_value = $value;
@@ -175,4 +268,13 @@ sub range_map {
 }
 
 1;
+
+=back
+
+=head1 SEE ALSO
+
+L<Convert::Age>
+
+=cut
+
 

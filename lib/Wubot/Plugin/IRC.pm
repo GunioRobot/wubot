@@ -174,7 +174,7 @@ sub check {
     return { react => { subject => "Initialized connection $config->{server}:$config->{port} => $config->{nick}" } };
 }
 
-sub close {
+sub _close {
     my ( $self ) = @_;
     $self->con->disconnect;
 }

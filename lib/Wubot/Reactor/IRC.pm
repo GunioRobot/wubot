@@ -111,7 +111,7 @@ sub _init {
     $self->logger->info( "Initialized connection $config->{server}:$config->{port} => $config->{nick}" );
 }
 
-sub close {
+sub _close {
     my ( $self ) = @_;
     $self->con->disconnect;
 }
@@ -137,10 +137,6 @@ For more info, please see the irc.txt document in the docs directory.
 =item react( $message, $config )
 
 The standard reactor plugin react() method.
-
-=item close()
-
-Call disconnect() method on the AnyEvent::IRC::Client object.
 
 =back
 

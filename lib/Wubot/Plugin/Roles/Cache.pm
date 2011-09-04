@@ -21,6 +21,11 @@ has 'cache_data' => ( is => 'rw',
                       },
                   );
 
+has 'expire_age' => ( is => 'ro',
+                      isa => 'Num',
+                      default => sub { 60*60*24*7 },
+                  );
+
 sub read_cache {
     my ( $self ) = @_;
 
@@ -100,8 +105,8 @@ sub cache_is_seen {
 sub cache_expire {
     my ( $self, $cache ) = @_;
 
-    # anything older than 7 days ago is expired
-    my $expired = time - 60*60*24*7;
+    # anything older than expire_age gets expired
+    my $expired = time - $self->expire_age;
 
     for my $id ( keys %{ $cache->{seen} } ) {
         if ( $cache->{seen}->{ $id } < $expired ) {

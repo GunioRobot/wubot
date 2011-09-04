@@ -194,7 +194,7 @@ to restart wubot-monitor to pick up a plugin configuration change.
 
 =item get_plugins()
 
-Get a list of all plugin instance keys that are configurated to run on
+Get a list of all plugin instance keys that are configured to run on
 the current machine.
 
 =item get_plugin_config( $plugin_key, $param )

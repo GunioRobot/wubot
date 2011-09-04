@@ -196,7 +196,7 @@ If the age is between 1 hour and 1 day old, the color will vary from
 light blue to dark blue.
 
 If the age is between 1 day and 1 month, the color will vary from a
-rather light grey to black.
+rather light gray to black.
 
 If the age is greater than 1 month year, the color will be an
 increasingly dark yellow color.

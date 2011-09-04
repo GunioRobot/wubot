@@ -184,7 +184,8 @@ If no schema is found, a 'no schema specified or found for table'
 exception will be thrown.
 
 If the 'failok' flag is true, then failure to find a schema will not
-throw an exception, but will simly write a log message at debug level.
+throw an exception, but will simply write a log message at debug
+level.
 
 =cut
 
@@ -284,7 +285,7 @@ Update a row in the table described by the 'where' clause.
 This method uses the 'update' method on L<SQL::Abstract>.  See the
 documentation there for more information.
 
-Only columns defined in the schema will be udpated.  Any keys in the
+Only columns defined in the schema will be updated.  Any keys in the
 entry hash that are not found in the schema will be ignored.
 
 If an 'id' field is defined in the entry, it will be ignored even if

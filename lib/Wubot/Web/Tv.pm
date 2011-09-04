@@ -2,6 +2,8 @@ package Wubot::Web::Tv;
 use strict;
 use warnings;
 
+# VERSION
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use Wubot::Logger;
@@ -460,3 +462,16 @@ sub oldschedule {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Web::Tv - wubot tv web interface
+
+=head1 DESCRIPTION
+
+The wubot web interface is still under construction.  There will be
+more information here in the future.
+
+TODO: finish docs

@@ -1,6 +1,8 @@
 package Wubot::Util::Colors;
 use Moose;
 
+# VERSION
+
 # solarized color schema: http://ethanschoonover.com/solarized
 my $pretty_colors = { pink      => '#FF33FF',
                       yellow    => '#b58900',
@@ -43,3 +45,18 @@ sub get_color {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Util::Colors - color themes for wubot
+
+=head1 DESCRIPTION
+
+This module defines color codes for named colors for the wubot web ui.
+
+The web ui is still under development.  Current the colors are
+hard-coded.  In the future these will be configurable.
+
+TODO: finish docs

@@ -6,6 +6,60 @@ use warnings;
 
 use Log::Log4perl qw(:easy);
 
+use Wubot::Logger;
+
+=head1 NAME
+
+Wubot::Logger - wubot logging library
+
+
+=head1 SYNOPSIS
+
+    use Wubot::Logger;
+
+=head1 DESCRIPTION
+
+This package encapsulates the logging for Wubot.  It loads and
+initializes Log::Log4perl.  By default is uses the ScreenColoredLevels
+appender.
+
+=head1 LOG LEVEL
+
+The default logging level is WARN.
+
+If you invoke any script that uses Wubot::Logger with the following
+command line options, it will set the log level appropriately:
+
+  -trace = trace level
+  -d or -debug = debug level
+  -v or -verbose = info level
+
+Alternately, you can also set the following environment variables to
+true to control the log level:
+
+  LOG_TRACE - trace level
+  LOG_DEBUG - debug leve
+  LOG_VERBOSE - info level
+
+This library can also be used by test cases.  When the script being
+run (determined by $0) ends in '.t', the default logging level is set
+to FATAL, and the normal (non-colored) screen appender is used.  This
+helps reduce noise when running the test cases and prevent color codes
+which can cause problems with the test harness.
+
+=head1 LOG FILES
+
+The wubot-monitor and wubot-reactor processes will automatically have
+all output logged to the log files:
+
+  $HOME/logs/wubot-monitor.log
+  $HOME/logs/wubot-reactor.log
+
+Logging will use Log::Dispatch::FileRotate in order to perform nightly
+rotation of the log files.
+
+=cut
+
 BEGIN {
 
     my $appender = "Log::Log4perl::Appender::ScreenColoredLevels";

@@ -2,6 +2,8 @@ package Wubot::Web::Rss;
 use strict;
 use warnings;
 
+# VERSION
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use XML::Atom::SimpleFeed;
@@ -148,3 +150,16 @@ sub format_date_time {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Web::RSS - serves outgoing wubot RSS feeds
+
+=head1 DESCRIPTION
+
+The wubot web interface is still under construction.  There will be
+more information here in the future.
+
+TODO: finish docs

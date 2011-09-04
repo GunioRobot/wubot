@@ -1,6 +1,8 @@
 #!/usr/local/bin/perl -w
 use strict;
 
+# VERSION
+
 use AnyEvent::Watchdog autorestart => 1, heartbeat => 300;
 
 $| = 1;

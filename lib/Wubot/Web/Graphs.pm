@@ -2,6 +2,8 @@ package Wubot::Web::Graphs;
 use strict;
 use warnings;
 
+# VERSION
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use YAML;
@@ -36,3 +38,16 @@ sub graphs {
 };
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Util::Graphs - web interface for wubot graphs
+
+=head1 DESCRIPTION
+
+The wubot web interface is still under construction.  There will be
+more information here in the future.
+
+TODO: finish docs

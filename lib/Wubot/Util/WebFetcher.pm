@@ -8,6 +8,92 @@ use LWP::UserAgent;
 
 use Wubot::Logger;
 
+use Wubot::Util::WebFetcher;
+
+=head1 NAME
+
+Wubot::Util::WebFetcher - fetch content from the web
+
+
+=head1 SYNOPSIS
+
+    use Wubot::Util::WebFetcher;
+
+    has 'fetcher' => ( is  => 'ro',
+                       isa => 'Wubot::Util::WebFetcher',
+                       lazy => 1,
+                       default => sub {
+                           return Wubot::Util::WebFetcher->new();
+                       },
+                   );
+
+    my $content;
+    eval {                          # try
+        $content = $self->fetcher->fetch( $config->{url}, $config );
+        1;
+    } or do {                       # catch
+        my $error = $@;
+        my $subject = "Request failure: $error";
+        $self->logger->error( $self->key . ": $subject" );
+        return { cache => $cache, react => { subject => $subject } };
+    };
+
+=head1 DESCRIPTION
+
+Fetch data from a URL using LWP::UserAgent.
+
+This utility class is designed to be used by wubot plugins in the
+classes Wubot::Plugin and Wubot::Reactor.
+
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item $obj->fetch( $url, $config );
+
+Fetches content from the specified URL.
+
+If the fetch attempt fails, then this method will die with the error
+message.  Plugins that wish to use this library should wrap the
+fetch() method in an eval block (see the example above).
+
+The data fetched will be passed to utf8::encode().
+
+The 'config' may contain the following settings:
+
+=over 4
+
+=item timeout
+
+Number of seconds before the fetch times out.  Defaults to 20 seconds.
+
+=item agent
+
+The user agent string.  Defaults to 'Mozilla/6.0'.
+
+=item user
+
+User id for basic auth.  See also 'pass'
+
+=item pass
+
+Password for basic auth.  See also 'user'.
+
+=item proxy
+
+The proxy URL.
+
+=item decompress
+
+If true, sets the Accept-Encoding using HTTP::message::decodable.
+
+=back
+
+=back
+
+=cut
+
 sub fetch {
     my ( $self, $url, $config ) = @_;
 
@@ -48,7 +134,8 @@ sub fetch {
     my $res = $ua->request($req);
 
     unless ( $res->is_success ) {
-        return { react => { 'failure fetching: ' . $res->status_line } };
+        my $results = $res->status_line || "no error text";
+        die "$results\n";
     }
 
     my $content = $res->decoded_content;

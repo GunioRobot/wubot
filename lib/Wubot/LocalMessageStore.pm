@@ -99,9 +99,9 @@ process.  A Wubot::SQLite object will be created for the queue.
 
 When initializing the database connection, all items that were marked
 'seen' more than 24 hours ago will be deleted from the queue, and the
-current number of messages reamining in the queue in the 'seen' and
-'unseen' state will be logged.  Since the wubot processes
-autoamtically restart every night just after midnight, this ensures
+current number of messages remaining in the queue in the 'seen' and
+'unseen' state will be logged.  Since the wubot processes are
+automatically restarted every night just after midnight, this ensures
 that the queue will not get too long, since long queues can
 significantly degrade performance.
 

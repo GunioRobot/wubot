@@ -1,5 +1,28 @@
 Revision history for Wubot
 
+0.2_003 Sat Sep  3, 2011  7:23 pm
+
+  - Cache role - allow plugins to override default expiration age
+
+  - removed old Mojolicious::Lite wubot-webui and webui subdir
+    - replaced by Mojolicious wubot-webui
+    - tweaked docs
+
+  - support for GROUP BY and LIMIT in Wubot::SQLite
+
+  - adding some more POD docs
+
+  - continuing to improve the notifications web ui
+
+  - WebFetcher - failure getting content now returns  'failure fetching' message rather than die
+
+  - update EmacsOrgModule plugin, rework Wubot::Util::Tasks
+  
+  - some new monitor prototypes
+    - safari bookmarks on OS X
+    - locally installed modules with newer version available on CPAN
+    - facebook wall scraper - minor improvements
+
 0.2_002 Sun Aug 28, 2011  3:58 pm
 
   - use Wubot::Logger across all test cases and libs

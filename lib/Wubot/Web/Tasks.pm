@@ -2,6 +2,8 @@ package Wubot::Web::Tasks;
 use strict;
 use warnings;
 
+# VERSION
+
 use Mojo::Base 'Mojolicious::Controller';
 
 use Data::ICal;
@@ -207,3 +209,16 @@ sub open {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Web::Tasks - wubot tasks web interface
+
+=head1 DESCRIPTION
+
+The wubot web interface is still under construction.  There will be
+more information here in the future.
+
+TODO: finish docs

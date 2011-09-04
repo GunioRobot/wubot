@@ -3,9 +3,6 @@ use Moose;
 
 # VERSION
 
-# ideal stolen from:
-# https://github.com/theory/check_perl_modules/blob/master/bin/check_perl_modules
-
 use Wubot::Logger;
 
 has 'expire_age' => ( is => 'rw',
@@ -120,3 +117,53 @@ sub check {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Wubot::Plugin::CPAN - determine if any CPAN modules are up to the latest versions
+
+
+=head1 SYNOPSIS
+
+  # The plugin configuration lives here:
+  ~/wubot/config/plugins/CPAN/myhostname.yaml
+
+  ---
+  delay: 1d
+  timeout: 300
+  perl: /usr/local/bin/perl
+
+
+=head1 DESCRIPTION
+
+This plugin checks if there are any perl modules installed locally
+which have a newer version available on CPAN.  The idea was stolen
+from theory's nagios check:
+
+  https://github.com/theory/check_perl_modules/blob/master/bin/check_perl_modules
+
+I originally tried to steal the logic from the check_perl_modules
+script, but the script makes a large number of calls (one for every
+module installed) to a web service (cpanmetadb.appspot.com) which
+overran its quota several times during my test.  So for the time
+being, it uses the rather ugly approach of parsing the output of the
+command:
+
+  perl -MCPAN -e 'CPAN::Shell->r'
+
+By default it will use the first 'perl' in the path, although you can
+set the perl path (see the example above).  This makes it possible to
+configure multiple monitors per host if there is more than one perl
+installation you want to monitor.
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item check( $inputs )
+
+The standard monitor check() method.
+
+=back

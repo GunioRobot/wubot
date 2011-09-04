@@ -46,9 +46,21 @@ __END__
 
 Wubot::Plugin::TaskNotify - monitor for upcoming scheduled tasks
 
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/TaskNotify/org.yaml
+
+  ---
+  dbfile: /Users/wu/wubot/sqlite/tasks.sql
+  tablename: tasks
+  delay: 5m
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+The TaskNotify plugin looks in the tasks database for items that are
+within 15 minutes of coming due.  For each item, a notification is
+sent each time the plugin runs.
 
 
 =head1 SUBROUTINES/METHODS

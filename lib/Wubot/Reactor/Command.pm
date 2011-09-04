@@ -508,3 +508,4 @@ TODO: exclude this from Test::Pod::Coverage
 
   WNOHANG
 
+=end Pod::Coverage

@@ -275,6 +275,4 @@ sub _range_map {
 
 L<Convert::Age>
 
-=cut
-
 

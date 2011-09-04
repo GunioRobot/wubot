@@ -60,3 +60,19 @@ The web ui is still under development.  Current the colors are
 hard-coded.  In the future these will be configurable.
 
 TODO: finish docs
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item $obj->get_color( $color_name )
+
+if there is a hex code defined in the theme for the specified color
+name, return that hex code.
+
+If called with a hex color or a color name that is not defined in the
+theme, just returns the text that was passed in.
+
+=back
+
+

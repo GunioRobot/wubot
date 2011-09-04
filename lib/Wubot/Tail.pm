@@ -264,4 +264,4 @@ pass that information on to programs that use the module.
   O_NONBLOCK
   O_RDONLY
 
-=cut
+=end Pod::Coverage

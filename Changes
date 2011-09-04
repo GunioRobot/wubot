@@ -10,7 +10,10 @@ Revision history for Wubot
 
   - support for GROUP BY and LIMIT in Wubot::SQLite
 
-  - adding some more POD docs
+  - continuing work on documentation
+    - adding some more POD docs
+    - converted some methods to be private
+    - Test::Pod::Coverage is now passing
 
   - continuing to improve the notifications web ui
 

@@ -11,8 +11,6 @@ use Wubot::LocalMessageStore;
 use Wubot::Reactor;
 use Wubot::SQLite;
 
-1;
-
 =head1 NAME
 
 Wubot::Check - perform checks for an instance of a monitor

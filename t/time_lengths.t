@@ -238,32 +238,32 @@ ok( my $timelength = Wubot::TimeLength->new(),
 
 {
     # map
-    is( $timelength->range_map( 10, 0, 100, 0, 1000 ),
+    is( $timelength->_range_map( 10, 0, 100, 0, 1000 ),
         100,
         "calling map of 10 from 0..100 to 0..1000"
     );
 
-    is( $timelength->range_map( 10, 0, 100, 100, 200 ),
+    is( $timelength->_range_map( 10, 0, 100, 100, 200 ),
         110,
         "calling map of 10 from 0..100 to 100..200"
     );
 
-    is( $timelength->range_map( 10, 0, 100, 0, -100 ),
+    is( $timelength->_range_map( 10, 0, 100, 0, -100 ),
         -10,
         "calling map of 10 from 0..100 to 0..-100"
     );
 
-    is( $timelength->range_map( 10, 0, 100, 1000, 2000 ),
+    is( $timelength->_range_map( 10, 0, 100, 1000, 2000 ),
         1100,
         "calling map of 10 from 0..100 to 1000..2000"
     );
 
-    is( $timelength->range_map( 10, 0, 100, 10, 20 ),
+    is( $timelength->_range_map( 10, 0, 100, 10, 20 ),
         11,
         "calling map of 10 from 0..100 to 10..20"
     );
 
-    is( $timelength->range_map( 20, 10, 110, 40, 50 ),
+    is( $timelength->_range_map( 20, 10, 110, 40, 50 ),
         41,
         "calling map of 20 from 20..110 to 40..50"
     );

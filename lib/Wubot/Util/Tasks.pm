@@ -150,12 +150,15 @@ sub check_schedule {
 sub sync_tasks {
     my ( $self, $file, @tasks ) = @_;
 
+    $self->logger->debug( "Syncing tasks for $file" );
+
     my %existing_task_ids;
 
     $self->sql->select( { tablename => 'tasks',
                           where     => { file => $file },
                           callback  => sub { my $task = shift;
-                                             $existing_task_ids{ $task->{taskid} } = 1;
+                                             $existing_task_ids{ $task->{taskid} } = $task->{id};
+                                             $self->logger->trace( "Existing task id: $task->{taskid} => $task->{id}" );
                                          },
                       } );
 
@@ -178,12 +181,17 @@ sub sync_tasks {
 
 
         $inserted_task_ids{ $task->{taskid} } = 1;
+        $self->logger->debug( "updated task id: $task->{taskid}" );
+
 
     }
 
     for my $taskid ( keys %existing_task_ids ) {
+        my $id = $existing_task_ids{$taskid};
+
         unless ( $inserted_task_ids{ $taskid } ) {
-            $self->sql->delete( 'tasks', { taskid => $taskid } );
+            $self->logger->debug( "Removed task: $taskid => $id" );
+            $self->sql->delete( 'tasks', { id => $id } );
         }
     }
 
@@ -241,6 +249,9 @@ sub parse_emacs_org_page {
         if ( $block =~ s|^((?:\d+[smhd])+)\s|| ) {
             $task->{duration} = $1;
         }
+        else {
+            $task->{duration} = undef;
+        }
 
         $task->{status} = lc( $name );
 
@@ -255,22 +266,29 @@ sub parse_emacs_org_page {
 
         $task->{taskid} = join( ".", $task->{file}, $task->{title} );
 
+        $task->{deadline_text}        = undef;
+        $task->{deadline_utime}       = undef;
+        $task->{deadline_recurrence}  = undef;
+        $task->{scheduled_text}       = undef;
+        $task->{scheduled_utime}      = undef;
+        $task->{scheduled_recurrence} = undef;
+
         # deadline may be listed before or after schedule.
         # this is an ugly solution that gets it either way
         if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
-            $task->{deadline_text} = $1;
-            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" );
-            $task->{deadline_recurrence}    = $2;
+            $task->{deadline_text}       = $1;
+            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_recurrence} = $2;
         }
         if ( $block =~ s|^\s+SCHEDULED\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
-            $task->{scheduled_text} = $1;
-            $task->{scheduled_utime}      = UnixDate( ParseDate( $1 ), "%s" );
-            $task->{scheduled_recurrence}     = $2;
+            $task->{scheduled_text}       = $1;
+            $task->{scheduled_utime}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{scheduled_recurrence} = $2;
         }
         if ( $block =~ s|^\s+DEADLINE\:\s\<(.*?)(?:\s\.?(\+\d+\w))?\>||m ) {
-            $task->{deadline_text} = $1;
-            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" );
-            $task->{deadline_recurrence}    = $2;
+            $task->{deadline_text}       = $1;
+            $task->{deadline_utime}      = UnixDate( ParseDate( $1 ), "%s" ) - 3600;
+            $task->{deadline_recurrence} = $2;
         }
 
         $block =~ s|^\s+\- State "DONE"\s+from "TODO"\s+\[.*$||mg;

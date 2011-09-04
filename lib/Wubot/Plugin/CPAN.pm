@@ -1,0 +1,122 @@
+package Wubot::Plugin::CPAN;
+use Moose;
+
+# VERSION
+
+# ideal stolen from:
+# https://github.com/theory/check_perl_modules/blob/master/bin/check_perl_modules
+
+use Wubot::Logger;
+
+has 'expire_age' => ( is => 'rw',
+                      isa => 'Num',
+                      default => sub { 60*60 },
+                  );
+
+has 'reactor'  => ( is => 'ro',
+                    isa => 'CodeRef',
+                    required => 1,
+                );
+
+has 'logger'  => ( is => 'ro',
+                   isa => 'Log::Log4perl::Logger',
+                   lazy => 1,
+                   default => sub {
+                       return Log::Log4perl::get_logger( __PACKAGE__ );
+                   },
+               );
+
+with 'Wubot::Plugin::Roles::Cache';
+with 'Wubot::Plugin::Roles::Plugin';
+
+sub check {
+    my ( $self, $inputs ) = @_;
+
+    my $cache  = $inputs->{cache};
+    my $config = $inputs->{config};
+
+    # todo: forking plugin fu to prevent running more than one at once
+    unless ( $config->{nofork} ) {
+        my $pid = fork();
+        if ( $pid ) {
+            # parent process
+            return { react => { subject  => "launched cpan child process: $pid",
+                                coalesce => $self->key,
+                            } }
+        }
+    }
+
+
+    eval {                          # try
+
+        my $perl = $config->{perl} || 'perl';
+
+        my $command = "$perl -MCPAN -e 'CPAN::Shell->r'";
+
+        my @react;
+
+        # run command capturing output
+        open my $run, "-|", "$command 2>&1" or die "Unable to execute $command: $!";
+
+      MODULE:
+        while ( my $line = <$run> ) {
+            chomp $line;
+
+            $self->logger->trace( $line );
+
+            next unless $line =~ m|^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$|;
+
+            my ( $module, $installed, $latest, $path ) = ( $1, $2, $3, $4 );
+
+            next MODULE if $installed eq "undef" || ! $latest;
+
+            #$self->logger->info( "Module needs update: $module: $installed => $latest" );
+
+            my $cache_string = "$module:$latest";
+
+            # if we've already seen this item, move along
+            if ( $self->cache_is_seen( $cache, $cache_string ) ) {
+                $self->logger->trace( "Already seen: ", $cache_string );
+
+                # touch cache time on this subject
+                $self->cache_mark_seen( $cache, $cache_string );
+
+                next MODULE;
+            }
+
+            # keep track of this item so we don't fetch it again
+            $self->cache_mark_seen( $cache, $cache_string );
+
+            my $subject = "perl module out of date: $module: $installed => $latest";
+            $self->logger->info( $subject );
+
+            $self->reactor->( { subject   => $subject,
+                                module    => $module,
+                                installed => $installed,
+                                lastest   => $latest,
+                                path      => $path,
+                            } );
+        }
+        close $run;
+
+        # check exit status
+        unless ( $? eq 0 ) {
+          my $status = $? >> 8;
+          my $signal = $? & 127;
+
+          $self->reactor->( { subject => "error running '$command': status=$status signal=$signal" } );
+        }
+
+        # write out the updated cache
+        $self->write_cache( $cache );
+
+        1;
+    } or do {                   # catch
+
+        $self->logger->info( "ERROR: getting cpan module info: $@" );
+    };
+
+    exit 0;
+}
+
+1;

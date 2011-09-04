@@ -93,4 +93,8 @@ TODO: More to come...
 
 The standard monitor check() method.
 
+=item validate_config( $config )
+
+The standard monitor validate_config() method.
+
 =back

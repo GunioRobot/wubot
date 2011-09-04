@@ -469,9 +469,56 @@ __END__
 
 Wubot::Web::Tv - wubot tv web interface
 
+=head1 SYNOPSIS
+
+   ~/wubot/config/webui.yaml
+
+    ---
+    plugins:
+      tv:
+        '/tv/crew/(.first)/(.last)': 'crew'
+        '/tv/program/(.program_id)': 'program'
+        '/tv/seen/(.show_id)/(.episode_num)/(.seen)': 'seen'
+        '/tv/station/hide/(.station_id)/(.hide)': 'hide'
+        '/tv/score/(.show)/(.score)': 'score'
+        '/tv/rt/(.program_id)': 'rt'
+        '/tv/schedule/crew/(.first)/(.last)': 'schedule_crew'
+        '/tv/schedule': 'schedule'
+        '/tv/schedule/(.program_id)': 'schedule_program'
+        '/tv/ical': 'ical'
+        '/tv/oldschedule': 'oldschedule'
+
 =head1 DESCRIPTION
 
 The wubot web interface is still under construction.  There will be
 more information here in the future.
 
 TODO: finish docs
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item crew
+
+=item program
+
+=item seen
+
+=item hide
+
+=item score
+
+=item rt
+
+=item schedule_crew
+
+=item schedule
+
+=item schedule_program
+
+=item ical
+
+=item oldschedule
+
+=back

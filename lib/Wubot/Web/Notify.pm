@@ -304,9 +304,33 @@ __END__
 
 Wubot::Web::Notify - web interface for wubot notifications
 
+=head1 SYNOPSIS
+
+   ~/wubot/config/webui.yaml
+
+    ---
+    plugins:
+      notify:
+        '/notify': notify
+        '/tags': tags
+
 =head1 DESCRIPTION
 
 The wubot web interface is still under construction.  There will be
 more information here in the future.
 
 TODO: finish docs
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item notify
+
+Display the notifications web interface
+
+=item tags
+
+Display the tags web interface
+
+=back

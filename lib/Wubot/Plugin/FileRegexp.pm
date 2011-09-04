@@ -95,6 +95,10 @@ TODO: More to come...
 
 =over 8
 
+=item init( $inputs )
+
+The standard monitor init() method.
+
 =item check( $inputs )
 
 The standard monitor check() method.

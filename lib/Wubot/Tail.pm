@@ -170,3 +170,4 @@ sub _get_lines_nonblock {
 }
 
 1;
+

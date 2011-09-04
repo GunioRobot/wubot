@@ -128,6 +128,10 @@ is accessible by ssh.  Simply set the command like so:
 
 =over 8
 
+=item validate_config( $config )
+
+The standard monitor validate_config() method.
+
 =item check( $inputs )
 
 The standard monitor check() method.

@@ -234,4 +234,8 @@ TODO: More to come...
 
 The standard reactor plugin react() method.
 
+=item monitor()
+
+The standard reactor monitor() method.
+
 =back

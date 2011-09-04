@@ -59,7 +59,7 @@ sub rss {
                                                   link        => $link,
                                                   description => $body,
                                                   dc => {
-                                                      date => format_date_time( $entry->{lastupdate} )
+                                                      date => _format_date_time( $entry->{lastupdate} )
                                                   }
                                               );
                                           },
@@ -138,7 +138,7 @@ sub atom {
 
 };
 
-sub format_date_time {
+sub _format_date_time {
     my ( $time ) = @_;
 
     unless ( $time ) { $time = time }
@@ -157,9 +157,34 @@ __END__
 
 Wubot::Web::RSS - serves outgoing wubot RSS feeds
 
+=head1 SYNOPSIS
+
+   ~/wubot/config/webui.yaml
+
+    ---
+    plugins:
+      rss:
+        '/rss/:mailbox': rss
+        '/atom/:mailbox': atom
+
+
 =head1 DESCRIPTION
 
 The wubot web interface is still under construction.  There will be
 more information here in the future.
 
 TODO: finish docs
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item rss
+
+Generate an RSS feed for the specified mailbox.
+
+=item atom
+
+Generates an ATOM feed for the specified mailbox.
+
+=back

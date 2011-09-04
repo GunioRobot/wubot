@@ -48,11 +48,7 @@ sub fetch {
     my $res = $ua->request($req);
 
     unless ( $res->is_success ) {
-        die( $res->status_line || "no error text" );
-    }
-
-    unless ($res->is_success) {
-        return { react => { 'failure getting updates: ' . $res->status_line } };
+        return { react => { 'failure fetching: ' . $res->status_line } };
     }
 
     my $content = $res->decoded_content;

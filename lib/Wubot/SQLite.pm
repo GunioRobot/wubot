@@ -401,12 +401,19 @@ sub select {
     my $where     = $options->{where};
     my $order     = $options->{order};
     my $limit     = $options->{limit};
+    my $group     = $options->{group};
 
     my $callback  = $options->{callback};
 
+    if ( $group && $group =~ m|([\w\d]+)| ) {
+        $tablename .= " GROUP BY $group";
+    }
+
     my( $statement, @bind ) = $self->sql_abstract->select( $tablename, $fields, $where, $order );
 
-    if ( $limit ) { $statement .= " LIMIT $limit" }
+    if ( $limit && $limit =~ m|(\d+)| ) {
+        $statement .= " LIMIT $1";
+    }
 
     #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 

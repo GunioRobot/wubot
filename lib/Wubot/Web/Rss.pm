@@ -155,7 +155,7 @@ __END__
 
 =head1 NAME
 
-Wubot::Web::RSS - serves outgoing wubot RSS feeds
+Wubot::Web::Rss - serves outgoing wubot RSS feeds
 
 =head1 SYNOPSIS
 

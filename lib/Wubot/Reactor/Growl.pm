@@ -86,14 +86,11 @@ sub react {
 
 1;
 
-
 __END__
-
 
 =head1 NAME
 
 Wubot::Reactor::Growl - display a growl notification on OS X using Growl::Tiny
-
 
 =head1 SYNOPSIS
 
@@ -103,7 +100,7 @@ Wubot::Reactor::Growl - display a growl notification on OS X using Growl::Tiny
 
 =head1 DESCRIPTION
 
-For more information, please see the 'notifications' document.
+For more information, please see L<Wubot::Guide::Notifications>.
 
 =head1 SUBROUTINES/METHODS
 

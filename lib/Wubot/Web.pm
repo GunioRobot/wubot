@@ -44,6 +44,9 @@ Wubot::Web - Mojolicious web interface for wubot
 
 =head1 DESCRIPTION
 
+For more information on the wubot web user interface, please see the
+document L<Wubot::Guide::WebUI>.
+
 The wubot web interface is still under construction.  There will be
 more information here in the future.
 

@@ -38,7 +38,7 @@ Wubot::TimeLength - utilities for dealing with time durations
 =head1 DESCRIPTION
 
 This class provides some utilities for dealing with time durations.
-It supports the 'compact' form used by Convert::Age, but with a few
+It supports the 'compact' form used by L<Convert::Age>, but with a few
 variations.
 
 For the sake of simplicity, one month is always treated as 30 days,
@@ -106,8 +106,11 @@ example, '3601' seconds returns '1h1s'.
 Time lengths are rounded to the most significant two fields.  For
 example, 1 day, 1 hour, 1 minute, and 1 second would be rounded to
 1d1h.  Obviously this method is not intended for precise time
-calculations, but rather for human-friendly ones.  If you need a more
-precise calculation, feel free to use L<Convert::Agent>.
+calculations, but rather for human-friendly ones.  Please don't try to
+convert a number of seconds to the human-readable format, and then
+convert that back to a number of seconds, as it will most likely be
+different due to rounding!!! If you need a more precise calculation,
+use L<Convert::Age>.
 
 If the 'space' option was set at construction time, then a space
 delimiter will be used in the resulting string, e.g. '1h 1m'.

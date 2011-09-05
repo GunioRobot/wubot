@@ -117,7 +117,7 @@ sub react {
 
 Process conditions defined on a rule.
 
-For more information, see L<Wubot::Guides::Conditions>.
+For more information, see L<Wubot::Guide::Conditions>.
 
 =cut
 

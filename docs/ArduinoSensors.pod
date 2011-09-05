@@ -4,6 +4,9 @@ Wubot::Guide::ArduinoSensors - monitoring arduino sensor data
 
 =head1 DESCRIPTION
 
+If you are not familiar with wubot, you may want to begin with the
+document L<Wubot::Guide::GettingStarted>.
+
 This document describes how to read temperature, humidity, or other
 sensor data from an Arduino and feed it into wubot.  We are notified
 in the event of a significant change in the sensor data or when the
@@ -15,11 +18,10 @@ sensor network built with XBee.
 
 =head1 Arduino sensor data
 
-I won't discuss the process of wiring up a temperature sensor or
-programming an arduino here, as that is already covered in great
-detail elsewhere.
+I won't discuss the process of wiring up a sensor or programming an
+arduino here, as that is already covered in great detail elsewhere.
 
-Here are some temperature sensors I can recommend:
+Here are some sensors I can recommend from personal experience:
 
   - http://shop.moderndevice.com/products/tmp421-temperature-sensor
   - http://www.sparkfun.com/products/9569
@@ -79,8 +81,8 @@ And here is an example:
   device: /dev/tty.usbmodem3b11
 
 This will check the configured device every 5 seconds for sensor data.
-Each line of data will be put into a message.  The 'line' field will
-contain the string that was read.
+Each line of data will be put into a wubot message.  The 'line' field
+will contain the string that was read.
 
 =head1 parsing the message
 
@@ -150,7 +152,6 @@ rule:
       target_field_name: type
 
 And after this rule, the message will contain the new field:
-
 
     source: office
     type: temp
@@ -228,7 +229,6 @@ for later plugins keep track of the office temp and the outside temp
 as two separate values.  Note that this change to the 'key' field is
 permanent!  So any later rules in the reactor that look for 'key
 matches SerialPort' will not find these messages again!
-
 
       - name: key
         plugin: Template

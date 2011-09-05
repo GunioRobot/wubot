@@ -175,7 +175,7 @@ Wubot::Plugin::XMPP - send and receive messages over XMPP
 
 Sends and receive messages between wubot instances over XMPP.
 
-For more information, see L<Wubot::Guides::MultipleBOts>.
+For more information, see L<Wubot::Guide::MultipleBots>.
 
 
 =head1 SUBROUTINES/METHODS

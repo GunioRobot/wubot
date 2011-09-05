@@ -43,7 +43,7 @@ __END__
 
 =head1 NAME
 
-Wubot::Util::Graphs - web interface for wubot graphs
+Wubot::Web::Graphs - web interface for wubot graphs
 
 =head1 SYNOPSIS
 

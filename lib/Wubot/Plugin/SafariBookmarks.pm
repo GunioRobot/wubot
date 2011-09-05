@@ -122,7 +122,7 @@ __END__
 
 =head1 NAME
 
-Wubot::Plugin::Directory - monitor a directory for new files
+Wubot::Plugin::SafariBookmarks - monitor a directory for new files
 
 =head1 DESCRIPTION
 

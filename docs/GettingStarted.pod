@@ -237,7 +237,7 @@ To start the reactor, simply run:  wubot-reactor
 =head1 Web UI
 
 For more information on the wubot webui, please see the document
-L<Wubot::Guides::WebUI>.
+L<Wubot::Guide::WebUI>.
 
 The Web UI reads the data out of the rss SQLite database, so before we
 can use the Web UI, we need to go back to the reactor and add some
@@ -317,7 +317,7 @@ reactor are separate processes is by design.  This ensures that the
 monitors can continually gather data on schedule and won't get hung up
 waiting for a reaction to occur.
 
-See the L<Wubot::Guides::WebUI> document for more information on
+See the L<Wubot::Guide::WebUI> document for more information on
 starting up the web ui.  Once the process is started up, point your
 RSS reader here, and enjoy your filtered feed:
 

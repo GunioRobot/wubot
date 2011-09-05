@@ -122,7 +122,7 @@ __END__
 
 =head1 NAME
 
-Wubot::Plugin::CPAN - determine if any CPAN modules are up to the latest versions
+Wubot::Plugin::CPAN - verify that the latest versions of all Perl modules are installed
 
 
 =head1 SYNOPSIS

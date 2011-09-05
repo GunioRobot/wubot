@@ -3,11 +3,18 @@ use strict;
 use warnings;
 
 use File::Temp qw/ tempdir /;
-use Test::More 'no_plan';
-use YAML;
+use Test::More;
 
-use Wubot::Logger;
-use Wubot::Reactor::Maildir;
+for my $lib ( 'Maildir::Lite',
+              'MIME::Entity',
+              'Wubot::Logger',
+              'Wubot::Reactor::Maildir' ) {
+
+    eval "use $lib";
+    plan skip_all => "Failed to load $lib for this test case" if $@;
+}
+
+plan 'no_plan';
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 

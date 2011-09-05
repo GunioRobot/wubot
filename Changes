@@ -1,5 +1,9 @@
 Revision history for Wubot
 
+0.2_004 Mon Sep  5, 2011 11:27 am
+
+  - separate required prereqs from optional prereqs
+
 0.2_003 Sat Sep  3, 2011  7:23 pm
 
   - Cache role - allow plugins to override default expiration age

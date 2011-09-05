@@ -2,13 +2,19 @@
 use strict;
 use warnings;
 
-use File::Temp qw/ tempdir /;
-use Test::More 'no_plan';
-
-use Wubot::Logger;
-use Wubot::Reactor::HTMLStrip;
-
 no utf8;
+
+use Test::More;
+
+for my $lib ( 'HTML::Strip',
+              'Wubot::Logger',
+              'Wubot::Reactor::HTMLStrip' ) {
+
+    eval "use $lib";
+    plan skip_all => "Failed to load $lib for this test case" if $@;
+}
+
+plan 'no_plan';
 
 ok( my $strip = Wubot::Reactor::HTMLStrip->new(),
     "Creating new console reactor object"

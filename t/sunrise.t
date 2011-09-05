@@ -2,12 +2,17 @@
 use strict;
 
 use File::Temp qw/ tempdir /;
-use Test::More 'no_plan';
-use Test::Differences;
-use YAML;
+use Test::More;
 
-use Wubot::Logger;
-use Wubot::Plugin::SunRise;
+for my $lib ( 'Astro::Sunrise',
+              'Wubot::Logger',
+              'Wubot::Plugin::SunRise' ) {
+
+    eval "use $lib";
+    plan skip_all => "Failed to load $lib for this test case" if $@;
+}
+
+plan 'no_plan';
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 

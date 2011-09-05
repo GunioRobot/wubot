@@ -2,10 +2,17 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+use Test::More;
 
-use Wubot::Logger;
-use Wubot::Reactor::Growl;
+for my $lib ( 'Growl::Tiny',
+              'Wubot::Logger',
+              'Wubot::Reactor::Growl' ) {
+
+    eval "use $lib";
+    plan skip_all => "Failed to load $lib for this test case" if $@;
+}
+
+plan 'no_plan';
 
 ok( my $growl = Wubot::Reactor::Growl->new(),
     "Creating new growl reactor object"

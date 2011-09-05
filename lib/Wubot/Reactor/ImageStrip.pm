@@ -3,7 +3,6 @@ use Moose;
 
 # VERSION
 
-use HTML::Strip;
 use YAML;
 
 use Wubot::Logger;

@@ -115,15 +115,14 @@ App::Wubot::Plugin::SunRise - monitor the sunrise and sunset times
   ~/wubot/config/plugins/SunRise/home.yaml
 
   ---
-  enable: 1
   longitude: -123.4567890
   latitude: 46.8002468
   delay: 1m
 
 =head1 DESCRIPTION
 
-Uses Astro::Sunrise to monitor the sunrise and sunset times based on
-your location.
+Uses L<Astro::Sunrise> to monitor the sunrise and sunset times based
+on your location.
 
 A notification will be sent after a state change, and then each hour
 before the event.  For example, if the plugin is first run at 6:45pm,

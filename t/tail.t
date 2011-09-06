@@ -8,7 +8,7 @@ use Test::More 'no_plan';
 use YAML;
 
 use Wubot::Logger;
-use Wubot::Tail;
+use Wubot::Util::Tail;
 
 $| = 1;
 
@@ -23,10 +23,10 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     my @lines;
     my @warn;
 
-    ok( my $tail = Wubot::Tail->new( { path           => $path,
-                                       callback       => sub { push @lines, @_ },
-                                       reset_callback => sub { push @warn,  @_ },
-                                   } ),
+    ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+                                             callback       => sub { push @lines, @_ },
+                                             reset_callback => sub { push @warn,  @_ },
+                                         } ),
         "Creating new file tail object"
     );
 
@@ -278,10 +278,10 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     {
         my @lines;
 
-        ok( my $tail = Wubot::Tail->new( { path           => $path,
-                                           callback       => sub { push @lines, @_ },
-                                           reset_callback => sub { return },
-                                       } ),
+        ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+                                                 callback       => sub { push @lines, @_ },
+                                                 reset_callback => sub { return },
+                                             } ),
             "Creating new file tail object"
         );
 
@@ -313,17 +313,17 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     {
         my @lines;
 
-        ok( my $tail = Wubot::Tail->new( { path           => $path,
-                                           callback       => sub { push @lines, @_ },
-                                           reset_callback => sub { return },
-                                           position       => $position,
-                                       } ),
+        ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+                                                 callback       => sub { push @lines, @_ },
+                                                 reset_callback => sub { return },
+                                                 position       => $position,
+                                             } ),
             "Creating new file tail object"
         );
 
         is( $tail->get_lines(),
             2,
-            "Calling get_lines() on file that was updated before second Wubot::Tail object was created"
+            "Calling get_lines() on file that was updated before second Wubot::Util::Tail object was created"
         );
 
         is_deeply( \@lines,
@@ -345,11 +345,11 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     my @lines;
     my @warn;
 
-    ok( my $tail = Wubot::Tail->new( { path           => $path,
-                                       callback       => sub { push @lines, @_ },
-                                       reset_callback => sub { push @warn,  @_ },
-                                       position       => 1024,
-                                   } ),
+    ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+                                             callback       => sub { push @lines, @_ },
+                                             reset_callback => sub { push @warn,  @_ },
+                                             position       => 1024,
+                                         } ),
         "Creating new file tail object"
     );
 

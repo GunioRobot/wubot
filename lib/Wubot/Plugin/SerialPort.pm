@@ -8,7 +8,6 @@ use Device::SerialPort qw( :PARAM :STAT :ALL );
 # VERSION
 
 use Wubot::Logger;
-use Wubot::Tail;
 
 has 'device'    => ( is      => 'rw',
                      isa     => 'Str',

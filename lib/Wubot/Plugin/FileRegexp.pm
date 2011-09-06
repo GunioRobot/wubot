@@ -4,7 +4,7 @@ use Moose;
 # VERSION
 
 use Wubot::Logger;
-use Wubot::Tail;
+use Wubot::Util::Tail;
 
 has 'path'      => ( is      => 'rw',
                      isa     => 'Str',
@@ -12,11 +12,11 @@ has 'path'      => ( is      => 'rw',
                  );
 
 has 'tail'      => ( is      => 'ro',
-                     isa     => 'Wubot::Tail',
+                     isa     => 'Wubot::Util::Tail',
                      lazy    => 1,
                      default => sub {
                          my ( $self ) = @_;
-                         return Wubot::Tail->new( { path  => $self->path } );
+                         return Wubot::Util::Tail->new( { path  => $self->path } );
                      },
                  );
 

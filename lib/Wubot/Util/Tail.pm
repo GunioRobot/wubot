@@ -1,4 +1,4 @@
-package Wubot::Tail;
+package Wubot::Util::Tail;
 use Moose;
 
 # VERSION
@@ -9,12 +9,12 @@ use Wubot::Logger;
 
 =head1 NAME
 
-Wubot::Tail - follow the tail of a growing file
+Wubot::Util::Tail - follow the tail of a growing file
 
 
 =head1 SYNOPSIS
 
-    use Wubot::Tail;
+    use Wubot::Util::Tail;
 
     # for a complete example, see Wubot::Plugin::FileTail
 

@@ -5,11 +5,11 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::TransformField;
+use App::Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::TransformField;
 
-ok( my $transformer = Wubot::Reactor::TransformField->new(),
+ok( my $transformer = App::Wubot::Reactor::TransformField->new(),
     "Creating new TransformField reactor object"
 );
 

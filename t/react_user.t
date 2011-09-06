@@ -5,12 +5,12 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Reactor::User;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::User;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $user = Wubot::Reactor::User->new( { directory => $tempdir } ),
+ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
     "Creating new User reactor object"
 );
 
@@ -100,7 +100,7 @@ ok( my $user = Wubot::Reactor::User->new( { directory => $tempdir } ),
     $walter->{username} = 'walter';
     $donny->{username} = 'donny';
 
-    my $reactor = Wubot::Reactor::User->new( { directory => $tempdir } );
+    my $reactor = App::Wubot::Reactor::User->new( { directory => $tempdir } );
 
     my $results = $reactor->_read_user_info();
 

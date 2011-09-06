@@ -5,11 +5,11 @@ use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::FileRegexp;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::FileRegexp;
 
 my $init = { key        => 'FileRegexp-testcase',
-             class      => 'Wubot::Plugin::FileRegexp',
+             class      => 'App::Wubot::Plugin::FileRegexp',
              cache_file => '/dev/null',
          };
 
@@ -20,7 +20,7 @@ $| = 1;
 {
     my $path = "$tempdir/file1.log";
 
-    ok( my $tail = Wubot::Plugin::FileRegexp->new( $init ),
+    ok( my $tail = App::Wubot::Plugin::FileRegexp->new( $init ),
         "Creating new file tail object"
     );
 

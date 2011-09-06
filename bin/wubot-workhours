@@ -9,11 +9,11 @@ use YAML;
 Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
 
-use Wubot::Plugin::WorkHours;
+use App::Wubot::Plugin::WorkHours;
 
 my $period = shift @ARGV;
 
-my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::WorkHours',
+my $check = App::Wubot::Plugin::WorkHours->new( { class      => 'App::Wubot::Plugin::WorkHours',
                                              cache_file => '/dev/null',
                                              key        => 'WorkHours-testcase',
                                          } );

@@ -6,8 +6,8 @@ use LWP::Simple;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::TestCase;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::TestCase;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
@@ -17,7 +17,7 @@ my $class = "TestCase";
     my $key = "$class-one";
     my $cache_file = "$tempdir/$key.yaml";
 
-    ok( my $test = Wubot::Plugin::TestCase->new( { key        => $key,
+    ok( my $test = App::Wubot::Plugin::TestCase->new( { key        => $key,
                                                       class      => $class,
                                                       cache_file => $cache_file,
                                                } ),
@@ -43,7 +43,7 @@ my $class = "TestCase";
 
     YAML::DumpFile( $cache_file, $fake_cache_data );
 
-    ok( my $test = Wubot::Plugin::TestCase->new( { key        => $key,
+    ok( my $test = App::Wubot::Plugin::TestCase->new( { key        => $key,
                                                       class      => $class,
                                                       cache_file => $cache_file,
                                                } ),
@@ -75,7 +75,7 @@ my $class = "TestCase";
         "Checking that fake corrupted cache file was written"
     );
 
-    ok( my $test = Wubot::Plugin::TestCase->new( { key        => $key,
+    ok( my $test = App::Wubot::Plugin::TestCase->new( { key        => $key,
                                                    class      => $class,
                                                    cache_file => $cache_file,
                                                } ),
@@ -99,7 +99,7 @@ my $class = "TestCase";
 #     my $key = "$class-four";
 #     my $cache_file = "$tempdir/$key.yaml";
 
-#     ok( my $test = Wubot::Plugin::TestCase->new( { key        => $key,
+#     ok( my $test = App::Wubot::Plugin::TestCase->new( { key        => $key,
 #                                                    class      => $class,
 #                                                    cache_file => $cache_file,
 #                                                } ),

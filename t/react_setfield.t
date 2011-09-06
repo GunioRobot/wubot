@@ -5,10 +5,10 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Reactor::SetField;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::SetField;
 
-ok( my $setter = Wubot::Reactor::SetField->new(),
+ok( my $setter = App::Wubot::Reactor::SetField->new(),
     "Creating new SetField reactor object"
 );
 

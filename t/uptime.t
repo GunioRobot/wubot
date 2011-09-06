@@ -6,10 +6,10 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::Uptime;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::Uptime;
 
-ok( my $check = Wubot::Plugin::Uptime->new( { class      => 'Wubot::Plugin::Uptime',
+ok( my $check = App::Wubot::Plugin::Uptime->new( { class      => 'App::Wubot::Plugin::Uptime',
                                                  cache_file => "/dev/null",
                                                  key        => 'Uptime-testcase',
                                              } ),

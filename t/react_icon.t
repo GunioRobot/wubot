@@ -5,10 +5,10 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Reactor::Icon;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::Icon;
 
-ok( my $icon = Wubot::Reactor::Icon->new(),
+ok( my $icon = App::Wubot::Reactor::Icon->new(),
     "Creating new Icon reactor object"
 );
 

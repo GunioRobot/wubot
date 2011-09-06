@@ -16,20 +16,20 @@ use YAML;
 
 use lib "$FindBin::Bin/../lib";
 
-use Wubot::Logger;
+use App::Wubot::Logger;
 my $logger = Log::Log4perl::get_logger( 'default' );
 
-use Wubot::Config;
-use Wubot::Reactor;
-#use Wubot::Reactor::Voice;
-use Wubot::LocalMessageStore;
-use Wubot::Util::TimeLength;
+use App::Wubot::Config;
+use App::Wubot::Reactor;
+#use App::Wubot::Reactor::Voice;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Util::TimeLength;
 
-#my $voice = Wubot::Reactor::Voice->new();
+#my $voice = App::Wubot::Reactor::Voice->new();
 
 my $message_directory = "$ENV{HOME}/wubot/reactor";
 
-my $messenger = Wubot::LocalMessageStore->new();
+my $messenger = App::Wubot::LocalMessageStore->new();
 
 my $hostname = Sys::Hostname::hostname();
 $hostname =~ s|\..*$||;
@@ -41,7 +41,7 @@ my $config = YAML::LoadFile( $reactor_config );
 my $num_rules = scalar @{ $config->{rules} };
 $logger->warn( "Loaded $num_rules rules" );
 
-my $reactor = Wubot::Reactor->new( config => $config );
+my $reactor = App::Wubot::Reactor->new( config => $config );
 
 $logger->info( "Setting up timer..." );
 my $end = AnyEvent->condvar;
@@ -49,7 +49,7 @@ my $end = AnyEvent->condvar;
 my $lastupdate = time;
 my $maxcount   = 50;
 
-my $timelength = Wubot::Util::TimeLength->new();
+my $timelength = App::Wubot::Util::TimeLength->new();
 
 my $last_date = strftime( "%Y-%m-%d", localtime() );
 

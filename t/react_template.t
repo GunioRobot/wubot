@@ -5,11 +5,11 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::Template;
+use App::Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::Template;
 
-ok( my $template = Wubot::Reactor::Template->new(),
+ok( my $template = App::Wubot::Reactor::Template->new(),
     "Creating new Template reactor object"
 );
 

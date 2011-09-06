@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::Debugging - guide for debugging feeds
+App::Wubot::Guide::Debugging - guide for debugging feeds
 
 =head1 DESCRIPTION
 

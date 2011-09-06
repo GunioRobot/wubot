@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide - guide for using wubot
+App::Wubot::Guide - guide for using wubot
 
 =head1 GUIDES
 
@@ -8,11 +8,11 @@ The guides are under construction.  Lots more to come!
 
 =over 2
 
-=item L<Wubot::Guide::Overview>
+=item L<App::Wubot::Guide::Overview>
 
 Wtf is wubot?
 
-=item L<Wubot::Guide::GettingStarted>
+=item L<App::Wubot::Guide::GettingStarted>
 
 Guide to getting started monitoring an RSS feed and reacting to items
 in that feed.
@@ -23,11 +23,11 @@ in that feed.
 
 =over 2
 
-=item L<Wubot::Guide::MonitorPlugins>
+=item L<App::Wubot::Guide::MonitorPlugins>
 
 An overview of the monitor plugins
 
-=item L<Wubot::Guide::ArduinoSensors>
+=item L<App::Wubot::Guide::ArduinoSensors>
 
 Monitoring arduino sensor data.
 
@@ -37,19 +37,19 @@ Monitoring arduino sensor data.
 
 =over 2
 
-=item L<Wubot::Guide::Conditions>
+=item L<App::Wubot::Guide::Conditions>
 
 A guide for using conditions in rules.
 
-=item L<Wubot::Guide::Rules>
+=item L<App::Wubot::Guide::Rules>
 
 A description of the possible fields on rules.
 
-=item L<Wubot::Guide::ReactorPlugins>
+=item L<App::Wubot::Guide::ReactorPlugins>
 
 An overview of the available reactor plugins.
 
-=item L<Wubot::Guide::Notifications>
+=item L<App::Wubot::Guide::Notifications>
 
 A guide to using notifications.
 
@@ -59,11 +59,11 @@ A guide to using notifications.
 
 =over 2
 
-=item L<Wubot::Guide::Debugging>
+=item L<App::Wubot::Guide::Debugging>
 
 A guide for debugging monitors and reactions.
 
-=item L<Wubot::Guide::MultipleBots>
+=item L<App::Wubot::Guide::MultipleBots>
 
 A guide for running multiple communicating bots
 

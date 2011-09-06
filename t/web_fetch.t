@@ -5,12 +5,12 @@ use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::WebFetch;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::WebFetch;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $check = Wubot::Plugin::WebFetch->new( { class      => 'Wubot::Plugin::OsxIdle',
+ok( my $check = App::Wubot::Plugin::WebFetch->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                cache_file => '/dev/null',
                                                key        => 'OsxIdle-testcase',
                                            } ),

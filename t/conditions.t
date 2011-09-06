@@ -4,10 +4,10 @@ use strict;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Reactor;
+use App::Wubot::Logger;
+use App::Wubot::Reactor;
 
-my $reactor = Wubot::Reactor->new();
+my $reactor = App::Wubot::Reactor->new();
 
 # condition()
 {

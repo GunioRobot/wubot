@@ -7,8 +7,8 @@ use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Util::Tail;
+use App::Wubot::Logger;
+use App::Wubot::Util::Tail;
 
 $| = 1;
 
@@ -23,7 +23,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     my @lines;
     my @warn;
 
-    ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+    ok( my $tail = App::Wubot::Util::Tail->new( { path           => $path,
                                              callback       => sub { push @lines, @_ },
                                              reset_callback => sub { push @warn,  @_ },
                                          } ),
@@ -278,7 +278,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     {
         my @lines;
 
-        ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+        ok( my $tail = App::Wubot::Util::Tail->new( { path           => $path,
                                                  callback       => sub { push @lines, @_ },
                                                  reset_callback => sub { return },
                                              } ),
@@ -313,7 +313,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     {
         my @lines;
 
-        ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+        ok( my $tail = App::Wubot::Util::Tail->new( { path           => $path,
                                                  callback       => sub { push @lines, @_ },
                                                  reset_callback => sub { return },
                                                  position       => $position,
@@ -323,7 +323,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
         is( $tail->get_lines(),
             2,
-            "Calling get_lines() on file that was updated before second Wubot::Util::Tail object was created"
+            "Calling get_lines() on file that was updated before second App::Wubot::Util::Tail object was created"
         );
 
         is_deeply( \@lines,
@@ -345,7 +345,7 @@ my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     my @lines;
     my @warn;
 
-    ok( my $tail = Wubot::Util::Tail->new( { path           => $path,
+    ok( my $tail = App::Wubot::Util::Tail->new( { path           => $path,
                                              callback       => sub { push @lines, @_ },
                                              reset_callback => sub { push @warn,  @_ },
                                              position       => 1024,

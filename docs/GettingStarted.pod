@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::GettingStarted - monitoring and reacting to a feed
+App::Wubot::Guide::GettingStarted - monitoring and reacting to a feed
 
 =head1 DESCRIPTION
 
@@ -32,7 +32,7 @@ is an example of a minimalist RSS monitor config:
 
 The 'delay' param tells wubot-monitor how frequently to run the check,
 and the 'url' tag is the URL of the RSS/Atom feed.  For more info on
-the RSS monitor, see L<Wubot::Plugin::RSS>.
+the RSS monitor, see L<App::Wubot::Plugin::RSS>.
 
 After creating this config file, run wubot-monitor.  It will find the
 new config file and will schedule an immediate check of the RSS feed.
@@ -47,7 +47,7 @@ look something like this:
     key: RSS-usgs-m5
     lastupdate: 1311212434
     link: http://earthquake.usgs.gov/earthquakes/recenteqsww/Quakes/usc00051ms.php
-    plugin: Wubot::Plugin::RSS
+    plugin: App::Wubot::Plugin::RSS
     subject: 'M 6.0, Solomon Islands'
     title: 'M 6.0, Solomon Islands'
 
@@ -85,9 +85,9 @@ need a reactor config to determine what action to take when the
 message arrives.
 
 The reactor is configured with a series of rules.  For a list of the
-properties of a rule, have a peak at L<Wubot::Guide::Rules>.  For an
+properties of a rule, have a peak at L<App::Wubot::Guide::Rules>.  For an
 overview of the available reactor plugins, see
-L<Wubot::Guide::ReactorPlugins>.
+L<App::Wubot::Guide::ReactorPlugins>.
 
 Let's start with the individual rules and work up to the full rule
 tree.
@@ -116,7 +116,7 @@ After this rule runs, the message will have a new field named 'size'.
     key: RSS-usgs-m5
     lastupdate: 1311212434
     link: http://earthquake.usgs.gov/earthquakes/recenteqsww/Quakes/usc00051ms.php
-    plugin: Wubot::Plugin::RSS
+    plugin: App::Wubot::Plugin::RSS
     size: 6.0
     subject: 'M 6.0, Solomon Islands'
     title: 'M 6.0, Solomon Islands'
@@ -149,7 +149,7 @@ set the 'sticky' and 'yellow' properties on the rule.
         sticky: 1
         color: yellow
 
-To enable the notifications, see L<Wubot::Guide::Notifications>.
+To enable the notifications, see L<App::Wubot::Guide::Notifications>.
 
 After enabling the notifications, go to images.google.com and find a
 .png file that you would like to use for this feed (try searching for
@@ -167,7 +167,7 @@ So now let's put it all together.  The reactor config lives here:
   ~/wubot/config/reactor.yaml
 
 Here are the final contents of the reactor config, including some
-notifications rules discussed in L<Wubot::Guide::Notifications>.
+notifications rules discussed in L<App::Wubot::Guide::Notifications>.
 
 Warning: if you are not familiar with YAML, it is extremely sensitive
 to whitespace!
@@ -237,7 +237,7 @@ To start the reactor, simply run:  wubot-reactor
 =head1 Web UI
 
 For more information on the wubot webui, please see the document
-L<Wubot::Guide::WebUI>.
+L<App::Wubot::Guide::WebUI>.
 
 The Web UI reads the data out of the rss SQLite database, so before we
 can use the Web UI, we need to go back to the reactor and add some
@@ -261,7 +261,7 @@ plugin goes to insert the data, it will catch the error that the
 column does not exist, and will then attempt to alter the table and
 add the row.  Note that it will not change the type on a column that
 has already been created in the table, or remove a column that was
-previously added.  For more information, see L<Wubot::SQLite>.
+previously added.  For more information, see L<App::Wubot::SQLite>.
 
 You could easily add a rule in the reactor to select the RSS-usgs-m5
 key and then add a 'mailbox' field.  But this is a good opportunity to
@@ -317,7 +317,7 @@ reactor are separate processes is by design.  This ensures that the
 monitors can continually gather data on schedule and won't get hung up
 waiting for a reaction to occur.
 
-See the L<Wubot::Guide::WebUI> document for more information on
+See the L<App::Wubot::Guide::WebUI> document for more information on
 starting up the web ui.  Once the process is started up, point your
 RSS reader here, and enjoy your filtered feed:
 

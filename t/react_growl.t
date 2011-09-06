@@ -5,8 +5,8 @@ use warnings;
 use Test::More;
 
 for my $lib ( 'Growl::Tiny',
-              'Wubot::Logger',
-              'Wubot::Reactor::Growl' ) {
+              'App::Wubot::Logger',
+              'App::Wubot::Reactor::Growl' ) {
 
     eval "use $lib";
     plan skip_all => "Failed to load $lib for this test case" if $@;
@@ -14,7 +14,7 @@ for my $lib ( 'Growl::Tiny',
 
 plan 'no_plan';
 
-ok( my $growl = Wubot::Reactor::Growl->new(),
+ok( my $growl = App::Wubot::Reactor::Growl->new(),
     "Creating new growl reactor object"
 );
 

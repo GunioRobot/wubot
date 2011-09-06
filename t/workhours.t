@@ -6,10 +6,10 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::WorkHours;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::WorkHours;
 
-ok( my $check = Wubot::Plugin::WorkHours->new( { class      => 'Wubot::Plugin::WorkHours',
+ok( my $check = App::Wubot::Plugin::WorkHours->new( { class      => 'App::Wubot::Plugin::WorkHours',
                                                  cache_file => '/dev/null',
                                                  key        => 'WorkHours-testcase',
                                              } ),

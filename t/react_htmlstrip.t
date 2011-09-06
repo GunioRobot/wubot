@@ -7,8 +7,8 @@ no utf8;
 use Test::More;
 
 for my $lib ( 'HTML::Strip',
-              'Wubot::Logger',
-              'Wubot::Reactor::HTMLStrip' ) {
+              'App::Wubot::Logger',
+              'App::Wubot::Reactor::HTMLStrip' ) {
 
     eval "use $lib";
     plan skip_all => "Failed to load $lib for this test case" if $@;
@@ -16,7 +16,7 @@ for my $lib ( 'HTML::Strip',
 
 plan 'no_plan';
 
-ok( my $strip = Wubot::Reactor::HTMLStrip->new(),
+ok( my $strip = App::Wubot::Reactor::HTMLStrip->new(),
     "Creating new console reactor object"
 );
 

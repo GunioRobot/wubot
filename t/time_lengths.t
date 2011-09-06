@@ -4,11 +4,11 @@ use strict;
 use Test::Exception;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Util::TimeLength;
+use App::Wubot::Logger;
+use App::Wubot::Util::TimeLength;
 
-ok( my $timelength = Wubot::Util::TimeLength->new(),
-    "Creating a new Wubot::Util::TimeLength object"
+ok( my $timelength = App::Wubot::Util::TimeLength->new(),
+    "Creating a new App::Wubot::Util::TimeLength object"
 );
 
 # human readable string in most appropriate units
@@ -193,8 +193,8 @@ ok( my $timelength = Wubot::Util::TimeLength->new(),
 {
     # without space
     {
-        ok( my $timelength = Wubot::Util::TimeLength->new(),
-            "Creating a new Wubot::Util::TimeLength object without spaces"
+        ok( my $timelength = App::Wubot::Util::TimeLength->new(),
+            "Creating a new App::Wubot::Util::TimeLength object without spaces"
         );
 
         is( $timelength->get_human_readable( 60*60*12+70 ),
@@ -215,8 +215,8 @@ ok( my $timelength = Wubot::Util::TimeLength->new(),
 
     # with space
     {
-        ok( my $timelength = Wubot::Util::TimeLength->new( space => 1 ),
-            "Creating a new Wubot::Util::TimeLength object with spaces"
+        ok( my $timelength = App::Wubot::Util::TimeLength->new( space => 1 ),
+            "Creating a new App::Wubot::Util::TimeLength object with spaces"
         );
 
         is( $timelength->get_human_readable( 60*60*12+70 ),

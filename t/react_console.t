@@ -4,10 +4,10 @@ use warnings;
 
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Reactor::Console;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::Console;
 
-ok( my $console = Wubot::Reactor::Console->new(),
+ok( my $console = App::Wubot::Reactor::Console->new(),
     "Creating new console reactor object"
 );
 

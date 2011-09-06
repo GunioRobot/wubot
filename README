@@ -1,8 +1,8 @@
 Please see:
 
-  - http://search.cpan.org/perldoc?Wubot::Guide::GettingStarted
+  - http://search.cpan.org/perldoc?App::Wubot::Guide::GettingStarted
 
-  - http://search.cpan.org/perldoc?Wubot::Guide
+  - http://search.cpan.org/perldoc?App::Wubot::Guide
 
   - http://search.cpan.org/dist/wubot/
 
@@ -30,7 +30,7 @@ the 'config/schemas' directory into that directory.
 
 To get the web interface up and going, see here:
 
-  - http://search.cpan.org/perldoc?Wubot::Guide::WebUI
+  - http://search.cpan.org/perldoc?App::Wubot::Guide::WebUI
 
 =head1 LICENSE AND COPYRIGHT
 

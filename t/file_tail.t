@@ -6,18 +6,18 @@ use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::FileTail;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::FileTail;
 
 my $init = { key        => 'FileTail-testcase',
-             class      => 'Wubot::Plugin::FileTail',
+             class      => 'App::Wubot::Plugin::FileTail',
              cache_file => '/dev/null',
          };
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 {
-    ok( my $tail = Wubot::Plugin::FileTail->new( $init ),
+    ok( my $tail = App::Wubot::Plugin::FileTail->new( $init ),
         "Creating new file tail object"
     );
 
@@ -43,7 +43,7 @@ $| = 1;
     system( "echo line0 >> $path" );
     system( "echo line0 >> $path" );
 
-    ok( my $tail = Wubot::Plugin::FileTail->new( $init ),
+    ok( my $tail = App::Wubot::Plugin::FileTail->new( $init ),
         "Creating new file tail object"
     );
 

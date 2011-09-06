@@ -6,14 +6,14 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::Directory;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::Directory;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $tempdir2 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 
-ok( my $check = Wubot::Plugin::Directory->new( { class      => 'Wubot::Plugin::Directory',
+ok( my $check = App::Wubot::Plugin::Directory->new( { class      => 'App::Wubot::Plugin::Directory',
                                                  cache_file => "$tempdir2/foo",
                                                  key        => 'Directory-testcase',
                                              } ),

@@ -3,11 +3,11 @@ use strict;
 
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Config;
+use App::Wubot::Logger;
+use App::Wubot::Config;
 
-ok( my $config = Wubot::Config->new( { root => 't/config' } ),
-    "Creating new Wubot::Config object"
+ok( my $config = App::Wubot::Config->new( { root => 't/config' } ),
+    "Creating new App::Wubot::Config object"
 );
 
 is_deeply( [ $config->get_plugins() ],
@@ -17,7 +17,7 @@ is_deeply( [ $config->get_plugins() ],
 
 is_deeply( $config->get_plugin_config( 'TestCase-test1' ),
            {
-               plugin => 'Wubot::Plugin::TestCase',
+               plugin => 'App::Wubot::Plugin::TestCase',
                param1 => 'value1',
                hash1  => { key1 => 'value1', key2 => 'value2' },
            },

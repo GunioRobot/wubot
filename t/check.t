@@ -7,14 +7,14 @@ use File::Temp qw/ tempdir /;
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Check;
+use App::Wubot::Logger;
+use App::Wubot::Check;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
 {
-    ok( my $check = Wubot::Check->new( { class      => 'Wubot::Plugin::TestCase',
+    ok( my $check = App::Wubot::Check->new( { class      => 'App::Wubot::Plugin::TestCase',
                                          cache_file => $cache_file,
                                          key        => 'TestCase-testcase',
                                      } ),
@@ -48,7 +48,7 @@ my $cache_file = "$tempdir/storage.yaml";
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
+    ok( my $check = App::Wubot::Check->new( { class             => 'App::Wubot::Plugin::TestCase',
                                          cache_file        => $cache_file,
                                          key               => 'TestCase-testcase',
                                          reactor_queue_dir => $tempdir,
@@ -137,7 +137,7 @@ my $cache_file = "$tempdir/storage.yaml";
               ];
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
+    ok( my $check = App::Wubot::Check->new( { class             => 'App::Wubot::Plugin::TestCase',
                                          cache_file        => $cache_file,
                                          key               => 'TestCase-testcase',
                                          reactor_queue_dir => $tempdir,
@@ -178,7 +178,7 @@ my $cache_file = "$tempdir/storage.yaml";
               ];
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Check->new( { class             => 'Wubot::Plugin::TestCase',
+    ok( my $check = App::Wubot::Check->new( { class             => 'App::Wubot::Plugin::TestCase',
                                          cache_file        => $cache_file,
                                          key               => 'TestCase-testcase',
                                          reactor_queue_dir => $tempdir,

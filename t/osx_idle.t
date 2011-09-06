@@ -6,15 +6,15 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::OsxIdle;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::OsxIdle;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
 
 {
-    ok( my $check = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
+    ok( my $check = App::Wubot::Plugin::OsxIdle->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                    cache_file => $cache_file,
                                                    key        => 'OsxIdle-testcase',
                                                } ),
@@ -46,7 +46,7 @@ my $cache_file = "$tempdir/storage.yaml";
 }
 
 {
-    ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
+    ok( my $idle = App::Wubot::Plugin::OsxIdle->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
@@ -74,7 +74,7 @@ my $cache_file = "$tempdir/storage.yaml";
 
 # active duration
 {
-    ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
+    ok( my $idle = App::Wubot::Plugin::OsxIdle->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
@@ -176,7 +176,7 @@ my $cache_file = "$tempdir/storage.yaml";
 
 # active after idle
 {
-    ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
+    ok( my $idle = App::Wubot::Plugin::OsxIdle->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
                                                   key        => 'OsxIdle-testcase',
                                               } ),
@@ -214,7 +214,7 @@ my $cache_file = "$tempdir/storage.yaml";
 
 # idle after active
 {
-    ok( my $idle = Wubot::Plugin::OsxIdle->new( { class      => 'Wubot::Plugin::OsxIdle',
+    ok( my $idle = App::Wubot::Plugin::OsxIdle->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                   cache_file => $cache_file,
                                                   key        => 'OsxIdle-testcase',
                                               } ),

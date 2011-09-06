@@ -5,8 +5,8 @@ use Test::More tests => 21;
 
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Reactor;
+use App::Wubot::Logger;
+use App::Wubot::Reactor;
 
 my $config_src = <<"EOF";
 ---
@@ -96,7 +96,7 @@ EOF
 
 my $config = YAML::Load( $config_src );
 
-my $reactor = Wubot::Reactor->new( config => $config );
+my $reactor = App::Wubot::Reactor->new( config => $config );
 
 # react()
 {

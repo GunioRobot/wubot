@@ -6,13 +6,13 @@ use Test::More tests => 36;
 use File::Temp qw/ tempdir /;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::Pulse;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::Pulse;
 
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Plugin::Pulse->new( { class      => 'Wubot::Plugin::Pulse',
+    ok( my $check = App::Wubot::Plugin::Pulse->new( { class      => 'App::Wubot::Plugin::Pulse',
                                                  cache_file => "$tempdir/Pulse.cache.yaml",
                                                  key        => 'Pulse-navi',
                                              } ),
@@ -175,7 +175,7 @@ use Wubot::Plugin::Pulse;
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Plugin::Pulse->new( { class      => 'Wubot::Plugin::Pulse',
+    ok( my $check = App::Wubot::Plugin::Pulse->new( { class      => 'App::Wubot::Plugin::Pulse',
                                                  cache_file => "$tempdir/Pulse.cache.yaml",
                                                  key        => 'Pulse-navi',
                                              } ),
@@ -227,7 +227,7 @@ use Wubot::Plugin::Pulse;
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $check = Wubot::Plugin::Pulse->new( { class      => 'Wubot::Plugin::Pulse',
+    ok( my $check = App::Wubot::Plugin::Pulse->new( { class      => 'App::Wubot::Plugin::Pulse',
                                                  cache_file => "$tempdir/Pulse.cache.yaml",
                                                  key        => 'Pulse-navi',
                                              } ),

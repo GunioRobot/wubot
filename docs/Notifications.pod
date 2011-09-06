@@ -1,13 +1,13 @@
 =head1 NAME
 
-Wubot::Guide::Notifications - guide to using notifications
+App::Wubot::Guide::Notifications - guide to using notifications
 
 =head1 DESCRIPTION
 
 This document describes how to enable notifications.  You probably
 should not start at this document, as there will be no notifications
 unless you have figured out how to use the monitor and reactor.  A
-good place to start is probably L<Wubot::Guide::GettingStarted>.
+good place to start is probably L<App::Wubot::Guide::GettingStarted>.
 
 =head1 Notification reactors
 
@@ -170,7 +170,7 @@ can nevery be cleared by a non-sticky window.
 
 The IRC notification lets you send a public IRC message to a channel
 or a private message to a user.  For more information, see
-L<Wubot::Guide::IRC>.
+L<App::Wubot::Guide::IRC>.
 
 =head1 subject_text field
 

@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::MonitorPlugins - overview of the monitor plugins
+App::Wubot::Guide::MonitorPlugins - overview of the monitor plugins
 
 =head1 DESCRIPTION
 

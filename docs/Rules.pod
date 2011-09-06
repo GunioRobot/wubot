@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::Rules - rule field description
+App::Wubot::Guide::Rules - rule field description
 
 =head1 DESCRIPTION
 
@@ -26,7 +26,7 @@ Rules may contain the following fields:
   - description: conditions that must be satisfied in order for the rule to fire
   - hints:
     - if condition is not defined in the rule, the rule will always run
-    - for more information, see L<Wubot::Guide::Notifications>.
+    - for more information, see L<App::Wubot::Guide::Notifications>.
 
 =back
 
@@ -35,10 +35,10 @@ Rules may contain the following fields:
 =over 2
 
   - optional
-  - description: the name of a package in the Wubot::Reactor namespace
+  - description: the name of a package in the App::Wubot::Reactor namespace
   - hints:
     - most plugins require 'config' to determine what to do with the message
-    - for an overview of plugins, see L<Wubot::Guide::ReactorPlugins>.
+    - for an overview of plugins, see L<App::Wubot::Guide::ReactorPlugins>.
 
 =back
 

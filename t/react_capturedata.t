@@ -5,11 +5,11 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::CaptureData;
+use App::Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::CaptureData;
 
-ok( my $capture = Wubot::Reactor::CaptureData->new(),
+ok( my $capture = App::Wubot::Reactor::CaptureData->new(),
     "Creating new CaptureData reactor object"
 );
 

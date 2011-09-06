@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::ReactorPlugins - overview of the reactor plugins
+App::Wubot::Guide::ReactorPlugins - overview of the reactor plugins
 
 =head1 DESCRIPTION
 

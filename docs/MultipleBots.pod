@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::MultipleBots - guide for running multiple communicating bots
+App::Wubot::Guide::MultipleBots - guide for running multiple communicating bots
 
 =head1 DESCRIPTION
 
@@ -70,7 +70,7 @@ inter-host messaging must run a wubot-monitor process with the XMPP
 monitor enabled.
 
 XMPP messaging is implemented as a queue, and works exactly like the
-message queue for the reactor (i.e. it is a Wubot::LocalMessageQueue).
+message queue for the reactor (i.e. it is a App::Wubot::LocalMessageQueue).
 So if you aren't running a wubot-reactor process on a host, you could
 just point the XMPP monitor at the default reactor queue, and it would
 forward the reactor messages to a remote host for processing.

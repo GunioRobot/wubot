@@ -11,13 +11,13 @@ BEGIN {
     $ENV{TZ} = "America/Los_Angeles";
 }
 
-use Wubot::Logger;
-use Wubot::Util::Tasks;
+use App::Wubot::Logger;
+use App::Wubot::Util::Tasks;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 
-ok( my $taskutil = Wubot::Util::Tasks->new( { dbfile => "$tempdir/tasks.ql" } ),
+ok( my $taskutil = App::Wubot::Util::Tasks->new( { dbfile => "$tempdir/tasks.ql" } ),
     "Creating new taskutil object"
 );
 

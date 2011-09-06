@@ -5,11 +5,11 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::CopyField;
+use App::Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::CopyField;
 
-ok( my $transformer = Wubot::Reactor::CopyField->new(),
+ok( my $transformer = App::Wubot::Reactor::CopyField->new(),
     "Creating new CopyField reactor object"
 );
 

@@ -18,13 +18,13 @@ use YAML;
 
 use lib "$FindBin::Bin/../lib";
 
-use Wubot::Logger;
+use App::Wubot::Logger;
 my $logger = Log::Log4perl::get_logger( 'default' );
 
-use Wubot::Check;
-use Wubot::Config;
-use Wubot::LocalMessageStore;
-use Wubot::Util::TimeLength;
+use App::Wubot::Check;
+use App::Wubot::Config;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Util::TimeLength;
 
 my $cache_directory = "$ENV{HOME}/wubot/cache";
 unless ( -d $cache_directory ) {
@@ -39,13 +39,13 @@ unless ( -d $config_directory ) {
 our $plugin_objs;
 my $schedule;
 
-my $config  = Wubot::Config->new( { root => $config_directory } );
+my $config  = App::Wubot::Config->new( { root => $config_directory } );
 
-my $timelength = Wubot::Util::TimeLength->new();
+my $timelength = App::Wubot::Util::TimeLength->new();
 
 # all the plugins share a message store object rather than letting
 # each create their own
-my $message_store = Wubot::LocalMessageStore->new();
+my $message_store = App::Wubot::LocalMessageStore->new();
 
 my $count;
 
@@ -137,7 +137,7 @@ sub create_plugin_instance {
     }
 
     $plugin_objs->{ $plugin }
-        = Wubot::Check->new( { class         => $plugin_config->{plugin},
+        = App::Wubot::Check->new( { class         => $plugin_config->{plugin},
                                cache_file    => "$cache_directory/$plugin.yaml",
                                key           => $plugin,
                                reactor_queue => $message_store,

@@ -7,16 +7,16 @@ use Test::Exception;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::Logger;
-use Wubot::SQLite;
+use App::Wubot::Logger;
+use App::Wubot::SQLite;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 my $sqldb = "$tempdir/test.sql";
 
-ok( my $sql = Wubot::SQLite->new( { file               => $sqldb,
+ok( my $sql = App::Wubot::SQLite->new( { file               => $sqldb,
                                 } ),
-    "Creating new Wubot::SQLite object"
+    "Creating new App::Wubot::SQLite object"
 );
 
 ok( $sql->dbh,
@@ -480,10 +480,10 @@ ok( -r $sqldb,
                    };
     YAML::DumpFile( "$tempdir2/foo.yaml", $foo_schema );
 
-    ok( my $sql = Wubot::SQLite->new( { file               => $sqldb,
+    ok( my $sql = App::Wubot::SQLite->new( { file               => $sqldb,
                                         schema_dir         => $tempdir2,
                                     } ),
-        "Creating new Wubot::SQLite object"
+        "Creating new App::Wubot::SQLite object"
     );
 
     is_deeply( $sql->check_schema( 'xyz' ),

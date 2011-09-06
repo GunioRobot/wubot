@@ -6,8 +6,8 @@ use Sys::Hostname;
 use Test::More 'no_plan';
 use YAML;
 
-use Wubot::LocalMessageStore;
-use Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Logger;
 
 my $hostname = hostname();
 $hostname =~ s|\..*$||;
@@ -22,7 +22,7 @@ $hostname =~ s|\..*$||;
                     hostname   => $hostname,
                 };
 
-    ok( my $messenger = Wubot::LocalMessageStore->new(),
+    ok( my $messenger = App::Wubot::LocalMessageStore->new(),
         "Creating a new messenger"
     );
 
@@ -58,7 +58,7 @@ $hostname =~ s|\..*$||;
 
     my $timestamp = time - 10000;
 
-    ok( my $messenger = Wubot::LocalMessageStore->new(),
+    ok( my $messenger = App::Wubot::LocalMessageStore->new(),
         "Creating a new messenger"
     );
 
@@ -102,7 +102,7 @@ $hostname =~ s|\..*$||;
 
     my $timestamp = time - 10000;
 
-    my $messenger = Wubot::LocalMessageStore->new();
+    my $messenger = App::Wubot::LocalMessageStore->new();
 
     for my $message_number ( 1 .. 19 ) {
         $messenger->store( { %{ $message, },
@@ -127,7 +127,7 @@ $hostname =~ s|\..*$||;
 {
     my $directory = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    my $messenger = Wubot::LocalMessageStore->new();
+    my $messenger = App::Wubot::LocalMessageStore->new();
 
     is( scalar $messenger->get( $directory ),
         undef,
@@ -147,7 +147,7 @@ $hostname =~ s|\..*$||;
                     hostname   => $hostname,
                 };
 
-    ok( my $messenger = Wubot::LocalMessageStore->new(),
+    ok( my $messenger = App::Wubot::LocalMessageStore->new(),
         "Creating a new messenger"
     );
 
@@ -200,7 +200,7 @@ $hostname =~ s|\..*$||;
                     body       => "foo \x{263A} bar",
                 };
 
-    ok( my $messenger = Wubot::LocalMessageStore->new(),
+    ok( my $messenger = App::Wubot::LocalMessageStore->new(),
         "Creating a new messenger"
     );
 
@@ -237,7 +237,7 @@ $hostname =~ s|\..*$||;
 
     my $timestamp = time - 10000;
 
-    my $messenger = Wubot::LocalMessageStore->new();
+    my $messenger = App::Wubot::LocalMessageStore->new();
 
     for my $message_number ( 1 .. 19 ) {
         $messenger->store( { %{ $message, },
@@ -319,13 +319,13 @@ $hostname =~ s|\..*$||;
                     lastupdate => $timestamp,
                 };
 
-    my $messenger = Wubot::LocalMessageStore->new();
+    my $messenger = App::Wubot::LocalMessageStore->new();
 
     $messenger->store( { %{ $message, },
                      }, $directory );
 
 
-    my $sqlite = Wubot::SQLite->new( { file => "$directory/queue.sqlite" } );
+    my $sqlite = App::Wubot::SQLite->new( { file => "$directory/queue.sqlite" } );
 
     my ( $row ) = $sqlite->select( { tablename => 'message_queue' } );
 

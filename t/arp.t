@@ -6,15 +6,15 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::Arp;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::Arp;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
 
 
 {
-    ok( my $check = Wubot::Plugin::Arp->new( { class      => 'Wubot::Plugin::Arp',
+    ok( my $check = App::Wubot::Plugin::Arp->new( { class      => 'App::Wubot::Plugin::Arp',
                                                cache_file => $cache_file,
                                                key        => 'Arp-testcase',
                                            } ),

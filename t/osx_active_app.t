@@ -6,11 +6,11 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::OsxActiveApp;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::OsxActiveApp;
 
 {
-    ok( my $check = Wubot::Plugin::OsxActiveApp->new( { class      => 'Wubot::Plugin::OsxActiveApp',
+    ok( my $check = App::Wubot::Plugin::OsxActiveApp->new( { class      => 'App::Wubot::Plugin::OsxActiveApp',
                                                         cache_file => '/dev/null',
                                                         key        => 'OsxActiveApp-test',
                                                } ),

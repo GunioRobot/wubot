@@ -5,8 +5,8 @@ use File::Temp qw/ tempdir /;
 use Test::More;
 
 for my $lib ( 'Astro::Sunrise',
-              'Wubot::Logger',
-              'Wubot::Plugin::SunRise' ) {
+              'App::Wubot::Logger',
+              'App::Wubot::Plugin::SunRise' ) {
 
     eval "use $lib";
     plan skip_all => "Failed to load $lib for this test case" if $@;
@@ -16,7 +16,7 @@ plan 'no_plan';
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $check = Wubot::Plugin::SunRise->new( { class      => 'Wubot::Plugin::OsxIdle',
+ok( my $check = App::Wubot::Plugin::SunRise->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                                cache_file => '/dev/null',
                                                key        => 'OsxIdle-testcase',
                                            } ),

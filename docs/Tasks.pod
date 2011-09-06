@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::Tasks - guide to using wubot to monitor tasks
+App::Wubot::Guide::Tasks - guide to using wubot to monitor tasks
 
 
 =head1 STATUS
@@ -24,20 +24,20 @@ web interface to review my task list.
 
 =head1 COMPONENTS
 
-L<Wubot::Plugin::EmacsOrgMode> - monitors ~/org directory for new
+L<App::Wubot::Plugin::EmacsOrgMode> - monitors ~/org directory for new
 files that contain TODO items that have a scheduled or deadline date.
 
-L<Wubot::Plugin::TaskDB> - monitors the task database for the highest
+L<App::Wubot::Plugin::TaskDB> - monitors the task database for the highest
 priority task in the queue.
 
-L<Wubot::Plugin::TaskNotify> - monitors the task database for items
+L<App::Wubot::Plugin::TaskNotify> - monitors the task database for items
 that have a scheduled or deadline date that is due within the next 15
 minutes.
 
-L<Wubot::Util::Tasks> - utility class where most of the parsing and
+L<App::Wubot::Util::Tasks> - utility class where most of the parsing and
 database work is done.  Used by the other classes.
 
-L<Wubot::Web::Tasks> - web user interface for tasks.
+L<App::Wubot::Web::Tasks> - web user interface for tasks.
 
 
 =head1 LIMITATIONS

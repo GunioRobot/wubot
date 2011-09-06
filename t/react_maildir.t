@@ -7,8 +7,8 @@ use Test::More;
 
 for my $lib ( 'Maildir::Lite',
               'MIME::Entity',
-              'Wubot::Logger',
-              'Wubot::Reactor::Maildir' ) {
+              'App::Wubot::Logger',
+              'App::Wubot::Reactor::Maildir' ) {
 
     eval "use $lib";
     plan skip_all => "Failed to load $lib for this test case" if $@;
@@ -18,7 +18,7 @@ plan 'no_plan';
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $maildir = Wubot::Reactor::Maildir->new(),
+ok( my $maildir = App::Wubot::Reactor::Maildir->new(),
     "Creating new maildir reactor object"
 );
 
@@ -26,7 +26,7 @@ ok( my $maildir = Wubot::Reactor::Maildir->new(),
     my $testmessage1 = { body => 'this is the test body',
                          key  => 'TestCase-test1',
                          lastupdate => time - 60*60*24,
-                         plugin => 'Wubot::Plugin::RSS',
+                         plugin => 'App::Wubot::Plugin::RSS',
                          subject => 'this is the subject',
                      };
 
@@ -55,7 +55,7 @@ BODY
     my $testmessage1 = { body => $body,
                          key  => 'TestCase-test1',
                          lastupdate => time - 60*60*24,
-                         plugin => 'Wubot::Plugin::RSS',
+                         plugin => 'App::Wubot::Plugin::RSS',
                          subject => 'this is the subject',
                      };
 
@@ -119,7 +119,7 @@ BODY
     my $testmessage1 = { body => $body,
                          key  => 'TestCase-test1',
                          lastupdate => time - 60*60*24,
-                         plugin => 'Wubot::Plugin::RSS',
+                         plugin => 'App::Wubot::Plugin::RSS',
                          subject => 'this is the subject',
                      };
 

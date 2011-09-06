@@ -6,12 +6,12 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::TaskDB;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::TaskDB;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $check = Wubot::Plugin::TaskDB->new( { class      => 'Wubot::Plugin::TaskDB',
+ok( my $check = App::Wubot::Plugin::TaskDB->new( { class      => 'App::Wubot::Plugin::TaskDB',
                                               cache_file => '/dev/null',
                                               key        => 'TaskDB-testcase',
                                           } ),

@@ -11,9 +11,9 @@ use Sys::Hostname;
 
 use lib "$FindBin::Bin/../lib";
 
-use Wubot::Logger;
-use Wubot::SQLite;
-use Wubot::Check;
+use App::Wubot::Logger;
+use App::Wubot::SQLite;
+use App::Wubot::Check;
 
 my $logger = Log::Log4perl::get_logger( 'default' );
 
@@ -44,8 +44,8 @@ if ( -r $cache_file ) {
     $logger->info( "Found cache file: $cache_file" );
 }
 
-my $check = Wubot::Check->new( { key        => "$plugin-$key",
-                                 class      => "Wubot::Plugin::$plugin",
+my $check = App::Wubot::Check->new( { key        => "$plugin-$key",
+                                 class      => "App::Wubot::Plugin::$plugin",
                                  cache_file => $cache_file,
                              } );
 
@@ -88,4 +88,4 @@ __END__
 This script makes it easy to perform a single check of an instance of
 a monitor.
 
-See also: L<Wubot::Guide::Debugging>
+See also: L<App::Wubot::Guide::Debugging>

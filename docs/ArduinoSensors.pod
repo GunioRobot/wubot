@@ -1,11 +1,11 @@
 =head1 NAME
 
-Wubot::Guide::ArduinoSensors - monitoring arduino sensor data
+App::Wubot::Guide::ArduinoSensors - monitoring arduino sensor data
 
 =head1 DESCRIPTION
 
 If you are not familiar with wubot, you may want to begin with the
-document L<Wubot::Guide::GettingStarted>.
+document L<App::Wubot::Guide::GettingStarted>.
 
 This document describes how to read temperature, humidity, or other
 sensor data from an Arduino and feed it into wubot.  We are notified
@@ -88,7 +88,7 @@ will contain the string that was read.
 
 Now that you have the sensor data coming in, the next step is to parse
 it.  To do that we need to define some rules.  See also
-L<Wubot::Guide::Rules>.
+L<App::Wubot::Guide::Rules>.
 
 Remember that 'beginning-of-record' character I mentioned above?  This
 rule makes use of that.  Start by cleaning everything from the
@@ -238,7 +238,7 @@ matches SerialPort' will not find these messages again!
 
 
 Let's start with a simple warning.  If you haven't looked at the
-L<Wubot::Guide::Notifications> doc yet, this might be a good time to
+L<App::Wubot::Guide::Notifications> doc yet, this might be a good time to
 take a look.  If the temp gets above 85 degrees in the office, then
 generate an alert message.  There are computers in the office, so if
 the temerature starts to get too high, the one of them could overheat.

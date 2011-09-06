@@ -1,5 +1,13 @@
 Revision history for Wubot
 
+0.3.0 2011-09-20T20:06PDT
+
+  - Renamed Wubot to App::Wubot
+    - Wubot::TimeLength => Wubot::Util::TimeLength
+    - Wubot::Tail => Wubot::Util::Tail
+    - Wubot => App::Wubot
+
+
 0.2.5 2011-09-16T16:40PDT
 
   - update changelog to use W3CDTF timestamp

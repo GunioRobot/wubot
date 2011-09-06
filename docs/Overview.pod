@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::Overview - wtf is wubot?
+App::Wubot::Guide::Overview - wtf is wubot?
 
 =head1 DESCRIPTION
 
@@ -26,7 +26,7 @@ from a variety of sources, including:
   - monitors running on remote hosts
   - your own custom monitor plugin written in perl
 
-For more info, see: L<Wubot::Guide::MonitorPlugins>
+For more info, see: L<App::Wubot::Guide::MonitorPlugins>
 
 Data collected from each monitor is sent through a set of rules that
 can perform actions such as:
@@ -42,7 +42,7 @@ can perform actions such as:
   - your own custom action written in perl
   - ignore the message, the equivalent of routing it to /dev/null
 
-For more info, see: L<Wubot::Guide::ReactorPlugins>
+For more info, see: L<App::Wubot::Guide::ReactorPlugins>
 
 =back
 
@@ -58,23 +58,23 @@ message, you also have the option to modify the message, e.g.:
 Unlike previous generations of this project, the rules are entirely
 controlled by configuration.  So it is not necessary to write any perl
 code to use the rules.  In the future there will be a user interface
-for configuring the rules.  See L<Wubot::Guide::Rules>.
+for configuring the rules.  See L<App::Wubot::Guide::Rules>.
 
 Rules can be nested, so that when a rule matches, it can cause
 additional sub-rules to run.  Nesting rules makes the rules processing
 much more efficient so that not every rule needs to be run on every
 message.  Rules processing is recursive so rules can be nested
 arbitrarily deep.  For more information on rule conditions, see
-L<Wubot::Guide::Conditions>.
+L<App::Wubot::Guide::Conditions>.
 
 Distributed operation currently relies on XMPP.  Using XMPP, messages
 can be sent between wubot instances on multiple hosts.  Monitors
 generate messages that may be reacted upon locally, and/or may be
 forwarded to other hosts for further reaction.  See
-L<Wubot::Guide::MultipleBots>.
+L<App::Wubot::Guide::MultipleBots>.
 
 This project is still under construction.
 
-To get started, see L<Wubot::Guide::GettingStarted>.
+To get started, see L<App::Wubot::Guide::GettingStarted>.
 
 Lots more to come...

@@ -8,8 +8,8 @@ use File::Temp qw/ tempdir /;
 
 for my $lib ( 'RRDs',
               'RRD::Simple',
-              'Wubot::Logger',
-              'Wubot::Reactor::RRD' ) {
+              'App::Wubot::Logger',
+              'App::Wubot::Reactor::RRD' ) {
 
     eval "use $lib";
     plan skip_all => "Failed to load $lib for this test case" if $@;
@@ -17,7 +17,7 @@ for my $lib ( 'RRDs',
 
 plan 'no_plan';
 
-ok( my $rrd = Wubot::Reactor::RRD->new(),
+ok( my $rrd = App::Wubot::Reactor::RRD->new(),
     "Creating a new 'rrd' reactor object"
 );
 

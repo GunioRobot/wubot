@@ -8,8 +8,8 @@ use Test::More tests => 33;
 use File::Temp qw/ tempdir /;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Reactor::Command;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::Command;
 
 my $tempdir  = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 $tempdir .= "/tmp";
@@ -21,7 +21,7 @@ my $queuedb = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 $queuedb .= "/commands.sql";
 
 {
-    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
+    ok( my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
         "Creating new command reactor object"
     );
 
@@ -47,7 +47,7 @@ $queuedb .= "/commands.sql";
 }
 
 {
-    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
+    ok( my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
         "Creating new command reactor object"
     );
 
@@ -62,7 +62,7 @@ $queuedb .= "/commands.sql";
 
     my $id = 'forker';
 
-    my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } );
+    my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } );
 
     my $queue_results_h = $command->react( { foo => 'abc' }, { command => 'sleep 4 && echo finished', fork => $id } );
 
@@ -146,7 +146,7 @@ $queuedb .= "/commands.sql";
 {
     my $id = 'separate';
 
-    my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedir => $queuedir, queuedb => $queuedb } );
+    my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedir => $queuedir, queuedb => $queuedb } );
 
     my $results1_h = $command->react( { foo => 'abc' }, { command => 'sleep 1 && echo finished1', fork => "$id.1" } );
     my $results2_h = $command->react( { foo => 'def' }, { command => 'sleep 1 && echo finished2', fork => "$id.2" } );
@@ -199,7 +199,7 @@ $queuedb .= "/commands.sql";
 }
 
 {
-    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb, fork => 'cache' } ),
+    ok( my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb, fork => 'cache' } ),
         "Creating new command reactor object"
     );
 
@@ -241,7 +241,7 @@ $queuedb .= "/commands.sql";
 
     my $queuedb = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 ) . "command.sql";
 
-    ok( my $command = Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
+    ok( my $command = App::Wubot::Reactor::Command->new( { logdir => $tempdir, queuedb => $queuedb } ),
         "Creating new command reactor object"
     );
 

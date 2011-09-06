@@ -5,12 +5,12 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Reactor::WebFetch;
+use App::Wubot::Logger;
+use App::Wubot::Reactor::WebFetch;
 
 my $expected_content = "<title>Google</title>";
 
-ok( my $fetch = Wubot::Reactor::WebFetch->new(),
+ok( my $fetch = App::Wubot::Reactor::WebFetch->new(),
     "Creating new WebFetch reactor object"
 );
 

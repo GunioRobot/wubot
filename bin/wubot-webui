@@ -20,7 +20,7 @@ EOF
 
 
 # Application
-$ENV{MOJO_APP} ||= 'Wubot::Web';
+$ENV{MOJO_APP} ||= 'App::Wubot::Web';
 
 #app->secret('Wubot Web User Interface');
 

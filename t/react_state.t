@@ -6,15 +6,15 @@ use Test::More tests => 29;
 
 use File::Temp qw/ tempdir /;
 
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::State;
-use Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::State;
+use App::Wubot::Logger;
 
 
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    ok( my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } ),
+    ok( my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } ),
         "Creating new State reactor object"
     );
 
@@ -141,7 +141,7 @@ for my $testcase ( @{ $cases } ) {
 
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+    my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     for my $idx ( 0 .. $#{ $testcase->{cases} } - 1 ) {
         $state->react( $testcase->{cases}->[$idx], $testcase->{config} );
@@ -164,7 +164,7 @@ for my $testcase ( @{ $cases } ) {
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+    my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     is_deeply( [ $state->monitor() ],
                [ ],
@@ -200,7 +200,7 @@ for my $testcase ( @{ $cases } ) {
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+    my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
 
@@ -240,13 +240,13 @@ for my $testcase ( @{ $cases } ) {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     {
-        my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+        my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
         $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 }, { field => 'a', change => 10 } );
 
     }
     {
-        my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+        my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
         my @results = $state->monitor();
 
@@ -262,7 +262,7 @@ for my $testcase ( @{ $cases } ) {
                        subject => 'Warning: cache data for TestCase1:a not updated in 1h',
                    },
                  ],
-                   "Checking that monitor() finds cache data from previous Wubot::Reactor::State instance"
+                   "Checking that monitor() finds cache data from previous App::Wubot::Reactor::State instance"
                );
 
     }
@@ -272,7 +272,7 @@ for my $testcase ( @{ $cases } ) {
 {
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-    my $state = Wubot::Reactor::State->new( { cachedir => $tempdir } );
+    my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     $state->react( { key => 'TestCase1', x => 5, lastupdate => time-60*60 },
                    { field => 'a', change => 10, notify_interval => '5s' },

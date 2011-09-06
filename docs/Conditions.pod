@@ -1,6 +1,6 @@
 =head1 NAME
 
-Wubot::Guide::Conditions - guide for using conditions in rules
+App::Wubot::Guide::Conditions - guide for using conditions in rules
 
 =head1 DESCRIPTION
 

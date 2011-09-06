@@ -6,13 +6,13 @@ use Test::More 'no_plan';
 use Test::Differences;
 use YAML;
 
-use Wubot::Logger;
-use Wubot::Plugin::Ping;
+use App::Wubot::Logger;
+use App::Wubot::Plugin::Ping;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
 
-ok( my $check = Wubot::Plugin::Ping->new( { class      => 'Wubot::Plugin::OsxIdle',
+ok( my $check = App::Wubot::Plugin::Ping->new( { class      => 'App::Wubot::Plugin::OsxIdle',
                                             cache_file => '/dev/null',
                                             key        => 'OsxIdle-testcase',
                                         } ),

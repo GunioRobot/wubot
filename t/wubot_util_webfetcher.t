@@ -3,10 +3,10 @@ use strict;
 
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::Util::WebFetcher;
+use App::Wubot::Logger;
+use App::Wubot::Util::WebFetcher;
 
-ok( my $fetcher = Wubot::Util::WebFetcher->new(),
+ok( my $fetcher = App::Wubot::Util::WebFetcher->new(),
     "Creating a new fetcher"
 );
 

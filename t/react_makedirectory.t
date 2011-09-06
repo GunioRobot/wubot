@@ -5,11 +5,11 @@ use warnings;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 
-use Wubot::Logger;
-use Wubot::LocalMessageStore;
-use Wubot::Reactor::MakeDirectory;
+use App::Wubot::Logger;
+use App::Wubot::LocalMessageStore;
+use App::Wubot::Reactor::MakeDirectory;
 
-ok( my $mkdir = Wubot::Reactor::MakeDirectory->new(),
+ok( my $mkdir = App::Wubot::Reactor::MakeDirectory->new(),
     "Creating new MakeDirectory reactor object"
 );
 

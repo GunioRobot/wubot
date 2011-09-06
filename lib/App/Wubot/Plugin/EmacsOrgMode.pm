@@ -13,9 +13,18 @@ has 'taskutil' => ( is => 'ro',
                     isa => 'App::Wubot::Util::Tasks',
                     lazy => 1,
                     default => sub {
-                        return App::Wubot::Util::Tasks->new();
+                        my $self = shift;
+                        return App::Wubot::Util::Tasks->new( { dbfile => $self->dbfile } );
                     },
                 );
+
+has 'dbfile' => ( is      => 'rw',
+                  isa     => 'Str',
+                  lazy    => 1,
+                  default => sub {
+                      return join( "/", $ENV{HOME}, "wubot", "sqlite", "tasks.sql" );
+                  },
+              );
 
 with 'App::Wubot::Plugin::Roles::Cache';
 with 'App::Wubot::Plugin::Roles::Plugin';

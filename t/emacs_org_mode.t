@@ -16,14 +16,16 @@ use App::Wubot::Reactor;
 
 my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 my $cache_file = "$tempdir/storage.yaml";
+my $taskdb = "$tempdir/tasks.sql";
 
 {
 
     my $reaction = [];
     ok( my $check = App::Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
-                                                        class      => 'App::Wubot::Plugin::EmacsOrgMode',
-                                                        cache_file => $cache_file,
-                                                    } ),
+                                                             class      => 'App::Wubot::Plugin::EmacsOrgMode',
+                                                             cache_file => $cache_file,
+                                                             dbfile     => $taskdb,
+                                                         } ),
         "Creating a new Emacs Org Mode check instance"
     );
 
@@ -284,8 +286,9 @@ my $cache_file = "$tempdir/storage.yaml";
 
     my $reaction = [];
     ok( my $check = App::Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
-                                                        class      => 'App::Wubot::Plugin::EmacsOrgMode',
-                                                        cache_file => "/dev/null",
+                                                             class      => 'App::Wubot::Plugin::EmacsOrgMode',
+                                                             cache_file => "/dev/null",
+                                                             dbfile     => $taskdb,
                                                     } ),
         "Creating a new Emacs Org Mode check instance"
     );
@@ -323,8 +326,9 @@ my $cache_file = "$tempdir/storage.yaml";
 
     my $reaction = [];
     ok( my $check = App::Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
-                                                        class      => 'App::Wubot::Plugin::EmacsOrgMode',
-                                                        cache_file => "/dev/null",
+                                                             class      => 'App::Wubot::Plugin::EmacsOrgMode',
+                                                             cache_file => "/dev/null",
+                                                             dbfile     => $taskdb,
                                                     } ),
         "Creating a new Emacs Org Mode check instance"
     );

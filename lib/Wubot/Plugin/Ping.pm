@@ -69,7 +69,7 @@ Wubot::Plugin::Ping - monitor ping response from a remote host
 
 =head1 SYNOPSIS
 
-  ~/wubot/config/plugins/Ping/google.yaml.bsd-02
+  ~/wubot/config/plugins/Ping/google.yaml
 
   ---
   host: google.com

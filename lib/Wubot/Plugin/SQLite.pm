@@ -61,9 +61,46 @@ __END__
 
 Wubot::Plugin::SQLite - monitor results of SQLite queries
 
+=head1
+
+  ~/wubot/config/plugins/SQLite/notifyqueue.yaml
+
+  ---
+  delay: 5m
+  dbfile: /Users/wu/wubot/sqlite/notify.sql
+  statements:
+    - SELECT count(*) AS unseen FROM notifications WHERE seen IS NULL
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+This plugin executes a sqlite query and sends a message with the
+results.
+
+=head1 EXAMPLES
+
+I find it useful to monitor the length of my notification queues.  The
+first example monitors the total number of items in the queue that are
+unread.
+
+  ~/wubot/config/plugins/SQLite/notifyqueue.yaml
+
+  ---
+  delay: 5m
+  dbfile: /Users/wu/wubot/sqlite/notify.sql
+  statements:
+    - SELECT count(*) AS unseen FROM notifications WHERE seen IS NULL
+
+The next example selects the number of items that were added to the
+queue in the last 24 hours:
+
+  ~/wubot/config/plugins/SQLite/notify-day.yaml
+
+  ---
+  delay: 5m
+  dbfile: /Users/wu/wubot/sqlite/notify.sql
+  statements:
+    - SELECT count(*) AS day FROM notifications WHERE lastupdate > ( select strftime('%s','now','-24 hours') )
 
 
 =head1 SUBROUTINES/METHODS

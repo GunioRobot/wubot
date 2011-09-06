@@ -137,8 +137,7 @@ Wubot::Plugin::EmacsOrgMode - parse tasks from Emacs Org-Mode files
 
 =head1 DESCRIPTION
 
-TODO: More to come...
-
+Please see L<Wubot::Guide::Tasks>.
 
 =head1 SUBROUTINES/METHODS
 

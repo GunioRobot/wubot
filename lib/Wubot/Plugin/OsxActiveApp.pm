@@ -48,9 +48,22 @@ __END__
 
 Wubot::Plugin::OsxActiveApp - monitor current active application in OS X
 
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/OsxActiveApp/navi.yaml
+
+  ---
+  enable: 1
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+Runs a little python command-line script (see the source) to determine
+which application is currently active in OS X.
+
+Sends a message containing:
+
+  application: {appname}
 
 
 =head1 SUBROUTINES/METHODS

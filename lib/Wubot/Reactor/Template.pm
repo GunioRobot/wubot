@@ -64,6 +64,15 @@ __END__
 
 Wubot::Reactor::Template - build a field using existing message fields as a template
 
+=head1 SYNOPSIS
+
+  - name: build a subject that references the username field
+    plugin: Template
+    config:
+      template: 'Got username: {$username}'
+      target_field: subject
+
+
 =head1 DESCRIPTION
 
 TODO: More to come...

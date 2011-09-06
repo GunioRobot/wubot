@@ -29,6 +29,19 @@ __END__
 
 Wubot::Reactor::Split - split a CSV field on a message out into multiple other fields
 
+=head1 SYNOPSIS
+
+  - name: split
+    plugin: Split
+    config:
+      source_field: line
+      target_fields:
+        - source
+        - type
+        - value
+        - units
+
+
 =head1 DESCRIPTION
 
 TODO: More to come...

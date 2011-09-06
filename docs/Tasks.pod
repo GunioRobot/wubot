@@ -1,0 +1,56 @@
+=head1 NAME
+
+Wubot::Guide::Tasks - guide to using wubot to monitor tasks
+
+
+=head1 STATUS
+
+This document and all the tools referenced in it are still under
+development.  I am using them now, but there are still a few rough
+edges.  They are not yet ready for mass consumption.
+
+
+=head1 DESCRIPTION
+
+I keep all my tasks in Emacs Org-Mode.
+
+  - http://orgmode.org/
+
+I use wubot to parse my tasks out of my org-mode files and store them
+in a database.  I use monitor plugins to monitor the tas database and
+send me notifications when tasks are coming due.  And I also use the
+web interface to review my task list.
+
+
+=head1 COMPONENTS
+
+L<Wubot::Plugin::EmacsOrgMode> - monitors ~/org directory for new
+files that contain TODO items that have a scheduled or deadline date.
+
+L<Wubot::Plugin::TaskDB> - monitors the task database for the highest
+priority task in the queue.
+
+L<Wubot::Plugin::TaskNotify> - monitors the task database for items
+that have a scheduled or deadline date that is due within the next 15
+minutes.
+
+L<Wubot::Util::Tasks> - utility class where most of the parsing and
+database work is done.  Used by the other classes.
+
+L<Wubot::Web::Tasks> - web user interface for tasks.
+
+
+=head1 LIMITATIONS
+
+One of the problems with using emacs org-mode is that I have the files
+open in emacs, and so I can't modify them directly from within the
+wubot web ui.  So currently wubot uses emacsclient to tell emacs to
+open a task file to a specific heading, or even to mark a task as
+complete.
+
+Most of these components are reusable, i.e. there could be other
+plugins that monitor other systems that contain tasks, and if they
+generated tasks messages in the same format as the EmacsOrgMode
+plugin, then the task monitor and web interface would work without
+modification.
+

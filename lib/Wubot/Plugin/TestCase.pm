@@ -39,7 +39,7 @@ Wubot::Plugin::TestCase - a plugin for testing purposes
 
 =head1 DESCRIPTION
 
-TODO: More to come...
+Not much to see here.  This plugin is only useful for testing.
 
 
 =head1 SUBROUTINES/METHODS

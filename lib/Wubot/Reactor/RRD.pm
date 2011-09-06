@@ -161,6 +161,24 @@ __END__
 
 Wubot::Reactor::RRD - store data in an RRD with RRD::Simple
 
+=head1 SYNOPSIS
+
+  - name: rrd
+    plugin: RRD
+    config:
+      base_dir: /home/wu/wubot/rrd
+      fields:
+        packets_sent: COUNTER
+        packets_received: COUNTER
+      period:
+        - day
+        - week
+        - month
+      graph_options:
+        right-axis: 1:0
+        width: 375
+
+
 =head1 DESCRIPTION
 
 TODO: More to come...

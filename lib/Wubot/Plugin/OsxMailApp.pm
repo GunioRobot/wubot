@@ -111,9 +111,31 @@ __END__
 
 Wubot::Plugin::OsxMailApp - monitor OS X mailbox file for new messages
 
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/OsxMailApp/work.yaml
+
+  ---
+  directory: /Users/myid/Library/Mail/DOM-userid@some.host.com/in.xxxxbox/Messages
+  delay: 1m
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+This plugin parses the cache files of the OS X Mail.app file for newly
+received messages.
+
+Each time a new email file shows up in the directory, a message will
+get sent containing each of the mail headers, with the field name in
+lower case.
+
+=head1 WHY
+
+You might ask yourself why a person would want to do such a thing.
+The answer is that I have to monitor an exchange mailbox.  The most
+reasonable client I can use with exchange is OS X's Mail.app.  Since I
+can't communicate well with exchange from perl, it is actually much
+easier to just to read the Mail.app cache files.
 
 
 =head1 SUBROUTINES/METHODS

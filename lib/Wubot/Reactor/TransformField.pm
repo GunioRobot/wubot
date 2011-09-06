@@ -40,6 +40,16 @@ __END__
 
 Wubot::Reactor::TransformField - use a regexps to transform the data in a field
 
+=head1 SYNOPSIS
+
+  - name: clean to beginning of line marker
+    plugin: TransformField
+    config:
+      source_field: line
+      regexp_search: '^.*\^'
+
+
+
 =head1 DESCRIPTION
 
 TODO: More to come...

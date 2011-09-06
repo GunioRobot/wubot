@@ -174,9 +174,32 @@ __END__
 
 Wubot::Plugin::Facebook - scrape facebook wall
 
+=head1 SYNOPSIS
+
+  ~/wubot/config/plugins/Facebook/drivein.yaml
+
+  ---
+  url: http://www.facebook.com/pages/Rodeo-Drive-In-Theatre/115615525131058
+  delay: 30m
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+This plugin is just a prototype!  It implements a very ugly and
+brittle mechanism for scraping a public facebook wall without
+requiring logging in to facebook.  It works this week.  It scrapes new
+posts and comments.  It can only see the most recent 10 items or so,
+so if a page if a lot of comments are posted in a short amount of
+time, you will miss some posts.
+
+=head1 WHY?
+
+I do not have a facebook account, but I want to keep up with a few
+local businesses that provide updates online through facebook.
+
+  - http://www.facebook.com/pages/Rodeo-Drive-In-Theatre/115615525131058
+  - http://www.facebook.com/pages/Colellos-Farm-Stand-Produce/110895085611757
+  - http://www.facebook.com/pages/Blackjack-Valley-Farm/170237373016619
 
 
 =head1 SUBROUTINES/METHODS

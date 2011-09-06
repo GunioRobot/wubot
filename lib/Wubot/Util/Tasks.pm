@@ -19,13 +19,7 @@ Wubot::Util::Tasks - utility for dealing with the Emacs Org-Mode files and tasks
 
 =head1 DESCRIPTION
 
-The wubot tasks libraries are still under development.  I am using
-them now, but there are still a few rough edges.  More documentation
-will be published once the rough edges can be smoothed over a bit.
-
-For more details on Emacs org-mode, see:
-
-  http://orgmode.org/
+Please see L<Wubot::Guide::Tasks>.
 
 =cut
 

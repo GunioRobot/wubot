@@ -66,8 +66,7 @@ Wubot::Plugin::TaskDB - monitor the highest priority task in the task db
 
 =head1 DESCRIPTION
 
-TODO: More to come...
-
+Please see L<Wubot::Guide::Tasks>.
 
 =head1 SUBROUTINES/METHODS
 

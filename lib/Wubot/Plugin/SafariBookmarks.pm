@@ -136,17 +136,17 @@ The file is copied to:
 
   /tmp/bookmarks.plist
 
-Then the 'plutil' utility is used to convert the plist to xml:
+Then the 'plutil' utility is used to convert the plist to XML:
 
   plutil -convert xml1 /tmp/bookmarks.plist
 
 The file is then read in to a data structure using XML::Simple.  The
-datastructure is walked recursively, and all unique URLs in the
-datastructure are returned.  Only the urls are found, no further
-parsing of the file has been implemented yet.  An attempt is made to
-fetch the content of the URL using LWP::Simple in order to grab the
-page title.  If the attempt succeds, the resulting message will have
-the title set in the 'subject' field, e.g.:
+data structure is walked recursively, and all unique URLs in the data
+structure are returned.  Only the URLs are matched; no further parsing
+of the file has been implemented yet.  An attempt is made to fetch the
+content of the URL using LWP::Simple in order to grab the page title.
+If the attempt succeeds, the resulting message will have the title set
+in the 'subject' field, e.g.:
 
   subject: Slashdot: News for nerds, stuff that matters
   link: http://www.slashdot.org/

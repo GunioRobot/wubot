@@ -117,7 +117,7 @@ Wubot::Plugin::Outlook - monitor number of emails in the inbox using Outlook Web
 =head1 DESCRIPTION
 
 This plugin is just a prototype!  It implements a very ugly and
-brittle mechanism for scraping the outlook web access html page for
+brittle mechanism for scraping the outlook web access HTML page for
 new items in the inbox.  It only returns the total number of emails in
 your inbox, up to the maximum number of emails configured to be shown
 per page.  If you inbox contains any email, a message will be sent

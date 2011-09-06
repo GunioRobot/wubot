@@ -1,5 +1,11 @@
 Revision history for Wubot
 
+0.2.5 2011-09-16T16:40PDT
+
+  - update changelog to use W3CDTF timestamp
+
+  - more POD updates
+
 0.2.004 Mon Sep  5, 2011 11:27 am
 
   - separate required prereqs from optional prereqs

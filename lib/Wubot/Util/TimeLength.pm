@@ -1,4 +1,4 @@
-package Wubot::TimeLength;
+package Wubot::Util::TimeLength;
 use Moose;
 
 # VERSION
@@ -7,14 +7,14 @@ use Wubot::Logger;
 
 =head1 NAME
 
-Wubot::TimeLength - utilities for dealing with time durations
+Wubot::Util::TimeLength - utilities for dealing with time durations
 
 
 =head1 SYNOPSIS
 
-    use Wubot::TimeLength;
+    use Wubot::Util::TimeLength;
 
-    my $timelength = Wubot::TimeLength->new();
+    my $timelength = Wubot::Util::TimeLength->new();
 
     # returns '1h1m'
     $timelength->get_human_readable( 3601 );
@@ -29,7 +29,7 @@ Wubot::TimeLength - utilities for dealing with time durations
     $timelength->get_human_readable( 60*60*24*1.5+70 )
 
     # use a space delimiter
-    my $timelength = Wubot::TimeLength->new( space => 1 ),
+    my $timelength = Wubot::Util::TimeLength->new( space => 1 ),
 
     # returns '1h 1s' with space delimiter
     $timelength->get_human_readable( 3601 );

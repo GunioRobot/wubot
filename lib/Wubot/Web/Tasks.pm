@@ -18,13 +18,13 @@ use URI::Escape;
 
 use Wubot::Util::Tasks;
 use Wubot::Util::Colors;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 my $tasks_file   = join( "/", $ENV{HOME}, "wubot", "sqlite", "tasks.sql" );
 my $sqlite_tasks = Wubot::SQLite->new( { file => $tasks_file } );
 my $taskutil     = Wubot::Util::Tasks->new();
 my $colors       = Wubot::Util::Colors->new();
-my $timelength   = Wubot::TimeLength->new();
+my $timelength   = Wubot::Util::TimeLength->new();
 
 sub tasks {
     my $self = shift;

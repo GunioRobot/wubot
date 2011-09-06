@@ -6,12 +6,12 @@ use Moose;
 use Astro::MoonPhase;
 
 use Wubot::Logger;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 has 'timelength' => ( is => 'ro',
-                      isa => 'Wubot::TimeLength',
+                      isa => 'Wubot::Util::TimeLength',
                       lazy => 1,
-                      default => sub { return Wubot::TimeLength->new(); },
+                      default => sub { return Wubot::Util::TimeLength->new(); },
                   );
 
 with 'Wubot::Plugin::Roles::Cache';

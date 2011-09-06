@@ -24,7 +24,7 @@ my $logger = Log::Log4perl::get_logger( 'default' );
 use Wubot::Check;
 use Wubot::Config;
 use Wubot::LocalMessageStore;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 my $cache_directory = "$ENV{HOME}/wubot/cache";
 unless ( -d $cache_directory ) {
@@ -41,7 +41,7 @@ my $schedule;
 
 my $config  = Wubot::Config->new( { root => $config_directory } );
 
-my $timelength = Wubot::TimeLength->new();
+my $timelength = Wubot::Util::TimeLength->new();
 
 # all the plugins share a message store object rather than letting
 # each create their own

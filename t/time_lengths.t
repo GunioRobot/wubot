@@ -5,10 +5,10 @@ use Test::Exception;
 use Test::More 'no_plan';
 
 use Wubot::Logger;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
-ok( my $timelength = Wubot::TimeLength->new(),
-    "Creating a new Wubot::TimeLength object"
+ok( my $timelength = Wubot::Util::TimeLength->new(),
+    "Creating a new Wubot::Util::TimeLength object"
 );
 
 # human readable string in most appropriate units
@@ -193,8 +193,8 @@ ok( my $timelength = Wubot::TimeLength->new(),
 {
     # without space
     {
-        ok( my $timelength = Wubot::TimeLength->new(),
-            "Creating a new Wubot::TimeLength object without spaces"
+        ok( my $timelength = Wubot::Util::TimeLength->new(),
+            "Creating a new Wubot::Util::TimeLength object without spaces"
         );
 
         is( $timelength->get_human_readable( 60*60*12+70 ),
@@ -215,8 +215,8 @@ ok( my $timelength = Wubot::TimeLength->new(),
 
     # with space
     {
-        ok( my $timelength = Wubot::TimeLength->new( space => 1 ),
-            "Creating a new Wubot::TimeLength object with spaces"
+        ok( my $timelength = Wubot::Util::TimeLength->new( space => 1 ),
+            "Creating a new Wubot::Util::TimeLength object with spaces"
         );
 
         is( $timelength->get_human_readable( 60*60*12+70 ),

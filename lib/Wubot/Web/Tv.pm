@@ -7,7 +7,7 @@ use warnings;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Wubot::Logger;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 use Wubot::Util::Colors;
 use Wubot::Util::XMLTV;
 
@@ -20,7 +20,7 @@ my $tv = Wubot::Util::XMLTV->new();
 my $sqlite_tv_data = Wubot::SQLite->new( { file => $tvdata_file } );
 my $sqlite_tv      = Wubot::SQLite->new( { file => $xmltv_file } );
 my $colors         = Wubot::Util::Colors->new();
-my $timelength     = Wubot::TimeLength->new();
+my $timelength     = Wubot::Util::TimeLength->new();
 
 my $schemas = { tv_data => { show             => 'VARCHAR(128)',
                              id               => 'INTEGER PRIMARY KEY AUTOINCREMENT',

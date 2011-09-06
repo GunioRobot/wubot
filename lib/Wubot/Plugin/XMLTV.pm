@@ -8,7 +8,7 @@ use YAML;
 
 use Wubot::Logger;
 use Wubot::SQLite;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 use Wubot::Util::XMLTV;
 
 has 'reactor'  => ( is => 'ro',
@@ -26,10 +26,10 @@ has 'logger'  => ( is => 'ro',
                );
 
 has 'timelength' => ( is => 'ro',
-                      isa => 'Wubot::TimeLength',
+                      isa => 'Wubot::Util::TimeLength',
                       lazy => 1,
                       default => sub {
-                          return Wubot::TimeLength->new();
+                          return Wubot::Util::TimeLength->new();
                       },
                   );
 

@@ -7,7 +7,7 @@ use File::Path;
 use YAML;
 
 use Wubot::Logger;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 has 'cache'   => ( is => 'ro',
                    isa => 'HashRef',
@@ -17,9 +17,9 @@ has 'cache'   => ( is => 'ro',
                );
 
 has 'timelength' => ( is => 'ro',
-                      isa => 'Wubot::TimeLength',
+                      isa => 'Wubot::Util::TimeLength',
                       lazy => 1,
-                      default => sub { return Wubot::TimeLength->new(); },
+                      default => sub { return Wubot::Util::TimeLength->new(); },
                   );
 
 has 'logger'  => ( is => 'ro',

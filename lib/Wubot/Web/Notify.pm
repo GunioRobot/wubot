@@ -9,14 +9,14 @@ use Mojo::Base 'Mojolicious::Controller';
 use Wubot::Util::Colors;
 use Wubot::Logger;
 use Wubot::SQLite;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 my $colors = Wubot::Util::Colors->new();
 
 my $is_null = "IS NULL";
 my $is_not_null = "IS NOT NULL";
 
-my $timelength = Wubot::TimeLength->new();
+my $timelength = Wubot::Util::TimeLength->new();
 
 my $notify_file    = join( "/", $ENV{HOME}, "wubot", "sqlite", "notify.sql" );
 my $sqlite_notify  = Wubot::SQLite->new( { file => $notify_file } );

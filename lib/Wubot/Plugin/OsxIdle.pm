@@ -4,13 +4,13 @@ use Moose;
 # VERSION
 
 use Wubot::Logger;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 has 'timelength' => ( is => 'ro',
-                      isa => 'Wubot::TimeLength',
+                      isa => 'Wubot::Util::TimeLength',
                       lazy => 1,
                       default => sub {
-                          return Wubot::TimeLength->new();
+                          return Wubot::Util::TimeLength->new();
                       },
                   );
 

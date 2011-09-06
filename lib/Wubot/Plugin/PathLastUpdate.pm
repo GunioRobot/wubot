@@ -8,8 +8,8 @@ use Wubot::Logger;
 with 'Wubot::Plugin::Roles::Cache';
 with 'Wubot::Plugin::Roles::Plugin';
 
-use Wubot::TimeLength;
-my $timelength = Wubot::TimeLength->new();
+use Wubot::Util::TimeLength;
+my $timelength = Wubot::Util::TimeLength->new();
 
 sub check {
     my ( $self, $inputs ) = @_;

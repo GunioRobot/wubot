@@ -23,7 +23,7 @@ use Wubot::Config;
 use Wubot::Reactor;
 #use Wubot::Reactor::Voice;
 use Wubot::LocalMessageStore;
-use Wubot::TimeLength;
+use Wubot::Util::TimeLength;
 
 #my $voice = Wubot::Reactor::Voice->new();
 
@@ -49,7 +49,7 @@ my $end = AnyEvent->condvar;
 my $lastupdate = time;
 my $maxcount   = 50;
 
-my $timelength = Wubot::TimeLength->new();
+my $timelength = Wubot::Util::TimeLength->new();
 
 my $last_date = strftime( "%Y-%m-%d", localtime() );
 

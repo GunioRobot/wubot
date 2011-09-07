@@ -23,6 +23,7 @@ sub check {
     my ( $self, $inputs ) = @_;
 
     my $config = $inputs->{config};
+    my $cache  = $inputs->{cache};
 
     $self->logger->debug( "Fetching content from: $config->{url}" );
 
@@ -39,7 +40,7 @@ sub check {
 
     my $field = $config->{field} || 'content';
 
-    return { react => { $field => $content } };
+    return { react => { $field => $content }, cache => $cache };
 }
 
 __PACKAGE__->meta->make_immutable;

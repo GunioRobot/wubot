@@ -40,14 +40,21 @@ App::Wubot::SQLite adds a number of features including:
   - add missing tables if schema is available
   - add missing columns that are defined in schema but missing from a table
 
-Schema files are read from ~/wubot/schemas.  Each table's schema lives
-in a file named {tablename}.yaml.  Each time a table schema is needed,
-the schema config file will be checked to see if it has been updated;
-if so, the schema file will be re-read.  This allows you to change the
-schema without re-starting the process.  Note that while missing
-columns can be added, but columns are not dynamically removed, and an
-existing column type is never altered.
+=head1 SCHEMAS
 
+Schema files are read from ~/wubot/schemas.  Each table's schema lives
+in a file named {tablename}.yaml.
+
+A number of schemas are distributed in the wubot tarball in the
+config/schemas subdirectory.  These schemas should be copied to
+~/wubot/schemas before running wubot.
+
+Each time a table schema is needed, the schema config file will be
+checked to see if it has been updated; if so, the schema file will be
+re-read.  This allows you to change the schema without re-starting the
+process.  Note that while missing columns can be added, but columns
+are not dynamically removed, and an existing column type is never
+altered.
 
 
 =cut

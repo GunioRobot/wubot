@@ -115,6 +115,7 @@ sub _parse_data {
 
 }
 
+__PACKAGE__->meta->make_immutable;
 
 1;
 

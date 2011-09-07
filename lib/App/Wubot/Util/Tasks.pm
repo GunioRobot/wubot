@@ -353,6 +353,8 @@ sub parse_emacs_org_page {
     return @tasks;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

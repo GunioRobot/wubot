@@ -116,6 +116,8 @@ sub check {
     exit 0;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

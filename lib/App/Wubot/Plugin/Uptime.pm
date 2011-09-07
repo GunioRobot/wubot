@@ -84,6 +84,8 @@ sub _parse_uptime {
     return ( $load01, $load05, $load15 );
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

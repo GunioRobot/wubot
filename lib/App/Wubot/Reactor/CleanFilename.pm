@@ -52,11 +52,11 @@ sub react {
     return $message;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
-
 __END__
-
 
 =head1 NAME
 

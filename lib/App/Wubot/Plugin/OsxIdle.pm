@@ -189,7 +189,9 @@ sub check {
      $last_notification = $stats->{subject};
 
      return ( $stats, $cache );
- }
+}
+
+__PACKAGE__->meta->make_immutable;
 
 1;
 

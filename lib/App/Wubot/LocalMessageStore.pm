@@ -58,6 +58,7 @@ message, the message will not be removed from the queue.  This could
 sometimes lead to reacting to a message more than once, but ensures
 that the reaction will always occur.
 
+
 =cut
 
 has 'logger'  => ( is => 'ro',
@@ -360,6 +361,8 @@ sub checksum {
 
     return md5_hex( $text );
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;
 

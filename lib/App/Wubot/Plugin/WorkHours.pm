@@ -108,8 +108,9 @@ sub _calculate_stats {
     return $data;
 }
 
-1;
+__PACKAGE__->meta->make_immutable;
 
+1;
 
 __END__
 

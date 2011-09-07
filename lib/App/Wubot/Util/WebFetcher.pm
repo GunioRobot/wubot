@@ -90,8 +90,6 @@ If true, sets the Accept-Encoding using HTTP::message::decodable.
 
 =back
 
-=back
-
 =cut
 
 sub fetch {
@@ -145,4 +143,10 @@ sub fetch {
     return $content;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
+
+__END__
+
+=back

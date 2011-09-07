@@ -96,6 +96,8 @@ sub _get_content {
     return $content;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

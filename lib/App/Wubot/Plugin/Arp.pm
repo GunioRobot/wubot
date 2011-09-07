@@ -51,11 +51,11 @@ sub _standardize_mac {
 
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
-
 __END__
-
 
 =head1 NAME
 

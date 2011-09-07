@@ -44,6 +44,8 @@ sub get_color {
     return $color;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

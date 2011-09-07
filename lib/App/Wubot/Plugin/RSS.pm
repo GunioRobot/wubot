@@ -105,8 +105,9 @@ sub check {
     return { cache => $cache, react => \@react };
 }
 
-1;
+__PACKAGE__->meta->make_immutable;
 
+1;
 
 __END__
 

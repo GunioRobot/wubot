@@ -83,6 +83,8 @@ sub check {
     return { react => \@messages, cache => $cache, delay => $delay };
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

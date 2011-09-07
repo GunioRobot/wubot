@@ -99,11 +99,11 @@ sub _check_for_image {
     return $image;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
-
 __END__
-
 
 =head1 NAME
 

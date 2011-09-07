@@ -990,6 +990,8 @@ sub get_rt_search_results {
 
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

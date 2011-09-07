@@ -40,6 +40,8 @@ sub check {
     return { react => { application => $output } };
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

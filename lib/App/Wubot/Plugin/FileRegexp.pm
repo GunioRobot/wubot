@@ -78,6 +78,8 @@ sub check {
     return { cache => { position => $self->tail->position } };
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
 __END__

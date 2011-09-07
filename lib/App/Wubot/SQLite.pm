@@ -727,6 +727,10 @@ sub get_schema {
     return $schema;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
+
+__END__
 
 =back

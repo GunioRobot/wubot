@@ -24,6 +24,7 @@ For more information, see the L<App::Wubot::Guide>.
 
 #_* End
 
+__PACKAGE__->meta->make_immutable;
 
 1;
 

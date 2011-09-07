@@ -60,11 +60,11 @@ sub check {
     return { react => $message, cache => $message };
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 
-
 __END__
-
 
 =head1 NAME
 

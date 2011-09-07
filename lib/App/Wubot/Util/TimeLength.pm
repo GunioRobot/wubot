@@ -270,7 +270,11 @@ sub _range_map {
     return $value;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
+
+__END__
 
 =back
 

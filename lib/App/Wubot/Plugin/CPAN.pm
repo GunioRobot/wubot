@@ -92,6 +92,7 @@ sub check {
                                 installed => $installed,
                                 lastest   => $latest,
                                 path      => $path,
+                                link      => "http://search.cpan.org/perldoc?$module",
                             } );
         }
         close $run;

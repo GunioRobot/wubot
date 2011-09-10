@@ -28,7 +28,7 @@ App::Wubot::LocalMessageStore - add or remove messages from a local wubot SQLite
 
     # scalar context, get the message, immediately deleting it from
     # the queue
-    my $got_message = $messenger->get( $directory ),
+    my $got_message = $messenger->get( $directory );
 
     # array context, get the message and return a callback that can be
     # called to delete the message after it has been successfully

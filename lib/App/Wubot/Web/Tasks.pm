@@ -216,7 +216,7 @@ __END__
 
 App::Wubot::Web::Tasks - wubot tasks web interface
 
-=head1 SYNOPSIS
+=head1 CONFIGURATION
 
    ~/wubot/config/webui.yaml
 

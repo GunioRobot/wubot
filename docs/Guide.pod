@@ -23,10 +23,6 @@ in that feed.
 
 =over 2
 
-=item L<App::Wubot::Guide::MonitorPlugins>
-
-An overview of the monitor plugins
-
 =item L<App::Wubot::Guide::ArduinoSensors>
 
 Monitoring arduino sensor data.
@@ -44,10 +40,6 @@ A guide for using conditions in rules.
 =item L<App::Wubot::Guide::Rules>
 
 A description of the possible fields on rules.
-
-=item L<App::Wubot::Guide::ReactorPlugins>
-
-An overview of the available reactor plugins.
 
 =item L<App::Wubot::Guide::Notifications>
 

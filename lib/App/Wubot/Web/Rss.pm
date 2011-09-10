@@ -157,7 +157,7 @@ __END__
 
 App::Wubot::Web::Rss - serves outgoing wubot RSS feeds
 
-=head1 SYNOPSIS
+=head1 CONFIGURATION
 
    ~/wubot/config/webui.yaml
 

@@ -150,6 +150,11 @@ App::Wubot::Plugin::EmacsOrgMode - parse tasks from Emacs Org-Mode files
 
 Please see L<App::Wubot::Guide::Tasks>.
 
+=head1 PARSING ORG FILES
+
+Right now the emacs or parsing is not very good, but I am planning to
+use L<Org::Parser> in the future.
+
 =head1 SUBROUTINES/METHODS
 
 =over 8

@@ -22,6 +22,12 @@ send me notifications when tasks are coming due.  And I also use the
 web interface to review my task list.
 
 
+=head1 PARSING ORG FILES
+
+Right now the emacs or parsing is not very good, but I am planning to
+use L<Org::Parser> in the future.
+
+
 =head1 COMPONENTS
 
 L<App::Wubot::Plugin::EmacsOrgMode> - monitors ~/org directory for new

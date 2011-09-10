@@ -21,6 +21,7 @@ App::Wubot::Util::Tasks - utility for dealing with the Emacs Org-Mode files and 
 
 Please see L<App::Wubot::Guide::Tasks>.
 
+
 =cut
 
 has 'sql'    => ( is      => 'ro',
@@ -235,7 +236,8 @@ sub sync_tasks {
 
 =item $obj->parse_emacs_org_page()
 
-TODO: documentation this method
+TODO: replace my ugly emacs org mode parsing with L<Org::Parser>
+
 
 =cut
 

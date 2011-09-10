@@ -45,7 +45,7 @@ __END__
 
 App::Wubot::Web::Graphs - web interface for wubot graphs
 
-=head1 SYNOPSIS
+=head1 CONFIGURATION
 
     ~/wubot/config/webui.yaml
 

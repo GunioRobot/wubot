@@ -1,20 +1,24 @@
 ---
 enable: 1
 delay: 1d
-url: http://www.openssl.org/source/
+url: http://www.openssl.org/sourcex/
 regexp: '\"(openssl\-[\d\.]+[a-z]?\.tar\.gz)\"'
 
 react:
 
-  - name: field
-    plugin: SetField
-    config:
-      field: sticky
-      value: 1
+  - name: matched
+    condition: match is true
+    rules:
 
-  - name: subject
-    plugin: Template
-    config:
-      template: 'New openssl release: {$match}'
-      target_field: subject
+      - name: field
+        plugin: SetField
+        config:
+        field: sticky
+        value: 1
+  
+      - name: subject
+        plugin: Template
+        config:
+          template: 'New openssl release: {$match}'
+          target_field: subject
 

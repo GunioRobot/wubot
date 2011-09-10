@@ -68,8 +68,8 @@ sub react {
         $message->{username_comment} = $2;
     }
 
-    if ( $message->{username} =~ m/\{.*\}/ ) {
-        $message->{username} =~ m/^(.*)\{(.*)\}/;
+    if ( $message->{username} =~ m/\{.*/ ) {
+        $message->{username} =~ m/^(.*)\{([^\}]+)/;
         $message->{username} = $1;
         $message->{username_comment} = $2;
     }
@@ -169,9 +169,44 @@ through the Icon reactor to determine if there is an appropriate icon
 for the user in your images directory.  For more information, please
 see the 'notifications' document.
 
-Eventually this plugin will be adapted to identify a user in a
-database of contacts, and optionally apply configuration data from the
-contact db, e.g. a nickname or a username_color.
+=head1 USER DATABASE
+
+The user database is still under construction.
+
+You can define information about your contacts in:
+
+  ~/wubot/userdb/{username}.yaml
+
+Here is an example:
+
+  ~/wubot/userdb/dude.yaml
+
+  ---
+  color: green
+  aliases:
+    lebowski: {}
+    'El Duderino': {}
+  image: dude.png
+
+If you define a 'color' or an 'image', then any messages that match
+the username will have those values set in the message.  This will
+override any pre-existing 'color' or 'image' fields.
+
+You can define any aliases for your user in the 'aliases' section of
+the config.  This allows you to recognize the same user in case they
+have different usernames for email, twitter, etc.  The 'username'
+field will be updated to use the username from the file name.  If the
+username is modified, the original username will be stored in the
+'username_orig' field.
+
+Using the example above, if a message had the username set to
+'lebowski', then the following fields would be set on the message:
+
+  username: dude
+  username_orig: lebowski
+  color: green
+  image: dude.png
+
 
 =head1 SUBROUTINES/METHODS
 

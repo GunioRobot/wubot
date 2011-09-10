@@ -79,6 +79,13 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
              },
                "Checking irc style: dude{idle}"
            );
+    is_deeply( $user->react( { username => 'dude{idle' }, $config ),
+               { username        => 'dude',
+                 username_orig    => 'dude{idle',
+                 username_comment => 'idle',
+             },
+               "Checking irc style, missing close: dude{idle"
+           );
 }
 
 # _read_user_info

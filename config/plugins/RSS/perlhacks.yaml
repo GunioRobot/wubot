@@ -1,7 +1,13 @@
 ---
-depends: network
-enabled: 1
-image: perl.png
-tag: perl
 url: http://perlhacks.com/atom.xml
-delay: 3600
+delay: 1h
+
+react:
+
+  - name: categorize
+    plugin: SetField
+    config:
+      set:
+        coalesce: perl
+        mailbox: perl
+

@@ -1,11 +1,16 @@
 ---
-enabled: 1
-image: usgs.png
-tags: weather
 url: http://earthquake.usgs.gov/eqcenter/catalogs/7day-M5.xml
 delay: 300
 
 react:
+
+  - name: categorize
+    plugin: SetField
+    config:
+      set:
+        coalesce: elements
+        mailbox: elements
+
   - name: size
     plugin: CaptureData
     config:

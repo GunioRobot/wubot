@@ -485,9 +485,118 @@ __END__
 
 App::Wubot::Reactor::Command - run an external command using data from the message
 
+
+
 =head1 DESCRIPTION
 
-TODO: More to come...
+The command reactor can be used to run an external command in response
+to some event.
+
+=head1 SYNCHRONOUS
+
+The simplest form of this is to run a command and wait until it
+completes.
+
+  - name: play a sound at 5pm
+    condition: key matches ^Pulse AND time equals 17:00
+    plugin: Command
+    config:
+      command: /usr/bin/afplay /Users/wu/wubot/sounds/bell.mp3
+
+Note that the entire reactor process will block on the completion of
+this command, so you should take care to make sure it is something
+that will not hang.
+
+
+=head1 ASYNCHRONOUS
+
+When you want to run a command that could take more than a few seconds
+to complete, you probably want to execute it in the background.  For
+that purpose, you can use the 'fork' option in the Command config.
+
+  - name: voice
+    condition: contains subject AND urgent is true
+    plugin: Command
+    config:
+      fork: audio
+      command_noresults: 1
+      command: /usr/bin/say '{$key}' '{$subject_text}'
+
+The 'fork' param specifies the name of a queue.  Wubot will monitor
+each named queue and ensure that only one command is active at a time
+for each queue.  This allows you to prevent multiple programs that use
+the same resource from running simultaneously.  For example, if you
+have multiple items that trigger sounds, you can add them all to the
+same named queue (I use the name 'audio').  That way you don't end up
+with multiple sounds being played at the same time.
+
+The 'command_noresults' option indicates not to send an additional
+message when the command completes.
+
+=head1 WORKFLOWS
+
+When a queued command is executed, a message will be sent.  You can
+use that message to trigger additional reactions.  The completion
+message will contain all the fields from the original message, plus
+the fields:
+
+  command_queue: the command queue from which the command was executed
+  command_status: the exit status of the command
+  command_signal: signal that terminated the program
+  command_output: output of the command
+
+If any of those fields already exist on the message, they will be
+overwritten.
+
+Using the named queues and completion messages together, you can build
+a workflow, e.g. where one queue is downloading items, a second queue
+is decompressing them, and a third queue is removing the original
+archives if the decompression was successful.  By using a different
+queue name for each process, you ensure that one process is doing each
+task at a time, as long as there is something in the queue for it to
+be doing.
+
+I do plan to write a guide with better examples in the near future.
+
+=head1 SECURITY WARNINGS
+
+Extreme care must be exercised when using tainted data in your
+commands!  If your entire command is hard-coded, then there is not
+much of a security risk:
+
+  command: /usr/bin/afplay /Users/wu/wubot/sounds/bell.mp3
+
+However if you are building a command that references fields on the
+message, then if someone added a command to your queue that contained
+a scary message field, then that command could be executed as you.
+This could do scary things such as:
+
+  rm -rf ~/*
+
+This can be especially dangerous if you are running wubot on multiple
+hosts that are communicating over XMPP.
+
+You can use reactor conditions to check your data, or reactor plugins
+such as TransformField to detaint your data before passing it in to an
+external command.
+
+
+=head1 LIMITATIONS
+
+It is not yet possible to specify a timeout for a command queue.  So
+if a program hangs indefinitely, the queue will get stuck.  This is on
+the todo list.
+
+The queues are checked each time the reactor's monitor() method is
+called.  Currently this is once ever 15 seconds.  So there could be up
+to a 15 second delay in-between the time when your command is added to
+the queue and the time it is executed.  The reactor's monitor() method
+is only called in the wubot-reactor process.  So if you define any
+'react' method with the Command plugin on a monitor config, the
+wubot-monitor process will never try to execute items in the queue.
+
+You must have at least one rule in your reactor config that uses the
+Command plugin, or the wubot-reactor will never check the queue.
 
 
 =head1 SUBROUTINES/METHODS

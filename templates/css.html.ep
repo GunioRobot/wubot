@@ -42,6 +42,10 @@ td.seen, th.seen {
   color: #000000;
   width: 2%;
 }
+td.mailbox, th.seen {
+  color: #000000;
+  width: 4%;
+}
 th.key, th.username {
   width: 10%
 }

@@ -4,6 +4,7 @@ use Moose;
 # VERSION
 
 use HTML::TokeParser::Simple;
+use HTML::Strip;
 
 use App::Wubot::Logger;
 use App::Wubot::Util::WebFetcher;
@@ -18,6 +19,14 @@ has 'fetcher' => ( is  => 'ro',
                        return App::Wubot::Util::WebFetcher->new();
                    },
                );
+
+has 'htmlstrip' => ( is => 'ro',
+                     isa => 'HTML::Strip',
+                     lazy => 1,
+                     default => sub {
+                         return HTML::Strip->new();
+                     },
+                 );
 
 sub check {
     my ( $self, $inputs ) = @_;
@@ -87,15 +96,15 @@ sub check {
                     $self->logger->warn( "WARNING: no subject found!" );
                     next TOKEN;
                 }
-                $subject =~ s|\s*\<wbr\/\>\s*||sg;
-
-                $subject = HTML::Entities::decode( $subject );
+                $subject = $self->htmlstrip->parse( $subject );
 
                 if ( $username ) {
                     $username = HTML::Entities::decode( $username );
                 }
 
                 push @messages, { subject  => $subject,
+                                  title    => $subject,
+                                  body     => $subject,
                                   username => $username,
                                   link     => $config->{url},
                               };
@@ -118,11 +127,8 @@ sub check {
                     $subject .= $token->as_is;
                 }
 
-                $subject =~ s|\s*\<wbr\/\>\s*||sg;
-                $subject =~ s|\<div.*?\>||g;
-                $subject =~ s|\<span.*?\>||g;
+                $subject = $self->htmlstrip->parse( $subject );
 
-                $subject = HTML::Entities::decode( $subject );
                 $username = HTML::Entities::decode( $username );
 
                 push @messages, { subject  => $subject,

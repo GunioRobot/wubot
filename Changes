@@ -1,5 +1,16 @@
 Revision history for Wubot
 
+0.3.1 2011-09-10T00:01PDT
+
+  - continuing doc updates
+  - add more sample config files
+  - continue building notifications web interface
+  - refactored TimeLength get_age_color method
+  - fix 'link' field on Twitter, SafariBookmarks, and CPAN monitors
+  - WebFetch uses cache to keep track of last run time
+  - add missing 'make_immutable' magic to Moose classes
+  - prevent EmacsOrgMode test case from writing to live tasks database
+
 0.3.0 2011-09-20T20:06PDT
 
   - Major changes: renamed Wubot to App::Wubot

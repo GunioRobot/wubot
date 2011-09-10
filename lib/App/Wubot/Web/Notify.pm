@@ -402,4 +402,8 @@ Display the notifications web interface
 
 Display the tags web interface
 
+=item colors
+
+Demonstrates the range of the age colors used in the timeline.
+
 =back

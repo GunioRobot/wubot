@@ -78,11 +78,8 @@ sub check {
                       username          => $username,
                       profile_image_url => $status->{user}->{profile_image_url},
                       coalesce          => "Twitter-$username",
+                      link              => "http://twitter.com/#!/$username/status/$status->{id}",
                   };
-
-        if ( $status->{text} =~ m|(https?\:\/\/\S+)| ) {
-            $entry->{link} = $1;
-        }
 
         push @react, $entry;
     }

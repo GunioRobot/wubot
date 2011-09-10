@@ -211,29 +211,37 @@ This should be configurable in the future.
 sub get_age_color {
     my ( $self, $seconds ) = @_;
 
-    if ( $seconds < $constants->{h} ) {
-        # minutes
-        my $r = $self->_range_map( $seconds, $constants->{m}, $constants->{h}, 255, 110 );
-        my $b = $self->_range_map( $seconds, $constants->{m}, $constants->{h}, 255, 170 );
-        return $self->_get_hex_color( $r, 0, $b );
+    my $colors = { 'h' => [ 255,   0, 255,  110,   0, 170    ],
+                   'd' => [  90, 100, 255,   40,   0, 170    ],
+                   'w' => [   0, 220,  80,    0,  80,   0    ],
+                   'M' => [ 250, 100,   0,  250, 250,   0    ],
+                   'y' => [ 250, 250,   0,    0,   0,   0, 2 ],
+               };
 
-    }
-    elsif ( $seconds < $constants->{d} ) {
-        # hours
-        my $r = $self->_range_map( $seconds, $constants->{h}, $constants->{d},  90,  40 );
-        my $g = $self->_range_map( $seconds, $constants->{h}, $constants->{d}, 100,   0 );
-        my $b = $self->_range_map( $seconds, $constants->{h}, $constants->{d}, 255, 170 );
-        return $self->_get_hex_color( $r, $g, $b );
-    }
-    elsif ( $seconds < $constants->{M} ) {
-        # days
-        my $c = $self->_range_map( $seconds, $constants->{d},  $constants->{M}, 240,  120 );
-        return $self->_get_hex_color( $c, $c, $c );
+    my $previous = 0;
+
+    for my $age ( qw( h d w M y ) ) {
+
+        next unless $colors->{$age};
+
+        my $color_a = $colors->{ $age };
+        my $multiplier = $color_a->[6] || 1;
+
+        my $max = $constants->{ $age } * $multiplier;
+
+        if ( $seconds < $max ) {
+
+
+            my $r = $self->_range_map( $seconds, $previous, $max, $color_a->[0], $color_a->[3] );
+            my $g = $self->_range_map( $seconds, $previous, $max, $color_a->[1], $color_a->[4] );
+            my $b = $self->_range_map( $seconds, $previous, $max, $color_a->[2], $color_a->[5] );
+
+            return $self->_get_hex_color( $r, $g, $b );
+        }
+
+        $previous = $constants->{$age};
     }
 
-    # months
-    my $c = $self->_range_map( $seconds, $constants->{M}, $constants->{y}, 250,  0 );
-    return $self->_get_hex_color( $c, $c, 0 );
 }
 
 sub _get_hex_color {

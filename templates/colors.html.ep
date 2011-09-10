@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>wubot timeline colors</title>
+    <meta http-equiv="refresh" content="60">
+    <%= include 'css' %>
+  </head>
+  <body bgcolor=black>
+
+    <table>
+      <tr><th class="age"></tr>
+      <% for my $entry ( @$results ) { %>
+      <tr>
+        <td class="age" bgcolor="<%= $entry->{color} %>"><%= $entry->{time} %></td>
+      </tr>
+      <% } %>
+    </table>
+
+</html>
+
+

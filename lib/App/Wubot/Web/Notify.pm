@@ -26,6 +26,11 @@ sub notify {
 
     my $now = time;
 
+    my $limit = 200;
+    if ( $self->param('limit') ) {
+        $limit = $self->param('limit');
+    }
+
     my $expand;
     if ( $self->param('expand') ) {
         $expand = 1;
@@ -52,77 +57,70 @@ sub notify {
         next unless $params->{$param};
         next unless $param =~ m|^tag_|;
 
-        my $tag = $params->{$param};
-
         $param =~ m|^tag_(\d+)|;
         my $id = $1;
 
-        if ( $tag eq "r" ) {
-            #print "Marking read: $id\n";
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    { id   => $id  },
-                                );
+        for my $tag ( split /\s*,\s*/, $params->{$param} ) {
 
-        }
-        elsif ( $tag eq "rr" ) {
-            my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
-                                                      fields    => 'subject',
-                                                      where     => { id => $id },
-                                                  } );
-            #print "Marking read: $entry->{subject}\n";
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    { subject => $entry->{subject} },
-                                );
+            if ( $tag eq "r" ) {
+                #print "Marking read: $id\n";
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        { id   => $id  },
+                                    );
 
-        }
-        elsif ( $tag eq "r.*" ) {
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    {},
-                                );
-        }
-        elsif ( $tag =~ m|^r\.(.*)$| ) {
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    { subject => { 'LIKE' => "%$1%" } },
-                                );
-        }
-        elsif ( $colors->get_color( $tag ) ne $tag ) {
-            $sqlite_notify->update( 'notifications',
-                                    { color => $tag },
-                                    { id    => $id  },
-                                );
-        }
-        elsif ( $tag =~ m|^-| ) {
-            $tag =~ s|^\-||;
-            print "Removing tag $tag on id $id\n";
-            $sqlite_notify->delete( 'tags',
-                                    { remoteid => $id, tag => $tag, tablename => 'notifications' },
-                                );
-        }
-        elsif ( $tag eq "x" ) {
-            print "Removing tag readme from id $id\n";
-            $sqlite_notify->delete( 'tags',
-                                    { remoteid => $id, tag => 'readme', tablename => 'notifications' },
-                                );
-        }
-        elsif ( $tag eq "m" ) {
-            print "Setting README tag on id $id and marking seen\n";
-            $sqlite_notify->insert( 'tags',
-                                    { remoteid => $id, tag => 'readme', tablename => 'notifications', lastupdate => time },
-                                );
-            $sqlite_notify->update( 'notifications',
-                                    { seen => $now },
-                                    { id   => $id  },
-                                );
-        }
-        else {
-            print "Setting tag $tag on id $id\n";
-            $sqlite_notify->insert( 'tags',
-                                    { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
-                                );
+            } elsif ( $tag eq "rr" ) {
+                my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
+                                                          fields    => 'subject',
+                                                          where     => { id => $id },
+                                                      } );
+                #print "Marking read: $entry->{subject}\n";
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        { subject => $entry->{subject} },
+                                    );
+
+            } elsif ( $tag eq "r.*" ) {
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        {},
+                                    );
+            } elsif ( $tag =~ m|^r\.(.*)$| ) {
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        { subject => { 'LIKE' => "%$1%" } },
+                                    );
+            } elsif ( $colors->get_color( $tag ) ne $tag ) {
+                $sqlite_notify->update( 'notifications',
+                                        { color => $tag },
+                                        { id    => $id  },
+                                    );
+            } elsif ( $tag =~ m|^-| ) {
+                $tag =~ s|^\-||;
+                print "Removing tag $tag on id $id\n";
+                $sqlite_notify->delete( 'tags',
+                                        { remoteid => $id, tag => $tag, tablename => 'notifications' },
+                                    );
+            } elsif ( $tag eq "x" ) {
+                print "Removing tag readme from id $id\n";
+                $sqlite_notify->delete( 'tags',
+                                        { remoteid => $id, tag => 'readme', tablename => 'notifications' },
+                                    );
+            } elsif ( $tag eq "m" ) {
+                print "Setting README tag on id $id and marking seen\n";
+                $sqlite_notify->insert( 'tags',
+                                        { remoteid => $id, tag => 'readme', tablename => 'notifications', lastupdate => time },
+                                    );
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        { id   => $id  },
+                                    );
+            } else {
+                print "Setting tag $tag on id $id\n";
+                $sqlite_notify->insert( 'tags',
+                                        { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
+                                    );
+            }
         }
     }
 
@@ -164,6 +162,20 @@ sub notify {
         }
     }
 
+    my $mailbox     = $self->param( "mailbox" );
+    if ( $mailbox ) {
+        $expand = 1;
+        if ( $mailbox eq "null" ) {
+            $where = { mailbox => undef, seen => $seen };
+        }
+        else {
+            $where = { mailbox => $mailbox, seen => $seen };
+        }
+        if ( ! $old && ! $self->param( 'order' ) ) {
+            $order = "lastupdate, id";
+        }
+    }
+
     my $seen_key      = $self->param( "seen_key" );
     if ( $seen_key ) {
         $sqlite_notify->update( 'notifications',
@@ -191,6 +203,10 @@ sub notify {
         $where = { id => \@ids };
     }
 
+    if ( $self->param('collapse') ) {
+        $expand = 0;
+    }
+
     my @messages;
     my @ids;
     my $collapse;
@@ -199,19 +215,17 @@ sub notify {
     for my $message ( $sqlite_notify->select( { tablename => 'notifications',
                                                 where     => $where,
                                                 order     => $order,
-                                                limit     => 100,
+                                                limit     => $limit,
                                             } ) ) {
 
         push @ids, $message->{id};
 
+        unless ( $message->{mailbox} ) { $message->{mailbox} = 'null' }
+
         utf8::decode( $message->{subject} );
 
-        if ( ! $message->{link} && $message->{subject} =~ m|(https?\:\/\/\S+)| ) {
-            $message->{link} = $1;
-        }
-
-        my $coalesce = $message->{coalesce} || $message->{subject};
-        unless ( $expand ) {
+        my $coalesce = $message->{mailbox};
+        if ( ! $expand ) {
             if ( $collapse->{ $coalesce } ) {
                 $collapse->{ $coalesce }->{$message->{id}} = 1;
                 next MESSAGE;
@@ -240,7 +254,7 @@ sub notify {
 
         $message->{icon} =~ s|^.*\/||;
 
-        my $coalesce = $message->{coalesce} || $message->{subject};
+        my $coalesce = $message->{mailbox} || $message->{subject};
         $message->{count} = scalar keys %{ $collapse->{ $coalesce } || {} };
         $message->{coalesced} = join( ",", keys %{ $collapse->{ $coalesce } || {} } );
 
@@ -253,7 +267,7 @@ sub notify {
         }
     }
 
-    $self->stash( 'headers', [qw/cmd key1 key2 seen count username icon subject link age/ ] );
+    $self->stash( 'headers', [qw/cmd count mailbox key1 key2 seen username icon subject link age/ ] );
 
     $self->stash( 'body_data', \@messages );
 
@@ -296,6 +310,32 @@ sub tags {
 
 };
 
+sub colors {
+    my $self = shift;
+
+    my @times;
+
+    push @times, map { $_ * 60 } ( 0 .. 59 );
+
+    push @times, map { $_ * 60 * 24 + 60*60 } ( 0 .. 59 );
+    push @times, map { $_ * 60 * 24 * 7 + 60*60*24 } ( 0 .. 59 );
+    push @times, map { $_ * 60 * 24 * 30 + 60*60*24*7  } ( 0 .. 59 );
+    push @times, map { $_ * 60 * 24 * 365 * 2 + 60*60*24*30 } ( 0 .. 59 );
+
+    my @results;
+
+    for my $age ( @times ) {
+
+        my $time = $timelength->get_human_readable( $age );
+        my $color = $timelength->get_age_color( $age );
+
+        push @results, { time => $time, color => $color };
+    }
+
+    $self->render( template => 'colors', results => \@results );
+
+}
+
 1;
 
 __END__
@@ -304,7 +344,7 @@ __END__
 
 App::Wubot::Web::Notify - web interface for wubot notifications
 
-=head1 SYNOPSIS
+=head1 CONFIGURATION
 
    ~/wubot/config/webui.yaml
 
@@ -316,10 +356,39 @@ App::Wubot::Web::Notify - web interface for wubot notifications
 
 =head1 DESCRIPTION
 
-The wubot web interface is still under construction.  There will be
-more information here in the future.
+The wubot web interface is still under construction!
 
-TODO: finish docs
+The notification web interface serves as your notification inbox.  You
+can browse through the unread notifications, mark them read, limit the
+display to specific plugins or usernames, apply tags, or mark them for
+later review.
+
+By default, items in the inbox are grouped and collapsed based on the
+'coalesce' field defined in the message.  There are some default
+coalesce fields provided by many of the plugins, or you can easily use
+rules to alter the defaults.
+
+By convention, wubot messages that are worthy of your attention will
+contain a 'subject' field describing the event.  This could be the
+subject of an email or rss feed, a tweet, a description of a disk
+space problem, etc.  For more information on wubot notifications, see
+also L<App::Wubot::Guide::Notifications>.
+
+In order to use the notification web interface, you will first need to
+define a rule in the reactor to store the message in the notifications
+table.  This can be done with a rule such as:
+
+  - name: notify sql table
+    plugin: SQLite
+    config:
+      file: /Users/wu/wubot/sqlite/notify.sql
+      tablename: notifications
+
+The notifications table schema is provided in the wubot distribution,
+see the 'schema's section of L<App::Wubot::SQLite> for more
+information.
+
+
 
 =head1 SUBROUTINES/METHODS
 

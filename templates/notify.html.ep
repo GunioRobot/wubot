@@ -7,7 +7,7 @@
   <body bgcolor=black>
 
     <%= include 'nav' %>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
     <font size="-1" color="#FF00FF">
       |
       <a href="/notify"><%= $count %> unread</a>
@@ -40,6 +40,16 @@
 
           <td><input type="text" name="tag_<%= $row->{id} %>" size="5" style="background-color: <%= $row->{color} %>; border: 1px solid black"></td>
 
+          <td align="center">
+            <% if ( $row->{count} && $row->{count} > 1 ) { %>
+            <%= $row->{count} %>
+            <% } %>
+          </td>
+
+          <td>
+            <a href="?mailbox=<%= $row->{mailbox} %>"><%= $row->{mailbox} %></a>
+          </td>
+
           <td>
             <a href="?plugin=<%= $row->{key1} %>"><%= $row->{key1} %></a>
           </td>
@@ -51,22 +61,17 @@
           <td class="seen">
             <a href="?seen=<%= $row->{id} %>">seen</a>
           </td>
-          <td align="center">
-            <% if ( $row->{count} && $row->{count} > 1 ) { %>
-            <a href="?seen=<%= $row->{coalesced} %>"><%= $row->{count} %></a>
-            <% } %>
-          </td>
 
           <td style="text-align: right"><a href="?username=<%= $row->{username} %>"><%= $row->{username} %></a></td>
 
-          <td><img height="24" width="24" src="/images/<%= $row->{icon} %>"></td>
+          <td>
+            <a href="<%= $row->{link} %>">
+              <img height="24" width="24" src="/images/<%= $row->{icon} %>">
+            </a>
+          </td>
 
           <td style="text-align: left">
-            <% if ( $row->{link} ) { %>
-            <a href="<%= $row->{link} %>"><%= $row->{subject} %></a>
-            <% } else { %>
             <%= $row->{subject} %>
-            <% } %>
           </td>
 
           <td>

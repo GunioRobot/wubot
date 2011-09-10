@@ -43,7 +43,23 @@ App::Wubot::SQLite adds a number of features including:
 =head1 SCHEMAS
 
 Schema files are read from ~/wubot/schemas.  Each table's schema lives
-in a file named {tablename}.yaml.
+in a file named {tablename}.yaml.  You can bypass the schema files by
+specifying the complete schema as a hashref.  If you pass in a string
+for the schema, then that string will be used as a subdirectory in
+~/wubot/schemas.  This allows you to group similar schemas together
+without having to use strange names for the tables.  Here are some
+examples:
+
+  # no schema specified, look for the schema file in
+  # ~/wubot/schemas/mytable.yaml
+  $sqlite->insert( 'mytable', { abc => 'xyz' } );
+
+  # bypass schema files, specify schema in insert
+  $sqlite->insert( 'mytable', { abc => 'xyz' }, { abc => 'TEXT' } );
+
+  # schema directory specified, look for the schema file in
+  # ~/wubot/schemas/foo/mytable.yaml
+  $sqlite->insert( 'mytable', { abc => 'xyz' }, { abc => 'TEXT' }, 'foo' );
 
 A number of schemas are distributed in the wubot tarball in the
 config/schemas subdirectory.  These schemas should be copied to
@@ -62,8 +78,11 @@ altered.
 # only initialize one connection to each database handle
 my %sql_handles;
 
-# don't continually reload schemas
-my %schemas;
+has 'schemas'      => ( is       => 'ro',
+                        isa      => 'HashRef',
+                        lazy     => 1,
+                        default  => sub { {} },
+                    );
 
 has 'file'         => ( is       => 'ro',
                         isa      => 'Str',
@@ -124,24 +143,24 @@ If no schema is found, a fatal error will be thrown.
 =cut
 
 sub create_table {
-    my ( $self, $table, $schema_h ) = @_;
+    my ( $self, $table, $schema ) = @_;
 
     unless ( $table ) {
         $self->logger->logcroak( "Error: table not specified" );
     }
-    $schema_h = $self->check_schema( $table, $schema_h );
+    $schema = $self->check_schema( $table, $schema );
 
     my $command = "CREATE TABLE $table (\n";
 
     my @lines;
-    for my $key ( keys %{ $schema_h } ) {
+    for my $key ( keys %{ $schema } ) {
         next if $key eq "constraints";
-        my $type = $schema_h->{$key};
+        my $type = $schema->{$key};
         push @lines, "\t$key $type";
     }
 
-    if ( $schema_h->{constraints} ) {
-        for my $constraint ( @{ $schema_h->{constraints} } ) {
+    if ( $schema->{constraints} ) {
+        for my $constraint ( @{ $schema->{constraints} } ) {
             push @lines, "\t$constraint";
         }
     }
@@ -197,10 +216,10 @@ level.
 =cut
 
 sub check_schema {
-    my ( $self, $table, $schema_h, $failok ) = @_;
+    my ( $self, $table, $schema, $failok ) = @_;
 
-    unless ( $schema_h ) {
-        unless ( $self->get_schema( $table ) ) {
+    unless ( $schema && ref $schema eq "HASH" ) {
+        unless ( $schema = $self->get_schema( $table, $schema ) ) {
             if ( $failok ) {
                 $self->logger->debug( "no schema specified, and global schema not found for table: $table" );
                 return;
@@ -210,21 +229,20 @@ sub check_schema {
                 $self->logger->logdie( "FATAL: no schema specified, and global schema not found for table: $table" );
             }
         }
-        $schema_h = $self->get_schema( $table );
     }
 
-    unless ( $schema_h ) {
+    unless ( $schema ) {
         $self->logger->logcroak( "Error: no schema specified or found for table: $table" );
     }
 
-    unless ( ref $schema_h eq "HASH" ) {
+    unless ( ref $schema eq "HASH" ) {
         $self->logger->logcroak( "ERROR: schema for table $table is invalid: not a hash ref" );
     }
 
-    return $schema_h;
+    return $schema;
 }
 
-=item insert( $table, $entry_h, $schema_h )
+=item insert( $table, $entry_h, $schema )
 
 Insert a single row into the named table.
 
@@ -247,7 +265,7 @@ get_prepared method documentation for more information.
 =cut
 
 sub insert {
-    my ( $self, $table, $entry, $schema_h ) = @_;
+    my ( $self, $table, $entry, $schema ) = @_;
 
     unless ( $entry && ref $entry eq "HASH" ) {
         $self->logger->logcroak( "ERROR: insert: entry undef or not a hashref" );
@@ -255,10 +273,10 @@ sub insert {
     unless ( $table && $table =~ m|^\w+$| ) {
         $self->logger->logcroak( "ERROR: insert: table name does not look valid" );
     }
-    $schema_h = $self->check_schema( $table, $schema_h );
+    $schema = $self->check_schema( $table, $schema );
 
     my $insert;
-    for my $field ( keys %{ $schema_h } ) {
+    for my $field ( keys %{ $schema } ) {
         next if $field eq "constraints";
         next if $field eq "id";
         $insert->{ $field } = $entry->{ $field };
@@ -266,7 +284,7 @@ sub insert {
 
     my( $command, @bind ) = $self->sql_abstract->insert( $table, $insert );
 
-    my $sth1 = $self->get_prepared( $table, $schema_h, $command );
+    my $sth1 = $self->get_prepared( $table, $schema, $command );
 
     eval {                          # try
         my ($stdout, $stderr) = Capture::Tiny::capture {
@@ -285,7 +303,7 @@ sub insert {
 }
 
 
-=item update( $table, $entry_h, $where, $schema_h )
+=item update( $table, $entry_h, $where, $schema )
 
 Update a row in the table described by the 'where' clause.
 
@@ -306,12 +324,12 @@ get_prepared method documentation for more information.
 =cut
 
 sub update {
-    my ( $self, $table, $update, $where, $schema_h ) = @_;
+    my ( $self, $table, $update, $where, $schema ) = @_;
 
-    $schema_h = $self->check_schema( $table, $schema_h );
+    $schema = $self->check_schema( $table, $schema );
 
     my $insert;
-    for my $field ( keys %{ $schema_h } ) {
+    for my $field ( keys %{ $schema } ) {
         next if $field eq "constraints";
         next if $field eq "id";
         next unless exists $update->{ $field };
@@ -320,7 +338,7 @@ sub update {
 
     my( $command, @bind ) = $self->sql_abstract->update( $table, $insert, $where );
 
-    my $sth1 = $self->get_prepared( $table, $schema_h, $command );
+    my $sth1 = $self->get_prepared( $table, $schema, $command );
 
     eval {                          # try
         my ($stdout, $stderr) = Capture::Tiny::capture {
@@ -338,7 +356,7 @@ sub update {
     return 1;
 }
 
-=item insert_or_update( $table, $entry_h, $where, $schema_h )
+=item insert_or_update( $table, $entry_h, $where, $schema )
 
 If a row exists in the table that matches the 'where' clause, then
 calls the update() method on that row.  If not, then calls the
@@ -348,23 +366,23 @@ methods for more information.
 =cut
 
 sub insert_or_update {
-    my ( $self, $table, $update, $where, $schema_h ) = @_;
+    my ( $self, $table, $update, $where, $schema ) = @_;
 
-    $schema_h = $self->check_schema( $table, $schema_h );
+    $schema = $self->check_schema( $table, $schema );
 
     my $count;
     # wrap select() in an eval, this could fail, e.g. if the table does not already exist
     eval {
-        $self->select( { tablename => $table, where => $where, callback => sub { $count++ }, schema => $schema_h } );
+        $self->select( { tablename => $table, where => $where, callback => sub { $count++ }, schema => $schema } );
     };
 
     if ( $count ) {
         $self->logger->debug( "updating $table" );
-        return $self->update( $table, $update, $where, $schema_h );
+        return $self->update( $table, $update, $where, $schema );
     }
 
     $self->logger->debug( "inserting into $table" );
-    return $self->insert( $table, $update, $schema_h );
+    return $self->insert( $table, $update, $schema );
 
     return 1;
 }
@@ -425,9 +443,9 @@ sub select {
 
     #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
 
-    my $schema_h = $self->check_schema( $tablename, $options->{schema}, 1 );
+    my $schema = $self->check_schema( $tablename, $options->{schema}, 1 );
 
-    my $sth = $self->get_prepared( $tablename, $schema_h, $statement );
+    my $sth = $self->get_prepared( $tablename, $schema, $statement );
 
     my $rv;
     eval {
@@ -671,7 +689,7 @@ sub disconnect {
     $self->dbh->disconnect;
 }
 
-=item get_schema( $table )
+=item get_schema( $table, $directory )
 
 Given the name of a table, get the schema for that table.
 
@@ -684,7 +702,7 @@ the schema without having to restart the wubot processes.
 =cut
 
 sub get_schema {
-    my ( $self, $table ) = @_;
+    my ( $self, $table, $directory ) = @_;
 
     unless ( $table ) {
         $self->logger->logconfess( "ERROR: get_schema called but no table specified" );
@@ -695,7 +713,13 @@ sub get_schema {
     #     $self->logger->logconfess( "ERROR: table name contains invalid characters: $table" );
     # }
 
-    my $schema_file = join( "/", $self->schema_dir, "$table.yaml" );
+    my $schema_file;
+    if ( $directory ) {
+        $schema_file = join( "/", $self->schema_dir, $directory, "$table.yaml" );
+    }
+    else {
+        $schema_file = join( "/", $self->schema_dir, "$table.yaml" );
+    }
     $self->logger->debug( "looking for schema file: $schema_file" );
 
     unless ( -r $schema_file ) {
@@ -706,9 +730,9 @@ sub get_schema {
     my $mtime = ( stat $schema_file )[9];
     my $schema = {};
 
-    if ( $schemas{$table} ) {
+    if ( $self->schemas->{$table} ) {
 
-        if ( $mtime > $schemas{$table}->{mtime} ) {
+        if ( $mtime > $self->schemas->{$table}->{mtime} ) {
 
             # file updated since last load
             $self->logger->warn( "Re-loading $table schema: $schema_file" );
@@ -716,7 +740,7 @@ sub get_schema {
         }
         else {
             # no updates, return from memory
-            return $schemas{$table}->{table};
+            return $self->schemas->{$table}->{table};
         }
 
     }
@@ -728,8 +752,8 @@ sub get_schema {
 
     }
 
-    $schemas{$table}->{table} = $schema;
-    $schemas{$table}->{mtime} = $mtime;
+    $self->schemas->{$table}->{table} = $schema;
+    $self->schemas->{$table}->{mtime} = $mtime;
 
     return $schema;
 }

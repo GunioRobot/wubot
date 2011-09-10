@@ -148,6 +148,26 @@ test "auto-incrementing id" => sub {
     );
 };
 
+test "testing 'id' field on message is not inserted over autoincrementing id" => sub {
+    my ($self) = @_;
+
+    $self->reset_sqlite;
+    my $table = "test_table_13";
+    my $schema = { id      => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+                   column1 => 'INT',
+                   column2 => 'INT',
+               };
+
+    ok( $self->sqlite->insert( $table, { id => 5, column1 => 0, column2 => 1 }, $schema ),
+        "Inserting data hash into table with an 'id' that should be ignored"
+    );
+
+    is_deeply( [ $self->sqlite->query( "SELECT * FROM $table" ) ],
+               [ { id => 1, column1 => 0, column2 => 1 } ],
+               "Checking inserted data got id that was autoincremented"
+           );
+};
+
 
 test "inserting defined false value" => sub {
     my ($self) = @_;
@@ -521,25 +541,22 @@ test "testing 'on conflict replace' constraint" => sub {
 test "testing schema yaml files" => sub {
     my ($self) = @_;
 
-    my $tempdir1 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-    my $sqlitedb = "$tempdir1/test.sql";
-
-    my $tempdir2 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
     my $xyz_schema = { abc => 'INT',
                        def => 'TEXT',
                    };
-    YAML::DumpFile( "$tempdir2/xyz.yaml", $xyz_schema );
+    YAML::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
 
     my $foo_schema = { bar => 'INT',
                        baz => 'TEXT',
                    };
-    YAML::DumpFile( "$tempdir2/foo.yaml", $foo_schema );
+    YAML::DumpFile( "$tempdir/foo.yaml", $foo_schema );
 
-    ok( $self->sqlite( App::Wubot::SQLite->new( { file               => $sqlitedb,
-                                                  schema_dir         => $tempdir2,
-                                              } ) ),
-        "Creating new App::Wubot::SQLite object"
-    );
+    $self->reset_sqlite;
+
+    # override schema_dir
+    $self->sqlite->{schema_dir} = $tempdir;
+
 
     is_deeply( $self->sqlite->check_schema( 'xyz' ),
                $xyz_schema,
@@ -569,7 +586,7 @@ test "testing schema yaml files" => sub {
     # update schema
     $xyz_schema->{ghi} = 'TEXT';
     sleep 1; # ensure date stamp is at least one second later
-    YAML::DumpFile( "$tempdir2/xyz.yaml", $xyz_schema );
+    YAML::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
 
     ok( $self->sqlite->insert( $table, { abc => 234, def => 567, ghi => 890 } ),
         "Inserting data, after adding column to schema file"
@@ -584,23 +601,43 @@ test "testing schema yaml files" => sub {
 
 };
 
-test "testing 'id' field" => sub {
+test "testing schema config file with named schema" => sub {
     my ($self) = @_;
 
-    $self->reset_sqlite;
-    my $table = "test_table_13";
-    my $schema = { id      => 'INTEGER PRIMARY KEY AUTOINCREMENT',
-                   column1 => 'INT',
-                   column2 => 'INT',
-               };
+    my $tempdir2 = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+    my $table = "xyz";
+    my $dir   = "foo";
+    my $xyz_schema = { abc => 'INT',
+                       def => 'TEXT',
+                   };
 
-    ok( $self->sqlite->insert( $table, { id => 5, column1 => 0, column2 => 1 }, $schema ),
-        "Inserting data hash into table with an 'id' that should be ignored"
+    system( "mkdir", "$tempdir2/$dir" );
+    YAML::DumpFile( "$tempdir2/$dir/$table.yaml", $xyz_schema );
+
+    system( "find $tempdir2" );
+    system( "cat $tempdir2/$dir/$table.yaml" );
+
+    $self->reset_sqlite;
+
+    # override schema_dir
+    $self->sqlite->{schema_dir} = $tempdir2;
+
+    is_deeply( $self->sqlite->check_schema( $table, $dir ),
+               $xyz_schema,
+               "Checking $dir.$table schema"
+           );
+
+    ok( $self->sqlite->create_table( $table, $dir ),
+        "Creating table, using schema from schema file"
+    );
+
+    ok( $self->sqlite->insert( $table, { abc => 123, def => 456, ghi => 789 }, $dir ),
+        "Inserting data, using schema in schema file"
     );
 
     is_deeply( [ $self->sqlite->query( "SELECT * FROM $table" ) ],
-               [ { id => 1, column1 => 0, column2 => 1 } ],
-               "Checking inserted data got id that was autoincremented"
+               [ { abc => 123, def => 456 } ],
+               "Checking that defined columns inserted into table"
            );
 };
 
@@ -618,6 +655,8 @@ test "testing disconnect" => sub {
                "Checking that exception thrown when running a sql query on dead sql handle",
            );
 };
+
+
 
 run_me;
 done_testing;

@@ -49,7 +49,7 @@ sub check {
     my @react;
 
     for my $url ( keys %{ $new } ) {
-        my $react = { url => $url };
+        my $react = { link => $url };
 
         my $content = get( $url );
 

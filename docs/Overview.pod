@@ -26,8 +26,6 @@ from a variety of sources, including:
   - monitors running on remote hosts
   - your own custom monitor plugin written in perl
 
-For more info, see: L<App::Wubot::Guide::MonitorPlugins>
-
 Data collected from each monitor is sent through a set of rules that
 can perform actions such as:
 
@@ -41,8 +39,6 @@ can perform actions such as:
   - forward the message to another host for further processing
   - your own custom action written in perl
   - ignore the message, the equivalent of routing it to /dev/null
-
-For more info, see: L<App::Wubot::Guide::ReactorPlugins>
 
 =back
 
@@ -77,4 +73,51 @@ This project is still under construction.
 
 To get started, see L<App::Wubot::Guide::GettingStarted>.
 
-Lots more to come...
+=head1 REACTIVE AUTOMATION
+
+I have struggled with a way to describe wubot in a sentence.  Recently
+I have been calling it a personal distributed reactive automation
+tool.
+
+By 'personal', I mean that it acts as a sort of personal assistant.
+
+By 'distributed', I mean that it can run on multiple hosts, and that
+those hosts can communicate information about events by forwarding the
+event messages.
+
+When I use the word 'reactor', I am not necessarily implying the
+'Reactor pattern'.
+
+  http://en.wikipedia.org/wiki/Reactor_pattern
+
+While it is possible to use this pattern in the wubot reactor plugins
+(as it is built on AnyEvent), it is not the main pattern that has been
+used so far.  I have settled on using an ordered procedural rules tree
+as the primary reactive pattern because I find the behavior to be more
+understandable, predicatable, and deterministic, and it is more than
+sufficient to handle most of the cases in this problem domain.
+
+I expect 'automation' is self-explanatory, but it really just means
+that wubot can take action based on the observed events.  The
+automation extends from filtering out events that are not interesting
+to complex workflows that require executing external commands.
+
+=head1 SEE ALSO
+
+AtomsMasher: Personal Reactive Automation for the Web
+
+    - http://eprints.ecs.soton.ac.uk/16788/
+
+Haystack: Research on Information Access, Analysis, Management, and Distribution
+
+    - http://groups.csail.mit.edu/haystack/
+
+Esper: Complex Event Processing
+
+    - http://esper.codehaus.org/
+
+
+Atomate: an information assistance engine enabling end-user personal
+reactive automation for the web.
+
+    - http://code.google.com/p/atomate/

@@ -116,7 +116,7 @@ test "read contact files" => sub {
 
     my $directory = $self->reactor->directory;
 
-    my $dude = { aliases => { 'lebowski' => {} }, color => 'red' };
+    my $dude = { aliases => [ 'lebowski' ], color => 'red' };
     YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     my $walter = { abc => 'def' };
@@ -201,10 +201,11 @@ test "userdb info is not case sensitive" => sub {
 
     my $directory = $self->reactor->directory;
 
-    my $dude = { aliases => { 'Lebowski' => {} }, color => 'red' };
+    my $dude = { aliases => [ 'Lebowski' ], color => 'red' };
     YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     $dude->{username} = 'dude';
+    $dude->{aliases}  = [ 'lebowski' ];
 
     is_deeply( $self->reactor->get_user_info( 'dude' ),
                $dude,
@@ -234,7 +235,7 @@ test "read changes to contact files" => sub {
 
     my $directory = $self->reactor->directory;
 
-    my $dude = { aliases => { 'lebowski' => {} } };
+    my $dude = { aliases => [ 'lebowski' ] };
     YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
@@ -279,7 +280,7 @@ test "read newly added aliases" => sub {
 
     my $directory = $self->reactor->directory;
 
-    my $dude = { aliases => { 'lebowski' => {} } };
+    my $dude = { aliases => [ 'lebowski' ] };
     YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'lebowski' }, {} ),
@@ -293,7 +294,7 @@ test "read newly added aliases" => sub {
     # be different
     sleep 1;
 
-    $dude->{aliases}->{'el duderino'} = {};
+    push @{ $dude->{aliases} }, 'el duderino';
     YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'el duderino' }, {} ),

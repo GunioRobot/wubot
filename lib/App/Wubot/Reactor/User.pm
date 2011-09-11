@@ -169,7 +169,7 @@ sub _read_userfile {
     $self->userdb->{$username} = $userdata;
 
     if ( $userdata->{aliases} ) {
-        for my $alias ( keys %{ $userdata->{aliases} } ) {
+        for my $alias ( @{ $userdata->{aliases} } ) {
 
             $alias = lc( $alias );
             $self->aliases->{$alias} = lc( $username );
@@ -234,8 +234,8 @@ Here is an example:
   ---
   color: green
   aliases:
-    lebowski: {}
-    'El Duderino': {}
+    - lebowski
+    - El Duderino
   image: dude.png
 
 If you define a 'color' or an 'image', then any messages that match

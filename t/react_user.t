@@ -3,34 +3,54 @@ use strict;
 use warnings;
 
 use File::Temp qw/ tempdir /;
-use Test::More 'no_plan';
+use Test::More;
+use Test::Routine;
+use Test::Routine::Util;
 
 use App::Wubot::Logger;
 use App::Wubot::Reactor::User;
 
-my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
-
-ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
-    "Creating new User reactor object"
+has reactor => (
+    is   => 'ro',
+    lazy => 1,
+    clearer => 'reset_reactor',
+    default => sub {
+        my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+        App::Wubot::Reactor::User->new( { directory => $tempdir } );
+    },
 );
 
+test "test reactor" => sub {
+    my ($self) = @_;
 
-{
-    my $config = {};
+    $self->reset_reactor;
 
-    is_deeply( $user->react( {}, $config ),
+    ok( $self->reactor->react(),
+        "Checking that test reactor is useable"
+    );
+
+    is_deeply( $self->reactor->react( {}, {} ),
                {},
                "Empty message results in no reaction field"
            );
 
-    is_deeply( $user->react( { username => 'wu' }, $config ),
+};
+
+test "parse username field" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $config = {};
+
+    is_deeply( $self->reactor->react( { username => 'wu' }, $config ),
                { username      => 'wu',
                  username_orig => 'wu',
              },
                "Checking user reactor when only simple username is set"
            );
 
-    is_deeply( $user->react( { username => 'dude@somehost.com' }, $config ),
+    is_deeply( $self->reactor->react( { username => 'dude@somehost.com' }, $config ),
                { username        => 'dude',
                  username_orig   => 'dude@somehost.com',
                  username_domain => 'somehost.com',
@@ -38,7 +58,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                'Checking user reactor for email address dude@somehost.com'
            );
 
-    is_deeply( $user->react( { username => 'El Duderino <dude@somehost.com>' }, $config ),
+    is_deeply( $self->reactor->react( { username => 'El Duderino <dude@somehost.com>' }, $config ),
                { username        => 'dude',
                  username_orig   => 'El Duderino <dude@somehost.com>',
                  username_domain => 'somehost.com',
@@ -47,7 +67,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                'Checking email style: El Duderino <dude@somehost.com>'
            );
 
-    is_deeply( $user->react( { username => '"El Duderino" <dude@somehost.com>' }, $config ),
+    is_deeply( $self->reactor->react( { username => '"El Duderino" <dude@somehost.com>' }, $config ),
                { username        => 'dude',
                  username_orig   => '"El Duderino" <dude@somehost.com>',
                  username_domain => 'somehost.com',
@@ -56,7 +76,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                'Checking email style: "El Duderino" <dude@somehost.com>'
            );
 
-    is_deeply( $user->react( { username => '"El Duderino"<dude@somehost.com>' }, $config ),
+    is_deeply( $self->reactor->react( { username => '"El Duderino"<dude@somehost.com>' }, $config ),
                { username        => 'dude',
                  username_orig   => '"El Duderino"<dude@somehost.com>',
                  username_domain => 'somehost.com',
@@ -65,73 +85,71 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                'Checking email style: "El Duderino"<dude@somehost.com>'
            );
 
-    is_deeply( $user->react( { username => 'dude|idle' }, $config ),
+    is_deeply( $self->reactor->react( { username => 'dude|idle' }, $config ),
                { username         => 'dude',
                  username_orig    => 'dude|idle',
                  username_comment => 'idle',
              },
                "Checking irc style: dude|idle"
            );
-    is_deeply( $user->react( { username => 'dude{idle}' }, $config ),
+    is_deeply( $self->reactor->react( { username => 'dude{idle}' }, $config ),
                { username        => 'dude',
                  username_orig    => 'dude{idle}',
                  username_comment => 'idle',
              },
                "Checking irc style: dude{idle}"
            );
-    is_deeply( $user->react( { username => 'dude{idle' }, $config ),
+    is_deeply( $self->reactor->react( { username => 'dude{idle' }, $config ),
                { username        => 'dude',
                  username_orig    => 'dude{idle',
                  username_comment => 'idle',
              },
                "Checking irc style, missing close: dude{idle"
            );
-}
+};
 
-# _read_user_info
-{
-    #use File::Temp qw/ tempdir /;
 
-    my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
+test "read contact files" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
 
     my $dude = { aliases => { 'lebowski' => {} }, color => 'red' };
-    YAML::DumpFile( "$tempdir/dude.yaml",  $dude );
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
 
     my $walter = { abc => 'def' };
-    YAML::DumpFile( "$tempdir/walter.yaml", $walter );
+    YAML::DumpFile( "$directory/walter.yaml", $walter );
 
     my $donny = { abc => 'xyz', def => 'pdq' };
-    YAML::DumpFile( "$tempdir/donny.yaml", $donny );
+    YAML::DumpFile( "$directory/donny.yaml", $donny );
 
     $dude->{username} = 'dude';
     $walter->{username} = 'walter';
     $donny->{username} = 'donny';
 
-    my $reactor = App::Wubot::Reactor::User->new( { directory => $tempdir } );
-
-    my $results = $reactor->_read_user_info();
-
-    is_deeply( $results->{dude},
+    is_deeply( $self->reactor->get_user_info( 'dude' ),
                $dude,
                "checking user info for dude"
            );
 
-    is_deeply( $results->{walter},
+    is_deeply( $self->reactor->get_user_info( 'walter' ),
                $walter,
                "checking user info for walter"
            );
 
-    is_deeply( $results->{donny},
+    is_deeply( $self->reactor->get_user_info( 'donny' ),
                $donny,
                "checking user info for donny"
            );
 
-    is_deeply( $results->{lebowski},
+    is_deeply( $self->reactor->get_user_info( 'lebowski' ),
                $dude,
                "checking user info for dude's alias 'lebowski'"
            );
 
-    is_deeply( $reactor->react( { username => 'dude' }, {} ),
+    is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
                { username       => 'dude',
                  username_orig  => 'dude',
                  color          => 'red',
@@ -139,7 +157,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                "Checking user reactor gets color from user db"
            );
 
-    is_deeply( $reactor->react( { username => 'lebowski' }, {} ),
+    is_deeply( $self->reactor->react( { username => 'lebowski' }, {} ),
                { username       => 'dude',
                  username_orig  => 'lebowski',
                  color          => 'red',
@@ -147,7 +165,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                "Checking user reactor gets color and username from user db"
            );
 
-    is_deeply( $reactor->react( { username => 'lebowski', color => 'blue' }, {} ),
+    is_deeply( $self->reactor->react( { username => 'lebowski', color => 'blue' }, {} ),
                { username       => 'dude',
                  username_orig  => 'lebowski',
                  color          => 'red',
@@ -156,7 +174,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                "Checking that username overridden param gets saved to param_orig"
            );
 
-    is_deeply( $reactor->react( { username => 'lebowski', color => 'red' }, {} ),
+    is_deeply( $self->reactor->react( { username => 'lebowski', color => 'red' }, {} ),
                { username       => 'dude',
                  username_orig  => 'lebowski',
                  color          => 'red',
@@ -164,7 +182,7 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                "Checking that username overridden param not saved to param_orig if value is unchanged"
            );
 
-    is_deeply( $reactor->react( { username => 'lebowski', color => 'blue', color_orig => 'green' }, {} ),
+    is_deeply( $self->reactor->react( { username => 'lebowski', color => 'blue', color_orig => 'green' }, {} ),
                { username       => 'dude',
                  username_orig  => 'lebowski',
                  color          => 'red',
@@ -173,4 +191,120 @@ ok( my $user = App::Wubot::Reactor::User->new( { directory => $tempdir } ),
                "Checking that username overridden param does not overwrite existing param_orig"
            );
 
-}
+
+};
+
+test "userdb info is not case sensitive" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
+
+    my $dude = { aliases => { 'Lebowski' => {} }, color => 'red' };
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+
+    $dude->{username} = 'dude';
+
+    is_deeply( $self->reactor->get_user_info( 'dude' ),
+               $dude,
+               "checking user info for dude"
+           );
+
+    is_deeply( $self->reactor->get_user_info( 'Dude' ),
+               $dude,
+               "checking user info for Dude"
+           );
+
+    is_deeply( $self->reactor->get_user_info( 'lebowski' ),
+               $dude,
+               "checking user info for lebowski"
+           );
+
+    is_deeply( $self->reactor->get_user_info( 'Lebowski' ),
+               $dude,
+               "checking user info for Lebowski"
+           );
+};
+
+test "read changes to contact files" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
+
+    my $dude = { aliases => { 'lebowski' => {} } };
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+
+    is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
+               { username       => 'dude',
+                 username_orig  => 'dude',
+             },
+               "Checking user reactor gets read user db file"
+           );
+
+    # ensure at least one second has passed so 'lastupdate' time will
+    # be different
+    sleep 1;
+
+    $dude->{color} = 'red';
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+
+    is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
+               { username       => 'dude',
+                 username_orig  => 'dude',
+                 color          => 'red',
+             },
+               "Checking user reactor read in changes to user db file"
+           );
+
+    is_deeply( $self->reactor->react( { username => 'lebowski' }, {} ),
+               { username       => 'dude',
+                 username_orig  => 'lebowski',
+                 color          => 'red',
+             },
+               "Checking user reactor applied updates to aliases"
+           );
+
+
+};
+
+test "read newly added aliases" => sub {
+    my ($self) = @_;
+
+    local $TODO = "need to check all files for newly added aliases";
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
+
+    my $dude = { aliases => { 'lebowski' => {} } };
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+
+    is_deeply( $self->reactor->react( { username => 'lebowski' }, {} ),
+               { username       => 'dude',
+                 username_orig  => 'lebowski',
+             },
+               "Checking user reactor gets read user db file"
+           );
+
+    # ensure at least one second has passed so 'lastupdate' time will
+    # be different
+    sleep 1;
+
+    $dude->{aliases}->{'el duderino'} = {};
+    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+
+    is_deeply( $self->reactor->react( { username => 'el duderino' }, {} ),
+               { username       => 'dude',
+                 username_orig  => 'el duderino',
+             },
+               "Checking user reactor read in newly added alias"
+           );
+
+
+};
+
+run_me;
+done_testing;

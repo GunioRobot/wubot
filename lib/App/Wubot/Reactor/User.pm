@@ -10,10 +10,7 @@ use App::Wubot::Logger;
 has 'userdb'  => ( is => 'ro',
                    isa => 'HashRef',
                    lazy => 1,
-                   default => sub {
-                       my $self = shift;
-                       $self->_read_user_info();
-                   },
+                   default => sub { {} },
                );
 
 has 'directory' => ( is => 'ro',
@@ -31,6 +28,18 @@ has 'logger'  => ( is => 'ro',
                        return Log::Log4perl::get_logger( __PACKAGE__ );
                    },
                );
+
+has 'lastupdates'  => ( is => 'ro',
+                        isa => 'HashRef',
+                        lazy => 1,
+                        default => sub { {} },
+                    );
+
+has 'aliases'  => ( is => 'ro',
+                    isa => 'HashRef',
+                    lazy => 1,
+                    default => sub { {} },
+                );
 
 sub react {
     my ( $self, $message, $config ) = @_;
@@ -74,18 +83,18 @@ sub react {
         $message->{username_comment} = $2;
     }
 
-    if ( $self->userdb->{ $message->{username} } ) {
+    if ( my $userdata = $self->get_user_info( $message->{username} ) ) {
 
         for my $param ( qw( username color image ) ) {
 
             if (    $message->{$param}
                  && ! $message->{"$param\_orig"}
-                 && $message->{$param} ne $self->userdb->{ $message->{username} }->{ $param } ) {
+                 && $message->{$param} ne $userdata->{ $param } ) {
                 $message->{"$param\_orig"} = $message->{$param};
             }
-            if ( $self->userdb->{ $message->{username} }->{ $param } ) {
+            if ( $userdata->{ $param } ) {
                 $self->logger->trace( "Setting $param for $message->{username}" );
-                $message->{$param} = $self->userdb->{ $message->{username} }->{ $param };
+                $message->{$param} = $userdata->{ $param };
             }
         }
     }
@@ -93,7 +102,29 @@ sub react {
     return $message;
 }
 
-sub _read_user_info {
+sub get_user_info {
+    my ( $self, $username ) = @_;
+
+    $username = lc( $username );
+
+    unless ( keys %{ $self->userdb } ) {
+        $self->_read_all_user_info();
+    }
+
+    # look up aliases
+    if ( $self->aliases->{$username} ) {
+        $username = $self->aliases->{$username};
+    }
+
+    return unless $self->userdb->{$username};
+
+    # check for updates to user db
+    $self->_read_userfile( $username );
+
+    return $self->userdb->{$username};
+}
+
+sub _read_all_user_info {
     my ( $self ) = @_;
 
     my $config = {};
@@ -105,27 +136,46 @@ sub _read_user_info {
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
         next unless $entry;
 
-        my $path = join( "/", $directory, $entry );
-        next unless -f $path;
-
         my $user = $entry;
         $user =~ s|.yaml$||g;
 
-        my $user_info = YAML::LoadFile( $path );
-        $user_info->{username} = $user;
-
-        $config->{$user} = $user_info;
-
-        if ( $config->{$user}->{aliases} ) {
-            for my $alias ( keys %{ $config->{$user}->{aliases} } ) {
-
-                $config->{$alias} = $user_info;
-            }
-        }
+        $self->_read_userfile( $user );
     }
     closedir( $dir_h );
 
     return $config;
+}
+
+sub _read_userfile {
+    my ( $self, $username ) = @_;
+
+    my $path = join( "/", $self->directory, "$username.yaml" );
+    return unless -f $path;
+
+    my $mtime = ( stat $path )[9];
+
+    if (    $self->lastupdates->{$username}
+         && $self->lastupdates->{$username} == $mtime ) {
+
+        $self->logger->trace( "User db cache is up to date" );
+        return;
+    }
+
+    my $userdata = YAML::LoadFile( $path );
+    $userdata->{username}   = lc( $username );
+
+    $self->lastupdates->{$username} = $mtime;
+
+    $self->userdb->{$username} = $userdata;
+
+    if ( $userdata->{aliases} ) {
+        for my $alias ( keys %{ $userdata->{aliases} } ) {
+
+            $alias = lc( $alias );
+            $self->aliases->{$alias} = lc( $username );
+        }
+    }
+
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -206,6 +256,24 @@ Using the example above, if a message had the username set to
   username_orig: lebowski
   color: green
   image: dude.png
+
+Each time a message comes through that has a username for which some
+user data is defined, the user's file will be scanned to see if it has
+been updated.  If so, the userdb file will be re-read.
+
+=head1 LIMITATIONS
+
+The file name must be completely lower case, and all usernames and
+aliases will automatically be converted to lower case.  This should be
+fixed in the future.
+
+Adding an alias to a contact will not yet be automatically re-read if
+a message is received from that alias.  In that case it will be
+necessary to restart the reactor to pick up the new alias.  This is
+because it does not know which file to read when it receives a message
+from the new alias.  In the future there should be some mechanism to
+scan the directory occasionally to look for changed files that could
+contain new aliases.
 
 
 =head1 SUBROUTINES/METHODS

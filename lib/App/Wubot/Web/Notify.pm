@@ -223,6 +223,7 @@ sub notify {
         unless ( $message->{mailbox} ) { $message->{mailbox} = 'null' }
 
         utf8::decode( $message->{subject} );
+        utf8::decode( $message->{username} );
 
         my $coalesce = $message->{mailbox};
         if ( ! $expand ) {
@@ -278,6 +279,12 @@ sub notify {
                                           where     => { seen => \$is_null },
                                       } );
     $self->stash( 'count', $total->{count} );
+
+    my ( $readme ) = $sqlite_notify->select( { fields    => 'count(*) as count',
+                                               tablename => 'tags',
+                                               where     => { tag => 'readme' },
+                                           } );
+    $self->stash( 'readme', $readme->{count} );
 
     $self->render( template => 'notify' );
 

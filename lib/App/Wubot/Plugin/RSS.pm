@@ -92,6 +92,7 @@ sub check {
                         link       => $link,
                         body       => $body,
                         coalesce   => $self->key,
+                        username   => $i->author,
                     };
 
         push @react, $article;

@@ -61,7 +61,7 @@ additional sub-rules to run.  Nesting rules makes the rules processing
 much more efficient so that not every rule needs to be run on every
 message.  Rules processing is recursive so rules can be nested
 arbitrarily deep.  For more information on rule conditions, see
-L<App::Wubot::Guide::Conditions>.
+L<App::Wubot::Conditions>.
 
 Distributed operation currently relies on XMPP.  Using XMPP, messages
 can be sent between wubot instances on multiple hosts.  Monitors

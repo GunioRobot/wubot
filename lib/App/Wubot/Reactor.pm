@@ -4,10 +4,9 @@ use Moose;
 # VERSION
 
 use Class::Load qw/load_class/;
-use Scalar::Util qw/looks_like_number/;
-use YAML;
 
 use App::Wubot::Logger;
+use App::Wubot::Conditions;
 
 =head1 NAME
 
@@ -49,6 +48,15 @@ has 'monitors' => ( is => 'ro',
                     isa => 'HashRef',
                     default => sub { return {} },
                 );
+
+has 'conditions' => ( is => 'ro',
+                      isa => 'App::Wubot::Conditions',
+                      lazy => 1,
+                      default => sub {
+                          return App::Wubot::Conditions->new();
+                      }
+                  );
+
 
 =head1 SUBROUTINES/METHODS
 
@@ -92,7 +100,7 @@ sub react {
         return $message if $message->{last_rule};
 
         if ( $rule->{condition} ) {
-            next RULE unless $self->condition( $rule->{condition}, $message );
+            next RULE unless $self->conditions->istrue( $rule->{condition}, $message );
         }
 
         $self->logger->debug( " " x $depth, "- rule matched: $rule->{name}" );
@@ -114,115 +122,6 @@ sub react {
     return $message;
 }
 
-=item condition( $condition, $message )
-
-Process conditions defined on a rule.
-
-For more information, see L<App::Wubot::Guide::Conditions>.
-
-=cut
-
-sub condition {
-    my ( $self, $condition, $message ) = @_;
-
-    if ( $condition =~ m|^(.*)\s+AND\s+(.*)$| ) {
-        my ( $first, $last ) = ( $1, $2 );
-
-        return 1 if $self->condition( $first, $message ) && $self->condition( $last, $message );
-        return;
-    }
-    elsif ( $condition =~ m|^(.*)\s+OR\s+(.*)$| ) {
-        my ( $first, $last ) = ( $1, $2 );
-
-        return 1 if $self->condition( $first, $message ) || $self->condition( $last, $message );
-        return;
-    }
-    elsif ( $condition =~ m|^NOT\s+(.*)$| ) {
-        return if $self->condition( $1, $message );
-        return 1;
-    }
-    elsif ( $condition =~ m|^([\w\.]+)\s+equals\s+(.*)$| ) {
-        my ( $field, $value ) = ( $1, $2 );
-
-        return 1 if $message->{ $field } && $message->{ $field } eq $value;
-        return;
-    }
-    elsif ( $condition =~ m|^([\w\.]+)\s+matches\s+(.*)$| ) {
-        my ( $field, $value ) = ( $1, $2 );
-
-        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/;
-        return;
-    }
-    elsif ( $condition =~ m|^([\w\.]+)\s+imatches\s+(.*)$| ) {
-        my ( $field, $value ) = ( $1, $2 );
-
-        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/i;
-        return;
-    }
-    elsif ( $condition =~ m|^contains ([\w\.]+)$| ) {
-        my $field = $1;
-
-        return 1 if exists $message->{ $field };
-        return;
-    }
-    elsif ( $condition =~ m|^([\w\.]+) is true$| ) {
-        my $field = $1;
-
-        if ( $message->{ $field } ) {
-            return if $message->{ $field } eq "false";
-            return 1;
-        }
-        return;
-    }
-    elsif ( $condition =~ m|^([\w\.]+) is false$| ) {
-        my $field = $1;
-
-        return 1 unless $message->{$field};
-        return 1 if $message->{ $field } eq "false";
-        return;
-    }
-    elsif ( $condition =~ m/^([\w\d\.\_]+) ((?:>|<)=?) ([\w\d\.\_]+)$/ ) {
-        my ( $left, $op, $right ) = ( $1, $2, $3 );
-
-        my $first;
-        if ( looks_like_number( $left ) ) {
-            $first = $left;
-        }
-        else {
-            return unless exists $message->{$left};
-            $first = $message->{$left};
-            return unless looks_like_number( $first )
-        }
-
-        my $second;
-        if ( looks_like_number( $right ) ) {
-            $second = $right;
-        }
-        else {
-            return unless exists $message->{$right};
-            $second = $message->{$right};
-            return unless looks_like_number( $second )
-        }
-
-        if ( $op eq ">" ) {
-            return 1 if $first > $second;
-        }
-        elsif ( $op eq ">=" ) {
-            return 1 if $first >= $second;
-        }
-        elsif ( $op eq "<" ) {
-            return 1 if $first < $second;
-        }
-        elsif ( $op eq "<=" ) {
-            return 1 if $first <= $second;
-        }
-
-        return;
-    }
-
-    $self->logger->error( "Condition could not be parsed: $condition" );
-    return;
-}
 
 =item initialize_plugin( $plugin )
 

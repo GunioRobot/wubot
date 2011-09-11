@@ -33,9 +33,9 @@ Monitoring arduino sensor data.
 
 =over 2
 
-=item L<App::Wubot::Guide::Conditions>
+=item L<App::Wubot::Conditions>
 
-A guide for using conditions in rules.
+Using conditions in rules.
 
 =item L<App::Wubot::Guide::Rules>
 

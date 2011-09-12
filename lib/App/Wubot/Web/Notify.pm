@@ -106,6 +106,10 @@ sub notify {
                 $sqlite_notify->delete( 'tags',
                                         { remoteid => $id, tag => 'readme', tablename => 'notifications' },
                                     );
+                $sqlite_notify->update( 'notifications',
+                                        { seen => $now },
+                                        { id   => $id  },
+                                    );
             } elsif ( $tag eq "m" ) {
                 print "Setting README tag on id $id and marking seen\n";
                 $sqlite_notify->insert( 'tags',

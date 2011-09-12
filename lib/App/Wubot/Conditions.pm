@@ -76,13 +76,6 @@ properly.
 
 =cut
 
-has 'cache'   => ( is => 'ro',
-                   isa => 'HashRef',
-                   lazy => 1,
-                   default => sub { {} },
-               );
-
-
 has 'logger'  => ( is => 'ro',
                    isa => 'Log::Log4perl::Logger',
                    lazy => 1,
@@ -107,16 +100,6 @@ sub istrue {
 
     return unless $condition;
 
-    # if we have previously parsed this condition, look up the parsed
-    # results in the cache.
-    if ( $self->cache->{ $condition } ) {
-        return $self->_run( $message, $self->cache->{ $condition } );
-    }
-
-    # store the parsed rule information
-    my $parsed;
-
-    # try to parse the rule
     if ( $condition =~ m|^(.*)\s+AND\s+(.*)$| ) {
         my ( $first, $last ) = ( $1, $2 );
 
@@ -134,136 +117,85 @@ sub istrue {
         return 1;
     }
     elsif ( $condition =~ m|^([\w\.]+)\s+equals\s+(.*)$| ) {
-        $parsed = [ '_equals', $1, $2 ];
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } eq $value;
+        return;
     }
     elsif ( $condition =~ m|^([\w\.]+)\s+matches\s+(.*)$| ) {
-        $parsed = [ '_matches', $1, $2 ];
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/;
+        return;
     }
     elsif ( $condition =~ m|^([\w\.]+)\s+imatches\s+(.*)$| ) {
-        $parsed = [ '_imatches', $1, $2 ];
+        my ( $field, $value ) = ( $1, $2 );
+
+        return 1 if $message->{ $field } && $message->{ $field } =~ m/$value/i;
+        return;
     }
     elsif ( $condition =~ m|^contains ([\w\.]+)$| ) {
-        $parsed = [ '_contains', $1 ];
+        my $field = $1;
+
+        return 1 if exists $message->{ $field };
+        return;
     }
     elsif ( $condition =~ m|^([\w\.]+) is true$| ) {
-        $parsed = [ '_is_true', $1 ];
+        my $field = $1;
+
+        if ( $message->{ $field } ) {
+            return if $message->{ $field } eq "false";
+            return 1;
+        }
+        return;
     }
     elsif ( $condition =~ m|^([\w\.]+) is false$| ) {
-        $parsed = [ '_is_false', $1 ];
+        my $field = $1;
+
+        return 1 unless $message->{$field};
+        return 1 if $message->{ $field } eq "false";
+        return;
     }
     elsif ( $condition =~ m/^([\w\d\.\_]+) ((?:>|<)=?) ([\w\d\.\_]+)$/ ) {
-        $parsed = [ '_compares', $1, $2, $3 ];
-    }
-    else {
-        $self->logger->error( "Condition could not be parsed: $condition" );
+        my ( $left, $op, $right ) = ( $1, $2, $3 );
+
+        my $first;
+        if ( looks_like_number( $left ) ) {
+            $first = $left;
+        }
+        else {
+            return unless exists $message->{$left};
+            $first = $message->{$left};
+            return unless looks_like_number( $first )
+        }
+
+        my $second;
+        if ( looks_like_number( $right ) ) {
+            $second = $right;
+        }
+        else {
+            return unless exists $message->{$right};
+            $second = $message->{$right};
+            return unless looks_like_number( $second )
+        }
+
+        if ( $op eq ">" ) {
+            return 1 if $first > $second;
+        }
+        elsif ( $op eq ">=" ) {
+            return 1 if $first >= $second;
+        }
+        elsif ( $op eq "<" ) {
+            return 1 if $first < $second;
+        }
+        elsif ( $op eq "<=" ) {
+            return 1 if $first <= $second;
+        }
+
         return;
     }
 
-    $self->logger->trace( "Parsed new condition: $condition" );
-
-    $self->cache->{$condition} = $parsed;
-
-    return $self->_run( $message, $parsed );
-
-}
-
-sub _run {
-    my ( $self, $message, $condition_a ) = @_;
-
-    my ( $op, @args ) = @{ $condition_a };
-
-    return $self->$op( $message, @args );
-}
-
-sub _compares {
-    my ( $self, $message, $left, $op, $right ) = @_;
-
-    my $first;
-    if ( looks_like_number( $left ) ) {
-        $first = $left;
-    } else {
-        return unless exists $message->{$left};
-        $first = $message->{$left};
-        return unless looks_like_number( $first )
-    }
-
-    my $second;
-    if ( looks_like_number( $right ) ) {
-        $second = $right;
-    } else {
-        return unless exists $message->{$right};
-        $second = $message->{$right};
-        return unless looks_like_number( $second )
-    }
-
-    if ( $op eq ">" ) {
-        return 1 if $first > $second;
-    } elsif ( $op eq ">=" ) {
-        return 1 if $first >= $second;
-    } elsif ( $op eq "<" ) {
-        return 1 if $first < $second;
-    } elsif ( $op eq "<=" ) {
-        return 1 if $first <= $second;
-    }
-
-    return;
-}
-
-sub _equals {
-    my ( $self, $message, $field, $value ) = @_;
-
-    return unless defined $message;
-    return unless defined $field;
-
-    return unless defined $value;
-
-    return unless $message->{$field};
-
-    return 1 if $message->{$field} eq $value;
-
-    return;
-}
-
-sub _matches {
-    my ( $self, $message, $field, $value ) = @_;
-
-    return 1 if $field && $value && $message->{ $field } && $message->{ $field } =~ m/$value/;
-
-    return;
-}
-
-sub _imatches {
-    my ( $self, $message, $field, $value ) = @_;
-
-    return 1 if $field && $value && $message->{ $field } && $message->{ $field } =~ m/$value/i;
-
-    return;
-}
-
-sub _contains {
-    my ( $self, $message, $field ) = @_;
-
-    return 1 if exists $message->{ $field };
-    return;
-}
-
-sub _is_true {
-    my ( $self, $message, $field ) = @_;
-
-    if ( $message->{ $field } ) {
-        return if $message->{ $field } eq "false";
-        return 1;
-    }
-
-    return;
-
-}
-
-sub _is_false {
-    my ( $self, $message, $field ) = @_;
-
-    return 1 unless $message->{$field};
-    return 1 if $message->{ $field } eq "false";
+    $self->logger->error( "Condition could not be parsed: $condition" );
     return;
 }
 

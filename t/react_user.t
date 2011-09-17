@@ -106,6 +106,22 @@ test "parse username field" => sub {
              },
                "Checking irc style, missing close: dude{idle"
            );
+
+    is_deeply( $self->reactor->react( { username => 'dude(http://www.dudism.com/)' }, $config ),
+               { username         => 'dude',
+                 username_orig    => 'dude(http://www.dudism.com/)',
+                 username_comment => 'http://www.dudism.com/',
+             },
+               "Checking 'username(http://...)' style"
+           );
+
+    is_deeply( $self->reactor->react( { username => 'dude (http://www.dudism.com/)' }, $config ),
+               { username         => 'dude',
+                 username_orig    => 'dude (http://www.dudism.com/)',
+                 username_comment => 'http://www.dudism.com/',
+             },
+               "Checking 'username (http://...)' style"
+           );
 };
 
 

@@ -3,6 +3,12 @@ use Moose;
 
 # VERSION
 
+# todo
+#  - App::Wubot::Util::User
+#  - configure class for user in userdb config
+#  - other classes could use other contact back-ends, e.g. emacs contacts
+#  - role for interface, with method to check if file changed
+
 use YAML;
 
 use App::Wubot::Logger;
@@ -79,6 +85,12 @@ sub react {
 
     if ( $message->{username} =~ m/\{.*/ ) {
         $message->{username} =~ m/^(.*)\{([^\}]+)/;
+        $message->{username} = $1;
+        $message->{username_comment} = $2;
+    }
+
+    if ( $message->{username} =~ m/\(http/ ) {
+        $message->{username} =~ m/^(.*?)\s*\((http[^\)]+)/;
         $message->{username} = $1;
         $message->{username_comment} = $2;
     }

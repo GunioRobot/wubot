@@ -71,7 +71,7 @@
           </td>
 
           <td style="text-align: left">
-            <%= $row->{subject} %>
+            <%= $row->{subject_text} %>
           </td>
 
           <td>

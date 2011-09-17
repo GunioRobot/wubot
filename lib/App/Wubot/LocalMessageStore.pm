@@ -216,6 +216,8 @@ sub store {
 Delete all queue items where the 'seen' time is older than the
 specified 'age' in seconds.
 
+Also calls the 'vacuum' command on the database to reclaim any unused
+space and improve performance.
 
 =cut
 
@@ -239,6 +241,8 @@ sub delete_seen {
 
    my $conditions = { seen => { '<' => $time } };
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );
+
+   $self->sqlite->{ $dbfile }->vacuum();
 }
 
 =item get( $directory )

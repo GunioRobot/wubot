@@ -26,6 +26,11 @@
     <tr bgcolor="<%= $row->{color} %>">
       <td><%= $row->{count} %></td>
       <td bgcolor="<%= $row->{color} %>"><%= $row->{lastupdate} %></td>
+
+      <td bgcolor="<%= $tagcolors->{ $row->{tag} } %>">
+        <a href="?tag=<%= $row->{tag} %>"><%= $row->{tag} %></a>
+      </td>
+
       <td><%= $row->{file} %></td>
       <td>
         <a href='/open/org/<%= $row->{file} %>.org/<%= $row->{emacs_link} %>'><%= $row->{title} %></a>

@@ -323,7 +323,6 @@ my $taskdb = "$tempdir/tasks.sql";
 
 
 {
-
     my $reaction = [];
     ok( my $check = App::Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
                                                              class      => 'App::Wubot::Plugin::EmacsOrgMode',
@@ -340,6 +339,38 @@ my $taskdb = "$tempdir/tasks.sql";
     is( $results->{react}->[1]->{taskid},
         "first_task.first line in file is task with two bullet points",
         "checking first line in file is task with two bullet points"
+    );
+
+}
+
+
+{
+    my $reaction = [];
+    ok( my $check = App::Wubot::Plugin::EmacsOrgMode->new( { key        => 'EmacsOrgMode-testcase',
+                                                             class      => 'App::Wubot::Plugin::EmacsOrgMode',
+                                                             cache_file => "/dev/null",
+                                                             dbfile     => $taskdb,
+                                                    } ),
+        "Creating a new Emacs Org Mode check instance"
+    );
+
+    ok( my $results = $check->check( { config => { directory => 't/org/4' } } ),
+        "Calling check() method again with new directory"
+    );
+
+    is( $results->{react}->[1]->{taskid},
+        "tagged_task.make tea",
+        "checking first task id"
+    );
+
+    is( $results->{react}->[1]->{taskid},
+        "tagged_task.make tea",
+        "checking first title"
+    );
+
+    is( $results->{react}->[1]->{tag},
+        "chores",
+        "checking first task tag"
     );
 
 }

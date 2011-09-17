@@ -227,6 +227,7 @@ sub notify {
         unless ( $message->{mailbox} ) { $message->{mailbox} = 'null' }
 
         utf8::decode( $message->{subject} );
+        utf8::decode( $message->{subject_text} );
         utf8::decode( $message->{username} );
 
         my $coalesce = $message->{mailbox};

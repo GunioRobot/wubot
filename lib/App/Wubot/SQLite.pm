@@ -548,6 +548,28 @@ sub delete {
 
 }
 
+=item vacuum()
+
+Run the 'vacuum' command.  Rebuilds the database to reclaim space from
+deleted items.
+
+=cut
+
+sub vacuum {
+    my ( $self ) = @_;
+
+    eval {
+        $self->logger->warn( "starting to vacuum database" );
+        $self->dbh->do( 'vacuum' );
+        1;
+    } or do {
+        $self->logger->logcroak( "can't vacuum database: $@" );
+    };
+
+    $self->logger->warn( "done vacuuming database" );
+
+}
+
 =item get_prepared( $table, $schema, $command )
 
 Given a SQL command, attempt to prepare the statement.

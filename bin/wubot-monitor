@@ -106,14 +106,16 @@ my $timer = AnyEvent->timer( after    => 1,
                                  unless ( $start_date eq $current_date ) {
                                      $logger->warn( "Date changed" );
 
-                                     $logger->warn( "Restarting..." );
+                                     $logger->warn( "Restarting now..." );
                                      AnyEvent::Watchdog::Util::restart;
                                  }
 
-                                 # for profiling
-                                 # if ( $loops > 10 ) {
-                                 #     $end->recv;
-                                 # }
+                                 if ( $ENV{LIMIT} ) {
+                                     print "LOOPS: $loops\n";
+                                     if ( $loops > $ENV{LIMIT} ) {
+                                         $end->recv;
+                                     }
+                                 }
 
                              } );
 

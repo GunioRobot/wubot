@@ -51,10 +51,12 @@ my $maxcount   = 50;
 
 my $timelength = App::Wubot::Util::TimeLength->new();
 
-my $last_date = strftime( "%Y-%m-%d", localtime() );
+my $start_date = strftime( "%Y-%m-%d", localtime() );
 
 my @reactions;
 my @timers;
+
+my $total_count = 0;
 
 push @timers, AnyEvent->timer( after    => 1,
                                interval => 5,
@@ -63,6 +65,7 @@ push @timers, AnyEvent->timer( after    => 1,
                                    my $count = 0;
 
                                    while ( my ( $message, $callback ) = $messenger->get( $message_directory ) ) {
+                                       $total_count++;
                                        $count++;
 
                                        # send message through the reactor
@@ -82,8 +85,21 @@ push @timers, AnyEvent->timer( after    => 1,
                                        return if $count >= $maxcount;
 
                                        if ( $ENV{LIMIT} ) {
-                                           exit if $count == $ENV{LIMIT};
+                                           print "COUNT: $total_count\n";
+                                           if ( $total_count > $ENV{LIMIT} ) {
+                                               $end->recv;
+                                           }
                                        }
+                                   }
+
+                                   # daily restart
+                                   my $current_date = strftime( "%Y-%m-%d", localtime() );
+                                   unless ( $start_date eq $current_date ) {
+                                       $logger->warn( "Date changed" );
+
+                                       $logger->warn( "Restarting in 30 seconds..." );
+                                       sleep 30;
+                                       AnyEvent::Watchdog::Util::restart;
                                    }
                                },
                            );
@@ -128,6 +144,7 @@ push @timers, AnyEvent->timer( after => 1,
                                        my $time = $timelength->get_human_readable( $now - $lastupdate );
                                        react( { subject    => "reactor on $hostname has not received a message in $time",
                                                 key        => 'wubot-reactor',
+                                                noforward  => 1,
                                                 lastupdate => $now,
                                             } );
                                    }

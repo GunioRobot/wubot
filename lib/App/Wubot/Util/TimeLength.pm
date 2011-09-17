@@ -192,30 +192,34 @@ color.  A steady stream of items with evenly spaced ages will create a
 smooth gradient of color.  Different colors are used to represent the
 age in minutes, hours, days, or months.
 
-If the age is younger than 1 hour, the color will be somewhere in the
-spectrum from light pink (brand new) to dark purple (1 hour old).
-
-If the age is between 1 hour and 1 day old, the color will vary from
-light blue to dark blue.
-
-If the age is between 1 day and 1 month, the color will vary from a
-rather light gray to black.
-
-If the age is greater than 1 month year, the color will be an
-increasingly dark yellow color.
-
-This should be configurable in the future.
+The colors will be moved off to a config file in the future.
 
 =cut
 
 sub get_age_color {
     my ( $self, $seconds ) = @_;
 
-    my $colors = { 'h' => [ 255,   0, 255,  110,   0, 170    ],
-                   'd' => [  90, 100, 255,   40,   0, 170    ],
-                   'w' => [   0, 220,  80,    0,  80,   0    ],
-                   'M' => [ 250, 100,   0,  250, 250,   0    ],
-                   'y' => [ 250, 250,   0,    0,   0,   0, 2 ],
+    # solarized
+    # my $colors = { 'h' => [ 211,  54, 130,  108, 113, 196    ],
+    #                'd' => [ 108, 113, 196,   38, 139, 210   ],
+    #                'w' => [  38, 139, 210,  133, 153,   0    ],
+    #                'M' => [ 133, 153,   0,  181, 137,   0    ],
+    #                'y' => [ 181, 137,   0,  220,  50,  47, 2 ],
+    #            };
+
+    # spectrum
+    # my $colors = { 'h' => [ 255,   0, 255,    0,   0, 255    ],
+    #                'd' => [   0,   0, 255,    0, 200,   0    ],
+    #                'w' => [   0, 200,   0,  200, 200,   0    ],
+    #                'M' => [ 200, 200,   0,  200,   0,   0    ],
+    #                'y' => [ 200,   0,   0,    0,   0,   0, 2 ],
+    #            };
+
+    my $colors = { 'h' => [ 255,   0, 255,  108, 113, 196    ],
+                   'd' => [ 108, 113, 196,   38, 139, 210    ],
+                   'w' => [  38, 139, 210,  133, 153,   0    ],
+                   'M' => [ 133, 153,   0,  181, 137,   0    ],
+                   'y' => [ 181, 137,   0,  220,  50,  47, 2 ],
                };
 
     my $previous = 0;

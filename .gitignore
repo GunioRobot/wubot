@@ -11,3 +11,4 @@ cover_db
 .build
 semantic.cache
 log
+.DS_Store

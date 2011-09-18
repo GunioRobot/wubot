@@ -65,9 +65,13 @@
           <td style="text-align: right"><a href="?username=<%= $row->{username} %>"><%= $row->{username} %></a></td>
 
           <td>
+            <% if ( $row->{link} ) { %>
             <a href="<%= $row->{link} %>">
+            <% } %>
               <img height="24" width="24" src="/images/<%= $row->{icon} %>">
+            <% if ( $row->{link} ) { %>
             </a>
+            <% } %>
           </td>
 
           <td style="text-align: left">
@@ -89,7 +93,6 @@
       <tfoot></tfoot>
     </table>
 
-    <br><br>
     <input type="image" src="images/wubot.png" border=0 height=32 width=32 alt="submit">
     </form>
 

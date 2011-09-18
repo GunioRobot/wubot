@@ -243,6 +243,8 @@ sub delete_seen {
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );
 
    $self->sqlite->{ $dbfile }->vacuum();
+
+   return 1;
 }
 
 =item get( $directory )

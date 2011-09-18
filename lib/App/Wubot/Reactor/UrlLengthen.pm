@@ -71,8 +71,9 @@ sub react {
                 )->find(\$value);
 
     for my $url ( keys %urls ) {
-
         my $lengthened_url = $urls{$url};
+
+        next unless $url && $lengthened_url;
 
         next if $url eq $lengthened_url;
 
@@ -92,6 +93,10 @@ sub expand {
 
     $self->logger->debug( "Lookup url: $url" );
     my $expanded_url = $self->longurl->expand($url);
+
+    unless ( $expanded_url ) {
+        return $url;
+    }
 
     $self->logger->debug( "Expanded: $url => $expanded_url" );
 

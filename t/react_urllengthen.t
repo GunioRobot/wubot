@@ -54,3 +54,23 @@ ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new(),
     );
 
 }
+
+{
+    # url that does not require shortening
+    my $url = 'https://github.com/wu/';
+
+    is( $lengthener->react( { subject => $url }, { field => 'subject' }  )->{subject},
+        $url,
+        "Lengthening URL that is not shortened"
+    );
+
+    is( $lengthener->expand( $url ),
+        $url,
+        "Lengthening URL that is not shortened"
+    );
+
+    is( $lengthener->react( { subject => $url }, { field => 'subject' }  )->{subject},
+        $url,
+        "Lengthening URL that is not shortened"
+    );
+}

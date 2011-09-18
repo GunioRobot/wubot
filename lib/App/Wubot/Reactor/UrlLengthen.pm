@@ -104,6 +104,10 @@ sub expand {
         $expanded_url = $self->expand_pltme( $expanded_url );
     }
 
+    if ( $expanded_url =~ m|plusist\.com| ) {
+        $expanded_url = $self->expand_plusist( $expanded_url );
+    }
+
     $self->cache->{ $url } = $expanded_url;
 
     return $expanded_url;
@@ -126,6 +130,24 @@ sub expand_pltme {
 
     return $head->{_headers}->{location};
 }
+
+sub expand_plusist {
+    my ( $self, $url ) = @_;
+
+    $self->logger->debug( "Getting content of $url" );
+    my $response = $self->ua->get( $url );
+
+    my $content = $response->decoded_content;
+
+    return $url unless $content =~ m|iframe id=\"link-frame\" src=\"(.*?)\"|;
+
+    $url = $1;
+    $self->logger->debug( "Expanded url: $url" );
+
+    return $url;
+}
+
+
 
 __PACKAGE__->meta->make_immutable;
 

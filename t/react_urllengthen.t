@@ -74,3 +74,15 @@ ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new(),
         "Lengthening URL that is not shortened"
     );
 }
+
+{
+    # url that does not require shortening
+    my $url = "http://plusist.com/merlyn/NDMxNzk";
+    my $long_url = "http://itunes.apple.com/us/app/magnetic-billiards-blueprint/id432152950?mt=8";
+
+    is( $lengthener->expand( $url ),
+        $long_url,
+        "Lengthening plusist URL"
+    );
+}
+

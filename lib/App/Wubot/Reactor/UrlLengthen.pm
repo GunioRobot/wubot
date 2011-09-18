@@ -9,6 +9,27 @@ use WWW::LongURL;
 
 use App::Wubot::Logger;
 
+=head1 NAME
+
+App::Wubot::Reactor::UrlLengthen - lengthen URLs using WWW::LongURL
+
+=head1 SYNOPSIS
+
+  - name: length URLs
+    condition: subject matches http
+    plugin: UrlLengthen
+    config:
+      field: subject
+
+
+=head1 DESCRIPTION
+
+Lengthen shortened URLs using L<WWW::LongURL>.
+
+URLs are found in the specified fields using L<URI::Find>.
+
+=cut
+
 has 'ua'      => ( is => 'ro',
                    isa => 'LWP::UserAgent',
                    lazy => 1,
@@ -50,6 +71,15 @@ has 'logger'  => ( is => 'ro',
                    },
                );
 
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item react( $message, $config )
+
+The standard reactor plugin react() method.
+
+=cut
 
 sub react {
     my ( $self, $message, $config ) = @_;
@@ -83,6 +113,12 @@ sub react {
     return $message;
 }
 
+=item expand( $url )
+
+Given a URL, attempt to expand it.
+
+=cut
+
 sub expand {
     my ( $self, $url ) = @_;
 
@@ -113,6 +149,13 @@ sub expand {
     return $expanded_url;
 }
 
+=item expand_pltme( $url )
+
+Expand plt.me URLs.  I have been seeing a lot of these lately and they
+do not get expanded by WWW::LongURL yet.
+
+=cut
+
 sub expand_pltme {
     my ( $self, $url ) = @_;
 
@@ -130,6 +173,18 @@ sub expand_pltme {
 
     return $head->{_headers}->{location};
 }
+
+=item expand_plusist( $url )
+
+Retrieve the target URL from plusist URLs.
+
+These are especially annoying since the URL in the browser shows up as
+the plusist URL, and the actual content is rendered in a frame.
+
+THis method gets the content of the plusist wrapper page and then
+parses the link from the link-frame.
+
+=cut
 
 sub expand_plusist {
     my ( $self, $url ) = @_;
@@ -155,41 +210,5 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
-
-=head1 NAME
-
-App::Wubot::Reactor::UrlLengthen - lengthen URLs using WWW::LongURL
-
-=head1 SYNOPSIS
-
-  - name: length URLs
-    condition: subject matches http
-    plugin: UrlLengthen
-    config:
-      field: subject
-
-
-=head1 DESCRIPTION
-
-Lengthen shortened URLs using L<WWW::LongURL>.
-
-URLs are found in the specified fields using L<URI::Find>.
-
-=head1 SUBROUTINES/METHODS
-
-=over 8
-
-=item react( $message, $config )
-
-The standard reactor plugin react() method.
-
-=item expand( $message, $config )
-
-Given a URL, attempt to expand it.
-
-=item expand_pltme( $message, $config )
-
-Expand plt.me URLs.  I have been seeing a lot of these lately and they
-do not get expanded by WWW::LongURL yet.
 
 =back

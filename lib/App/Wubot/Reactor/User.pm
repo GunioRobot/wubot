@@ -296,4 +296,9 @@ contain new aliases.
 
 The standard reactor plugin react() method.
 
+=item get_user_info( $username )
+
+Given a username or alias, look up the information about the user in
+the userdb.
+
 =back

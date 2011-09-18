@@ -181,7 +181,7 @@ Retrieve the target URL from plusist URLs.
 These are especially annoying since the URL in the browser shows up as
 the plusist URL, and the actual content is rendered in a frame.
 
-THis method gets the content of the plusist wrapper page and then
+This method gets the content of the plusist wrapper page and then
 parses the link from the link-frame.
 
 =cut

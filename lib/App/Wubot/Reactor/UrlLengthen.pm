@@ -149,6 +149,9 @@ App::Wubot::Reactor::UrlLengthen - lengthen URLs using WWW::LongURL
 
 =head1 DESCRIPTION
 
+Lengthen shortened URLs using L<WWW::LongURL>.
+
+URLs are found in the specified fields using L<URI::Find>.
 
 =head1 SUBROUTINES/METHODS
 

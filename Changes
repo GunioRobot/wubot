@@ -1,5 +1,20 @@
 Revision history for Wubot
 
+0.3.2 2011-09-23T23:29PDT
+
+  - LocalMessageStore vacuums the database when doing cleanup
+  - break out reactor conditions into a separate library
+  - rework daily restart logic in monitor and reactor scripts
+  - add username field to RSS feeds
+  - some updates to the userdb for the user reactor
+  - allow schema configs to be grouped in subdirectories
+  - adjust default age colors in TimeLength library, solarized spectrum
+  - added UrlLengthen reactor - expand shortened URLs
+  - added a couple of diagrams and screenshots
+  - update some tests to use Test::Routine
+  - update Facebook scraper plugin to use HTML::Strip
+  - ongoing refinements to tasks libraries and notification web interface
+
 0.3.1 2011-09-10T00:01PDT
 
   - continuing doc updates

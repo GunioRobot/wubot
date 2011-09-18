@@ -1,5 +1,11 @@
 Revision history for Wubot
 
+0.3.3 2011-09-15T15:14PDT
+
+  - added FeedFu guide
+  - UrlLengthen reactor handles plusist.com urls
+  - additional doc tweaks
+
 0.3.2 2011-09-23T23:29PDT
 
   - LocalMessageStore vacuums the database when doing cleanup

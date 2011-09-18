@@ -121,3 +121,8 @@ Atomate: an information assistance engine enabling end-user personal
 reactive automation for the web.
 
     - http://code.google.com/p/atomate/
+
+If this then that, a mashup tool for the social web.  When something
+happens (this) then do something else (that).
+
+    - http://Ifttt.com/

@@ -161,4 +161,13 @@ URLs are found in the specified fields using L<URI::Find>.
 
 The standard reactor plugin react() method.
 
+=item expand( $message, $config )
+
+Given a URL, attempt to expand it.
+
+=item expand_pltme( $message, $config )
+
+Expand plt.me URLs.  I have been seeing a lot of these lately and they
+do not get expanded by WWW::LongURL yet.
+
 =back

@@ -1,4 +1,4 @@
-package Wubot;
+package App::Wubot;
 use Moose;
 
 # VERSION
@@ -11,7 +11,7 @@ use Carp;
 
 =head1 NAME
 
-Wubot - personal distributed reactive automation
+App::Wubot - personal distributed reactive automation
 
 
 =head1 DESCRIPTION

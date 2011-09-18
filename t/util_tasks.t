@@ -226,6 +226,7 @@ $body
 
     $task_h->{color} = 'yellow';
     $task_h->{id}    = 2;
+    $task_h->{tag}   = undef;
 
     is_deeply( $results2[0],
                $task_h,
@@ -283,6 +284,7 @@ $body
     $task_h->{color} = 'yellow';
     $task_h->{id}    = 2;
     $task_h->{count} = 1;
+    $task_h->{tag}   = 'null';
 
     is_deeply( $results2[0],
                $task_h,

@@ -1,0 +1,154 @@
+=head1 NAME
+
+App::Wubot::Guide::FeedFu - example fu for handling feeds
+
+=head1 DESCRIPTION
+
+This document gives some examples of the range of operations that can
+be performed on a feed.
+
+=head1 FILTERING
+
+I follow twitter, but I am not a fan of the tweets of the form 'I'm at
+some location'.  So I filter those out with the following rule:
+
+  - name: ignore
+    condition: subject matches ^I.m at
+    last_rule: 1
+
+I follow the lifehacker RSS feed, but I know in advance that I'm not
+going to be interested in any articles that refer to windows 8 or
+sports.
+
+  - name: ignore
+    condition: subject imatches windows 8|sports
+    last_rule: 1
+
+A more complex example can be found in L<App::Wubot::Guide::GettingStarted>.
+
+
+=head1 COMBINING FEEDS
+
+I follow a lot of RSS feeds.  I often like to combine multiple feeds
+together into a single feed.  For example, I follow the 'tekgear' and
+'thinkgeek' RSS feeds, and I combine them together into a 'shop' feed.
+
+In the configuration for both RSS feeds, I simply set the 'mailbox' to
+'shop'.
+
+  - name: categorize
+    plugin: SetField
+    config:
+      set:
+        mailbox: shop
+
+Then I point my RSS feeder to the combined feed.
+
+  http://myhost:3000/atom/shop.xml
+
+=head1 SPLITTING AN INCOMING FEED INTO MULTIPLE OUTGOING FEEDS
+
+I monitor my email inbox with the 'Mbox' plugin.  I also get e-mails
+from Jira in my inbox, but I like to route those off to a 'jira'
+mailbox rather than to my mbox inbox.  The following reactor rule
+would find emails that have JIRA in the subject and set the target
+mailbox to 'jira'.
+
+      - name: jira
+        condition: subject matches JIRA
+        plugin: SetField
+        config:
+          field: mailbox
+          value: jira
+
+=head1 STRIPPING IMAGES
+
+I hate that some RSS feeds contain advertisments or other images that
+are not related to the content.  You can strip them out by using the
+ImageStrip reactor.
+
+For example, the RSS feed from slashdot has image buttons to share an
+article on facebook or twitter.  If I really want to do that, I'll
+click off to the article.
+
+  ---
+  url: http://rss.slashdot.org/Slashdot/slashdot
+  delay: 1h
+
+  react:
+
+    - name: body image remover
+      condition: contains body
+      plugin: ImageStrip
+      config:
+        field: body
+
+=head1 FETCHING THE BODY
+
+I hate that a lot of RSS feeds have started only providing 100 or less
+characters of the article.  This requires you to click off to the
+website to get the content.  Using wubot, you can fetch the body and
+trim out the bits that are not interesting.
+
+One example is the efoodalert RSS feed which provides information
+about food recalls.
+
+  ---
+  url: http://efoodalert.wordpress.com/feed/
+  delay: 1h
+
+  react:
+
+    - name: get full body
+      condition: contains body
+      rules:
+
+        - name: fetch body
+          plugin: WebFetch
+          config:
+            field: body
+            url_field: link
+
+        - name: capture body contents
+          plugin: CaptureData
+          config:
+            field: body
+            regexp: '^.*(<div id="content">.*)<div class="postinfo'
+
+=head1 FEED CONVERSIONS
+
+Wubot can be used to transform a feed from one feed type to another.
+For example, data coming in from any of the following forms can be
+routed back out to any of the other forms:
+
+  - RSS/Atom
+  - mbox/maildir
+  - IRC
+  - logfiles
+
+For example, if you wanted to receive an RSS feed and write the
+articles out to an mbox, you could configure a monitor for the RSS
+feed:
+
+  ---
+  url: http://rss.slashdot.org/Slashdot/slashdot
+  delay: 1h
+  react:
+    - name: categorize
+      plugin: SetField
+      config:
+        set:
+          mailbox: news
+
+Then a reactor rule could be used to write it back out in Maildir
+format:
+
+  rules:
+    - name: notify maildir
+      plugin: Maildir
+      condition: mailbox equals news
+      config:
+        path: /usr/home/wu/mail
+        mailbox: news
+
+Now you can read your RSS feeds in mutt.

@@ -17,6 +17,13 @@ Wtf is wubot?
 Guide to getting started monitoring an RSS feed and reacting to items
 in that feed.
 
+=item L<App::Wubot::Guide::FeedFu>
+
+Examples of some of the range of things that can be done with feeds,
+including filtering, combining, splitting, stripping images or html,
+fetching bodies for summaries, or converting from one format to
+another.
+
 =back
 
 =head1 MONITORING

@@ -17,6 +17,58 @@ use App::Wubot::Logger;
 use App::Wubot::SQLite;
 use App::Wubot::Util::TimeLength;
 
+=head1 NAME
+
+App::Wubot::Web::Notify - web interface for wubot notifications
+
+=head1 CONFIGURATION
+
+   ~/wubot/config/webui.yaml
+
+    ---
+    plugins:
+      notify:
+        '/notify': notify
+        '/notify/id/(.id)': item
+        '/tags': tags
+        '/colors': colors
+
+=head1 DESCRIPTION
+
+The wubot web interface is still under construction!
+
+The notification web interface serves as your notification inbox.  You
+can browse through the unread notifications, mark them read, limit the
+display to specific plugins or usernames, apply tags, or mark them for
+later review.
+
+By default, items in the inbox are grouped and collapsed based on the
+'coalesce' field defined in the message.  There are some default
+coalesce fields provided by many of the plugins, or you can easily use
+rules to alter the defaults.
+
+By convention, wubot messages that are worthy of your attention will
+contain a 'subject' field describing the event.  This could be the
+subject of an email or rss feed, a tweet, a description of a disk
+space problem, etc.  For more information on wubot notifications, see
+also L<App::Wubot::Guide::Notifications>.
+
+In order to use the notification web interface, you will first need to
+define a rule in the reactor to store the message in the notifications
+table.  This can be done with a rule such as:
+
+  - name: notify sql table
+    plugin: SQLite
+    config:
+      file: /Users/wu/wubot/sqlite/notify.sql
+      tablename: notifications
+
+The notifications table schema is provided in the wubot distribution,
+see the 'schema's section of L<App::Wubot::SQLite> for more
+information.
+
+=cut
+
 my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
 
 my $colors = App::Wubot::Util::Colors->new();
@@ -28,6 +80,17 @@ my $timelength = App::Wubot::Util::TimeLength->new();
 
 my $notify_file    = join( "/", $ENV{HOME}, "wubot", "sqlite", "notify.sql" );
 my $sqlite_notify  = App::Wubot::SQLite->new( { file => $notify_file } );
+
+
+=head1 SUBROUTINES/METHODS
+
+=over 8
+
+=item notify
+
+Display the notifications web interface
+
+=cut
 
 sub notify {
     my $self = shift;
@@ -70,7 +133,7 @@ sub notify {
 
         my $cmd = $params->{$param};
 
-        $self->cmd( $id, $cmd );
+        $self->_cmd( $id, $cmd );
 
     }
 
@@ -247,6 +310,12 @@ sub notify {
 
 };
 
+=item item
+
+Display a single item from the notification queue.
+
+=cut
+
 sub item {
     my $self = shift;
 
@@ -254,7 +323,7 @@ sub item {
 
     my $cmd = $self->param( 'cmd' );
     if ( $cmd ) {
-        $self->cmd( $id, $cmd );
+        $self->_cmd( $id, $cmd );
     }
 
     my ( $item ) = $sqlite_notify->select( { tablename => 'notifications',
@@ -322,7 +391,7 @@ sub item {
     $self->render( template => 'item' );
 }
 
-sub cmd {
+sub _cmd {
     my ( $self, $id, $cmd ) = @_;
 
     $logger->error( "ID:id COMMAND:$cmd" );
@@ -437,6 +506,12 @@ sub cmd {
     }
 }
 
+=item tags
+
+Display the tags web interface.
+
+=cut
+
 sub tags {
     my $self = shift;
 
@@ -463,6 +538,12 @@ sub tags {
     $self->render( template => 'tags' );
 
 };
+
+=item colors
+
+Display the range of the age colors used in the timeline.
+
+=cut
 
 sub colors {
     my $self = shift;
@@ -494,70 +575,5 @@ sub colors {
 
 __END__
 
-=head1 NAME
-
-App::Wubot::Web::Notify - web interface for wubot notifications
-
-=head1 CONFIGURATION
-
-   ~/wubot/config/webui.yaml
-
-    ---
-    plugins:
-      notify:
-        '/notify': notify
-        '/tags': tags
-
-=head1 DESCRIPTION
-
-The wubot web interface is still under construction!
-
-The notification web interface serves as your notification inbox.  You
-can browse through the unread notifications, mark them read, limit the
-display to specific plugins or usernames, apply tags, or mark them for
-later review.
-
-By default, items in the inbox are grouped and collapsed based on the
-'coalesce' field defined in the message.  There are some default
-coalesce fields provided by many of the plugins, or you can easily use
-rules to alter the defaults.
-
-By convention, wubot messages that are worthy of your attention will
-contain a 'subject' field describing the event.  This could be the
-subject of an email or rss feed, a tweet, a description of a disk
-space problem, etc.  For more information on wubot notifications, see
-also L<App::Wubot::Guide::Notifications>.
-
-In order to use the notification web interface, you will first need to
-define a rule in the reactor to store the message in the notifications
-table.  This can be done with a rule such as:
-
-  - name: notify sql table
-    plugin: SQLite
-    config:
-      file: /Users/wu/wubot/sqlite/notify.sql
-      tablename: notifications
-
-The notifications table schema is provided in the wubot distribution,
-see the 'schema's section of L<App::Wubot::SQLite> for more
-information.
-
-
-
-=head1 SUBROUTINES/METHODS
-
-=over 8
-
-=item notify
-
-Display the notifications web interface
-
-=item tags
-
-Display the tags web interface
-
-=item colors
-
-Demonstrates the range of the age colors used in the timeline.
 
 =back

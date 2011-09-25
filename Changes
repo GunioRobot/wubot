@@ -1,5 +1,16 @@
 Revision history for Wubot
 
+0.3.4 2011-09-23T23:06PDT
+
+  - first non-trial CPAN release
+  - multiple url Lengthener improvements
+  - documentation updates
+  - user reactor allows rules to be defined in user config
+  - multiple web module updates, web interface still under construction
+  - fix multiple bugs in xmltv since schema config file reorg
+  - resolve a bug where a corrupt userdb file silently prevented userdb reactor from working
+  - enable utf8 in log4perl appenders
+
 0.3.3 2011-09-15T15:14PDT
 
   - added FeedFu guide

@@ -12,6 +12,7 @@ use Moose;
 use YAML;
 
 use App::Wubot::Logger;
+use App::Wubot::Reactor;
 
 has 'userdb'  => ( is => 'ro',
                    isa => 'HashRef',
@@ -45,6 +46,12 @@ has 'aliases'  => ( is => 'ro',
                     isa => 'HashRef',
                     lazy => 1,
                     default => sub { {} },
+                );
+
+has 'reactor'  => ( is => 'ro',
+                    isa => 'App::Wubot::Reactor',
+                    lazy => 1,
+                    default => sub { return App::Wubot::Reactor->new() }
                 );
 
 sub react {
@@ -108,6 +115,10 @@ sub react {
                 $self->logger->debug( "Setting $param for $message->{username}" );
                 $message->{$param} = $userdata->{ $param };
             }
+        }
+
+        if ( $userdata->{rules} ) {
+            $self->reactor->react( $message, $userdata->{rules} );
         }
     }
 

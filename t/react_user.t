@@ -350,5 +350,41 @@ test "broken yaml file" => sub {
 
 };
 
+test "run rules in contact file" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
+
+    my $dude = << '...';
+
+---
+aliases:
+  - lebowski
+
+rules:
+
+  - name: test rule to set color
+    plugin: SetField
+    config:
+      field: foo
+      value: bar
+
+...
+
+    YAML::DumpFile( "$directory/dude.yaml", $dude );
+
+    is_deeply( $self->reactor->react( { username => 'dude' }, {} )->{foo},
+               'bar',
+               "Checking that reactor rule ran and set 'foo' to 'bar'"
+           );
+
+    is_deeply( $self->reactor->react( { username => 'lebowski' }, {} )->{foo},
+               'bar',
+               "Checking that reactor rule ran for alias"
+           );
+};
+
 run_me;
 done_testing;

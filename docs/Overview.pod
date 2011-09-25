@@ -4,6 +4,9 @@ App::Wubot::Guide::Overview - wtf is wubot?
 
 =head1 DESCRIPTION
 
+This project is still in the alpha stage of development!  Data
+handling is reliable, but the user interface is still rough.
+
 'wubot' is the code name for a distributed personal reactive
 automation tool I've been working on for the last several years.  It
 is built in modern Perl 5 using L<Moose>, L<AnyEvent>, L<LWP::UserAgent>, L<YAML>,

@@ -30,7 +30,29 @@ sub tasks {
     my $self = shift;
 
     my $due = $self->param( 'due' );
+    if ( $due ) {
+        $self->session( due => 1 );
+        $self->redirect_to( "/tasks" );
+    }
+    elsif ( defined $due ) {
+        $self->session( due => 0 );
+        $self->redirect_to( "/tasks" );
+    }
+    else {
+        $due = $self->session( 'due' );
+    }
+
     my $tag = $self->param( 'tag' );
+    if ( $tag ) {
+        $self->session( tag => $tag );
+        $self->redirect_to( "/tasks" );
+    }
+    else {
+        $tag = $self->session( 'tag' );
+    }
+    if ( $tag eq "none" ) {
+        undef $tag;
+    }
 
     my @tasks = $taskutil->get_tasks( $due, $tag );
 

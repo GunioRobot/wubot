@@ -10,6 +10,13 @@
 <body bgcolor="#073642">
 
   <%= include 'nav' %>
+  |
+  <a href="/tasks?tag=none">all tags</a>
+  |
+  <a href="/tasks?due=">all tasks</a>
+  |
+  <a href="/tasks?due=1">due</a>
+  |
 
 <table class='sortable autostripe'>
 <thead>

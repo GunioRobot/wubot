@@ -6,10 +6,18 @@ use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+use HTML::Strip;
+use  Lingua::Translate;
+use Log::Log4perl;
+use Text::Wrap;
+use URI::Find;
+
 use App::Wubot::Util::Colors;
 use App::Wubot::Logger;
 use App::Wubot::SQLite;
 use App::Wubot::Util::TimeLength;
+
+my $logger = Log::Log4perl::get_logger( __PACKAGE__ );
 
 my $colors = App::Wubot::Util::Colors->new();
 
@@ -36,7 +44,7 @@ sub notify {
         $expand = 1;
     }
 
-    my $order = 'lastupdate DESC, id DESC';
+    my $order = 'score DESC, lastupdate DESC, id DESC';
     if ( $self->param( 'order' ) ) {
         $order = $self->param( 'order' );
     }
@@ -60,72 +68,10 @@ sub notify {
         $param =~ m|^tag_(\d+)|;
         my $id = $1;
 
-        for my $tag ( split /\s*,\s*/, $params->{$param} ) {
+        my $cmd = $params->{$param};
 
-            if ( $tag eq "r" ) {
-                #print "Marking read: $id\n";
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        { id   => $id  },
-                                    );
+        $self->cmd( $id, $cmd );
 
-            } elsif ( $tag eq "rr" ) {
-                my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
-                                                          fields    => 'subject',
-                                                          where     => { id => $id },
-                                                      } );
-                #print "Marking read: $entry->{subject}\n";
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        { subject => $entry->{subject} },
-                                    );
-
-            } elsif ( $tag eq "r.*" ) {
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        {},
-                                    );
-            } elsif ( $tag =~ m|^r\.(.*)$| ) {
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        { subject => { 'LIKE' => "%$1%" } },
-                                    );
-            } elsif ( $colors->get_color( $tag ) ne $tag ) {
-                $sqlite_notify->update( 'notifications',
-                                        { color => $tag },
-                                        { id    => $id  },
-                                    );
-            } elsif ( $tag =~ m|^-| ) {
-                $tag =~ s|^\-||;
-                print "Removing tag $tag on id $id\n";
-                $sqlite_notify->delete( 'tags',
-                                        { remoteid => $id, tag => $tag, tablename => 'notifications' },
-                                    );
-            } elsif ( $tag eq "x" ) {
-                print "Removing tag readme from id $id\n";
-                $sqlite_notify->delete( 'tags',
-                                        { remoteid => $id, tag => 'readme', tablename => 'notifications' },
-                                    );
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        { id   => $id  },
-                                    );
-            } elsif ( $tag eq "m" ) {
-                print "Setting README tag on id $id and marking seen\n";
-                $sqlite_notify->insert( 'tags',
-                                        { remoteid => $id, tag => 'readme', tablename => 'notifications', lastupdate => time },
-                                    );
-                $sqlite_notify->update( 'notifications',
-                                        { seen => $now },
-                                        { id   => $id  },
-                                    );
-            } else {
-                print "Setting tag $tag on id $id\n";
-                $sqlite_notify->insert( 'tags',
-                                        { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
-                                    );
-            }
-        }
     }
 
     my $seen_id      = $self->param( "seen" );
@@ -196,10 +142,10 @@ sub notify {
         $expand = 1;
         my @ids;
         for my $row ( $sqlite_notify->select( { tablename => 'tags',
-                                               fieldname => 'remoteid',
-                                               where     => { tag => $tag },
-                                               order     => $order,
-                                           } ) ) {
+                                                fieldname => 'remoteid',
+                                                where     => { tag => $tag },
+                                                order     => $order,
+                                            } ) ) {
 
             push @ids, $row->{remoteid};
         }
@@ -273,7 +219,7 @@ sub notify {
         }
     }
 
-    $self->stash( 'headers', [qw/cmd count mailbox key1 key2 seen username icon subject link age/ ] );
+    $self->stash( 'headers', [ qw/cmd num mailbox key1 key2 seen username icon id subject link score age/ ] );
 
     $self->stash( 'body_data', \@messages );
 
@@ -291,9 +237,205 @@ sub notify {
                                            } );
     $self->stash( 'readme', $readme->{count} );
 
+    my ( $todo ) = $sqlite_notify->select( { fields    => 'count(*) as count',
+                                             tablename => 'tags',
+                                             where     => { tag => 'todo' },
+                                           } );
+    $self->stash( 'todo', $todo->{count} );
+
     $self->render( template => 'notify' );
 
 };
+
+sub item {
+    my $self = shift;
+
+    my $id = $self->stash( 'id' );
+
+    my $cmd = $self->param( 'cmd' );
+    if ( $cmd ) {
+        $self->cmd( $id, $cmd );
+    }
+
+    my ( $item ) = $sqlite_notify->select( { tablename => 'notifications',
+                                             where     => { id => $id },
+                                      } );
+
+    my $subject = $self->param( 'subject' );
+    if ( ! $cmd && $subject && $subject ne $item->{subject_text} ) {
+        $sqlite_notify->update( 'notifications',
+                                { subject_text => $subject },
+                                { id           => $id  },
+                            );
+        $self->redirect_to( "/notify/id/$id" );
+    }
+
+    my %urls;
+    URI::Find->new( sub {
+                        my ( $url ) = @_;
+                        $urls{$url}++;
+                        $url;
+                    }
+                )->find(\$item->{subject});
+    URI::Find->new( sub {
+                        my ( $url ) = @_;
+                        $urls{$url}++;
+                        $url;
+                    }
+                )->find(\$item->{body});
+    for my $url ( keys %urls ) {
+        if ( $url =~ m|doubleclick| ) { delete $urls{$url} }
+    }
+    delete $urls{ $item->{link} };
+    $self->stash( urls => [ sort keys %urls ] );
+
+    unless ( $item->{color} ) { $item->{color} = 'black' }
+    $item->{color} = $colors->get_color( $item->{color} );
+
+    $item->{icon} =~ s|^.*\/||;
+
+    if ( $item->{body} ) {
+        $Text::Wrap::columns = 80;
+        my $hs = HTML::Strip->new();
+        $item->{body} = $hs->parse( $item->{body} );
+        $item->{body} =~ s|\xA0| |g;
+        $item->{body} = fill( "", "", $item->{body});
+    }
+
+    for my $field ( qw( body subject_text username ) ) {
+        utf8::decode( $item->{$field} );
+    }
+
+    $self->stash( item => $item );
+
+    my @tags;
+    $sqlite_notify->select( { tablename => 'tags',
+                              fieldname => 'tag',
+                              where     => { remoteid => $item->{id} },
+                              order     => 'tag',
+                              callback  => sub { my $entry = shift;
+                                                 push @tags, $entry->{tag};
+                                             },
+                          } );
+    $self->stash( tags => \@tags );
+
+    $self->render( template => 'item' );
+}
+
+sub cmd {
+    my ( $self, $id, $cmd ) = @_;
+
+    $logger->error( "ID:id COMMAND:$cmd" );
+
+    my $now = time;
+
+    for my $tag ( split /\s*,\s*/, $cmd ) {
+
+        if ( $tag eq "r" ) {
+            #print "Marking read: $id\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
+                                );
+
+        }
+        elsif ( $tag eq "rr" ) {
+            my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
+                                                      fields    => 'subject',
+                                                      where     => { id => $id },
+                                                  } );
+            #print "Marking read: $entry->{subject}\n";
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => $entry->{subject} },
+                                );
+
+        }
+        elsif ( $tag eq "r.*" ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    {},
+                                );
+        }
+        elsif ( $tag =~ m|^r\.(.*)$| ) {
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { subject => { 'LIKE' => "%$1%" } },
+                                );
+        }
+        elsif ( $tag =~ m|^\d+$| ) {
+            if ( $tag eq "00" ) { $tag = undef }
+            $sqlite_notify->update( 'notifications',
+                                    { score => $tag },
+                                    { id => $id },
+                                );
+        }
+        elsif ( $colors->get_color( $tag ) ne $tag ) {
+            $sqlite_notify->update( 'notifications',
+                                    { color => $tag },
+                                    { id    => $id  },
+                                );
+        }
+        elsif ( $tag =~ m|^-| ) {
+            $tag =~ s|^\-||;
+            print "Removing tag $tag on id $id\n";
+            $sqlite_notify->delete( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications' },
+                                );
+        }
+        elsif ( $tag eq "x" ) {
+            print "Removing tag readme from id $id\n";
+            $sqlite_notify->delete( 'tags',
+                                    { remoteid => $id, tag => 'readme', tablename => 'notifications' },
+                                );
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
+                                );
+        }
+        elsif ( $tag eq "m" ) {
+            print "Setting README tag on id $id and marking seen\n";
+            $sqlite_notify->insert( 'tags',
+                                    { remoteid => $id, tag => 'readme', tablename => 'notifications', lastupdate => time },
+                                );
+            $sqlite_notify->update( 'notifications',
+                                    { seen => $now },
+                                    { id   => $id  },
+                                );
+        }
+        elsif ( $tag =~ m|tr (\w+)| ) {
+            my $src_lang = $1;
+            print "Translating subject from $src_lang\n";
+            my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
+                                                      fields    => 'subject',
+                                                      where     => { id => $id },
+                                                  } );
+
+            my $xl8r = Lingua::Translate->new(src => $src_lang,
+                                              dest => "en" )
+                or die "No translation server available";
+
+            my $english = $xl8r->translate($entry->{subject});
+            chomp $english;
+
+            if ( $english ) {
+                print "TRANSLATED: $english\n";
+
+                $sqlite_notify->update( 'notifications',
+                                        { subject_text => $english   },
+                                        { id   => $id },
+                                    );
+            }
+
+        }
+        else {
+            print "Setting tag $tag on id $id\n";
+            $sqlite_notify->insert( 'tags',
+                                    { remoteid => $id, tag => $tag, tablename => 'notifications', lastupdate => time },
+                                );
+        }
+    }
+}
 
 sub tags {
     my $self = shift;

@@ -2,7 +2,9 @@
 id: INTEGER PRIMARY KEY AUTOINCREMENT
 subject: TEXT
 subject_text: TEXT
+body: TEXT
 coalesce: VARCHAR(256)
+mailbox: VARCHAR(32)
 link: VARCHAR(512)
 icon: VARCHAR(256)
 key: VARCHAR(32)

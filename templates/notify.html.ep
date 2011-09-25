@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>wubot notifications</title>
-    <meta http-equiv="refresh" content="60">
+    <meta http-equiv="refresh" content="180">
     <%= include 'css' %>
   </head>
   <body bgcolor=black>
@@ -18,13 +18,15 @@
       |
       <a href="?tag=readme"><%= $readme %> readme</a>
       |
+      <a href="?tag=todo"><%= $todo %> todo</a>
+      |
       <a href="?seen=<%= $ids %>">all seen</a>
       |
     </font>
 
 <form method="post">
 
-    <table>
+    <table width='100%'>
       <thead>
         <tr>
           <% for my $header ( @$headers ) { %>
@@ -74,13 +76,27 @@
             <% } %>
           </td>
 
+          <td>
+            <% if ( $row->{body} ) { %>
+            <a href="/notify/id/<%= $row->{id} %>">*</a>
+            <% } else { %>
+            <a href="/notify/id/<%= $row->{id} %>">+</a>
+            <% } %>
+          </td>
+
           <td style="text-align: left">
             <%= $row->{subject_text} %>
           </td>
 
           <td>
             <% if ( $row->{link} ) { %>
-            <a href="<%= $row->{link} %>">link</a>
+            <a href="<%= $row->{link} %>">*</a>
+            <% } %>
+          </td>
+
+          <td>
+            <% if ( $row->{score} ) { %>
+            <%= $row->{score} %>
             <% } %>
           </td>
 

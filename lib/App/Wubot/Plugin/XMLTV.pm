@@ -72,11 +72,11 @@ sub check {
     } or do {                   # catch
 
         $self->logger->error( "ERROR processing XMLTV Data: $@" );
-        $self->reactor->( { subject => "Error processing XMLTV Data: $@" } );
+        $self->reactor->( { subject => "Error processing XMLTV Data: $@" }, $config );
 
     };
 
-    $self->reactor->( { subject => "Finished processing XMLTV Data: $count entries" } );
+    $self->reactor->( { subject => "Finished processing XMLTV Data: $count entries" }, $config );
     exit 0;
 }
 

@@ -100,7 +100,7 @@ sub check {
                              $self->logger->warn( "XMPP: connected to server" );
                              $self->reactor->( { subject => "XMPP: session ready",
                                                  coalesce => 'XMPP',
-                                             } );
+                                             }, $config );
                          },
                          disconnect => sub {
                              my ($cl, $acc, $h, $p, $reas) = @_;
@@ -108,7 +108,7 @@ sub check {
                              if ( $h && $p ) { $details = "($h:$p)" };
                              $self->logger->error( "XMPP: disconnect $details: $reas" );
                              $self->reactor->( { subject   => "XMPP: disconnect $details: $reas",
-                                                 noforward => 1 } );
+                                                 noforward => 1 }, $config );
                              delete $self->{cl};
                              delete $self->{session_ready};
                          },
@@ -117,7 +117,7 @@ sub check {
                              $self->logger->error( "XMPP: ERROR: " . $err->string );
                              $self->reactor->( { subject  => "XMPP: ERROR: " . $err->string,
                                                  coalesce => 'XMPP',
-                                             } );
+                                             }, $config );
                          },
                          message => sub {
                              my ($cl, $acc, $msg) = @_;
@@ -131,7 +131,7 @@ sub check {
                                  # set the noforward flag when sending a message
                                  $data->{noforward} = 1;
 
-                                 $self->reactor->( $data );
+                                 $self->reactor->( $data, $config );
                                  1;
                              } or do { # catch
                                  $self->logger->error( "UNABLE TO DECODE MESSAGE" );

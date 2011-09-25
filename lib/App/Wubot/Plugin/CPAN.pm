@@ -93,7 +93,9 @@ sub check {
                                 lastest   => $latest,
                                 path      => $path,
                                 link      => "http://search.cpan.org/perldoc?$module",
-                            } );
+                            },
+                              $config
+                          );
         }
         close $run;
 
@@ -102,7 +104,7 @@ sub check {
           my $status = $? >> 8;
           my $signal = $? & 127;
 
-          $self->reactor->( { subject => "error running '$command': status=$status signal=$signal" } );
+          $self->reactor->( { subject => "error running '$command': status=$status signal=$signal" }, $config );
         }
 
         # write out the updated cache

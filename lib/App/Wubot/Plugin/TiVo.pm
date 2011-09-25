@@ -86,7 +86,9 @@ sub check {
                                     series_id   => $show->series_id(),
                                     link        => $show->url(),
                                     coalesce    => $self->key,
-                                } );
+                                },
+                                  $config
+                              );
 
                 $cache->{shows}->{$show_string} = 1;
 

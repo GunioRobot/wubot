@@ -105,7 +105,7 @@ sub react {
                 $message->{"$param\_orig"} = $message->{$param};
             }
             if ( $userdata->{ $param } ) {
-                $self->logger->trace( "Setting $param for $message->{username}" );
+                $self->logger->debug( "Setting $param for $message->{username}" );
                 $message->{$param} = $userdata->{ $param };
             }
         }
@@ -173,7 +173,15 @@ sub _read_userfile {
         return;
     }
 
-    my $userdata = YAML::LoadFile( $path );
+    my $userdata;
+    eval {                          # try
+        $userdata = YAML::LoadFile( $path );
+        1;
+    } or do {                       # catch
+        $self->logger->error( "Unable to load yaml file: $path: $@" );
+        return;
+    };
+
     $userdata->{username}   = lc( $username );
 
     $self->lastupdates->{$username} = $mtime;

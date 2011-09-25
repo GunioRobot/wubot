@@ -323,5 +323,32 @@ test "read newly added aliases" => sub {
 
 };
 
+
+test "broken yaml file" => sub {
+    my ($self) = @_;
+
+    $self->reset_reactor;
+
+    my $directory = $self->reactor->directory;
+
+    my $path = "$directory/dude.yaml";
+
+    open(my $fh, ">", $path )
+        or die "Couldn't open $path for writing: $!\n";
+    print $fh "---\nfoo\n\n";
+    close $fh or die "Error closing file: $!\n";
+
+    is( $self->reactor->_read_userfile( 'dude' ),
+        undef,
+        "Checking that no data was returned, but call did not die"
+    );
+
+    is( $self->reactor->get_user_info( 'dude' ),
+        undef,
+        "Checking that no data was returned, but call did not die"
+    );
+
+};
+
 run_me;
 done_testing;

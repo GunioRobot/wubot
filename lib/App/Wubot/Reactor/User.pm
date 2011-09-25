@@ -14,45 +14,45 @@ use YAML;
 use App::Wubot::Logger;
 use App::Wubot::Reactor;
 
-has 'userdb'  => ( is => 'ro',
-                   isa => 'HashRef',
-                   lazy => 1,
-                   default => sub { {} },
-               );
+has 'userdb'      => ( is => 'ro',
+                       isa => 'HashRef',
+                       lazy => 1,
+                       default => sub { {} },
+                   );
 
-has 'directory' => ( is => 'ro',
-                     isa => 'Str',
-                     lazy => 1,
-                     default => sub {
-                         return join( "/", $ENV{HOME}, "wubot", "userdb" );
-                     },
-                 );
+has 'directory'   => ( is => 'ro',
+                       isa => 'Str',
+                       lazy => 1,
+                       default => sub {
+                           return join( "/", $ENV{HOME}, "wubot", "userdb" );
+                       },
+                   );
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
+has 'logger'      => ( is => 'ro',
+                       isa => 'Log::Log4perl::Logger',
+                       lazy => 1,
+                       default => sub {
+                           return Log::Log4perl::get_logger( __PACKAGE__ );
+                       },
+                   );
 
-has 'lastupdates'  => ( is => 'ro',
+has 'lastupdates' => ( is => 'ro',
                         isa => 'HashRef',
                         lazy => 1,
                         default => sub { {} },
                     );
 
-has 'aliases'  => ( is => 'ro',
-                    isa => 'HashRef',
-                    lazy => 1,
-                    default => sub { {} },
-                );
+has 'aliases'     => ( is => 'ro',
+                       isa => 'HashRef',
+                       lazy => 1,
+                       default => sub { {} },
+                   );
 
-has 'reactor'  => ( is => 'ro',
-                    isa => 'App::Wubot::Reactor',
-                    lazy => 1,
-                    default => sub { return App::Wubot::Reactor->new() }
-                );
+has 'reactor'     => ( is => 'ro',
+                       isa => 'App::Wubot::Reactor',
+                       lazy => 1,
+                       default => sub { return App::Wubot::Reactor->new() },
+                   );
 
 sub react {
     my ( $self, $message, $config ) = @_;

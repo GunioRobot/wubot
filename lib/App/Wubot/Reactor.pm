@@ -31,27 +31,27 @@ to true for the message.
 
 =cut
 
-has 'config' => ( is => 'ro',
-                  isa => 'HashRef',
-              );
+has 'config'     => ( is => 'ro',
+                      isa => 'HashRef',
+                  );
 
-has 'logger'  => ( is => 'ro',
-                   isa => 'Log::Log4perl::Logger',
-                   lazy => 1,
-                   default => sub {
-                       return Log::Log4perl::get_logger( __PACKAGE__ );
-                   },
-               );
+has 'logger'     => ( is => 'ro',
+                      isa => 'Log::Log4perl::Logger',
+                      lazy => 1,
+                      default => sub {
+                          return Log::Log4perl::get_logger( __PACKAGE__ );
+                      },
+                  );
 
-has 'plugins' => ( is => 'ro',
-                   isa => 'HashRef',
-                   default => sub { return {} },
-               );
+has 'plugins'    => ( is => 'ro',
+                      isa => 'HashRef',
+                      default => sub { return {} },
+                  );
 
-has 'monitors' => ( is => 'ro',
-                    isa => 'HashRef',
-                    default => sub { return {} },
-                );
+has 'monitors'   => ( is => 'ro',
+                      isa => 'HashRef',
+                      default => sub { return {} },
+                  );
 
 has 'conditions' => ( is => 'ro',
                       isa => 'App::Wubot::Conditions',

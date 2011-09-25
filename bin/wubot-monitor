@@ -140,10 +140,10 @@ sub create_plugin_instance {
 
     $plugin_objs->{ $plugin }
         = App::Wubot::Check->new( { class         => $plugin_config->{plugin},
-                               cache_file    => "$cache_directory/$plugin.yaml",
-                               key           => $plugin,
-                               reactor_queue => $message_store,
-                           } );
+                                    cache_file    => "$cache_directory/$plugin.yaml",
+                                    key           => $plugin,
+                                    reactor_queue => $message_store,
+                                } );
 
     $plugin_objs->{ $plugin }->init( $plugin_config );
 

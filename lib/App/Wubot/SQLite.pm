@@ -22,6 +22,17 @@ App::Wubot::SQLite - the wubot library for working with SQLite
 
     use App::Wubot::SQLite;
 
+    my $sqlite = App::Wubot::SQLite->new( { file => '/path/to/db.sqlite' } );
+
+    # insert data into 'mytable'.  table is automatically created if
+    # it doesn't exist.
+    $sqlite->insert( 'mytable', { abc => 'xyz' }, { abc => 'TEXT' } );
+
+    # insert another row into 'mytable'.  'xyz' column is
+    # automatically added.
+    $sqlite->insert( 'mytable', { abc => 'def', xyz => 'abc' }, { abc => 'TEXT', xyz => 'TEXT" } );
+
+
 =head1 DESCRIPTION
 
 Wubot uses SQLite for a wide variety of uses, including:
@@ -59,7 +70,7 @@ examples:
 
   # schema directory specified, look for the schema file in
   # ~/wubot/schemas/foo/mytable.yaml
-  $sqlite->insert( 'mytable', { abc => 'xyz' }, { abc => 'TEXT' }, 'foo' );
+  $sqlite->insert( 'mytable', { abc => 'xyz' }, 'foo' );
 
 A number of schemas are distributed in the wubot tarball in the
 config/schemas subdirectory.  These schemas should be copied to

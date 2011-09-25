@@ -9,11 +9,11 @@ be performed on a feed.
 
 =head1 FILTERING
 
-I follow twitter, but I am not a fan of the tweets of the form 'I'm at
-some location'.  So I filter those out with the following rule:
+I follow twitter, but I am not a fan of the tweets of the form "I'm at
+x location".  So I filter those out with the following rule:
 
   - name: ignore
-    condition: subject matches ^I.m at
+    condition: subject matches ^I'm at
     last_rule: 1
 
 I follow the lifehacker RSS feed, but I know in advance that I'm not

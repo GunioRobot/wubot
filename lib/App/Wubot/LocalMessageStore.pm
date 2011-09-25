@@ -51,6 +51,8 @@ When a message in the queue has been processed, it will not be
 immediately removed from the queue.  Instead, the 'seen' flag will be
 set to the timestamp when the message was marked as processed.
 
+=head1 GUARANTEED MESSAGE PROCESSING
+
 The callback mechanism (see the example above) is used to ensure that
 the message has been successfully processed before it is deleted.  If
 the wubot process gets shut down in the middle of processing a

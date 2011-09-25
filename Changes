@@ -1,5 +1,12 @@
 Revision history for Wubot
 
+0.3.5 2011-09-12T12:27PDT
+
+  - rename 'wubot' to 'App::Wubot' to allow install from CPAN
+  - prevent issues when both reactor and monitor try to vacuum database at same time
+  - fix bug where monitor rules weren't running on forked plugins
+    - CPAN, TiVo, XMLTV, and XMPP
+
 0.3.4 2011-09-23T23:06PDT
 
   - first non-trial CPAN release

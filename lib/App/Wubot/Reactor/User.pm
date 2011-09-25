@@ -292,6 +292,28 @@ Each time a message comes through that has a username for which some
 user data is defined, the user's file will be scanned to see if it has
 been updated.  If so, the userdb file will be re-read.
 
+=head1 RULES
+
+You can now include a custom set of rules to run any time a message is
+received from a user by creating a rules tree in the user config file.
+
+  aliases:
+    - lebowski
+
+  rules:
+
+    - name: set foo field on messages from the dude
+      plugin: SetField
+      config:
+        field: foo
+        value: bar
+
+The rules will run after an other userdb config has been processed.
+This means that you could use it to things like set a custom color or
+image based on other fields in the message.  For example, you might
+set different colors for the user in different feeds, or based on the
+user alias being used.
+
 =head1 LIMITATIONS
 
 The file name must be completely lower case, and all usernames and

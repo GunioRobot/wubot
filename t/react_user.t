@@ -365,7 +365,7 @@ aliases:
 
 rules:
 
-  - name: test rule to set color
+  - name: set foo field on messages from the dude
     plugin: SetField
     config:
       field: foo

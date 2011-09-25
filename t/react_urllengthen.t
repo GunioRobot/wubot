@@ -4,6 +4,7 @@ use warnings;
 
 no utf8;
 
+use File::Temp qw/ tempdir /;
 use Test::More;
 
 for my $lib ( 'App::Wubot::Logger',
@@ -16,9 +17,9 @@ for my $lib ( 'App::Wubot::Logger',
     plan skip_all => "Failed to load $lib for this test case: $@" if $@;
 }
 
-plan 'no_plan';
+my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
-ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new(),
+ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new( { dbfile => "$tempdir/foo" } ),
     "Creating new UrlLengthen reactor object"
 );
 
@@ -31,7 +32,17 @@ ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new(),
         "Lengthening URL for t.co"
     );
 
-    is ( $lengthener->cache->{$short_url},
+    my ( $cache ) = $lengthener->sqlite->select( { tablename => 'urls',
+                                                   where     => { short_url => $short_url },
+                                                   schema    => $lengthener->schema,
+                                               } );
+
+    is ( $cache->{short_url},
+        $short_url,
+        "Checking lookup was cached"
+    );
+
+    is ( $cache->{long_url},
         $long_url,
         "Checking lookup was cached"
     );
@@ -75,14 +86,23 @@ ok( my $lengthener = App::Wubot::Reactor::UrlLengthen->new(),
     );
 }
 
-{
-    # url that does not require shortening
-    my $url = "http://plusist.com/merlyn/NDMxNzk";
-    my $long_url = "http://itunes.apple.com/us/app/magnetic-billiards-blueprint/id432152950?mt=8";
+my $test_cases = [
+    { source => 'http://690.jp/5l',
+      target => 'http://www.updated3news.com/',
+  },
+    { source => "http://plusist.com/merlyn/NDMxNzk",
+      target => "http://itunes.apple.com/us/app/magnetic-billiards-blueprint/id432152950?mt=8",
+  },
+];
 
-    is( $lengthener->expand( $url ),
-        $long_url,
-        "Lengthening plusist URL"
+
+for my $test_case ( @{ $test_cases } ) {
+
+    is( $lengthener->expand( $test_case->{source} ),
+        $test_case->{target},
+        "Checking: $test_case->{source}"
     );
+
 }
 
+done_testing;

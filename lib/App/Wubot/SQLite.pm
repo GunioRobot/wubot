@@ -730,10 +730,9 @@ sub get_schema {
         $self->logger->logconfess( "ERROR: get_schema called but no table specified" );
     }
 
-    # table name may contain 'join'
-    # unless ( $table =~ m|^[\w\d\_]+$| ) {
-    #     $self->logger->logconfess( "ERROR: table name contains invalid characters: $table" );
-    # }
+    if ( $directory && $directory =~ m|\.| ) {
+        ( $directory, $table ) = split /\./, $directory;
+    }
 
     my $schema_file;
     if ( $directory ) {

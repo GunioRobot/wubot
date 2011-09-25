@@ -1,56 +1,73 @@
 <style type="text/css">
-      
+
+body {
+    background-color: #333333;
+    color: #cccccc;
+    font-size: small;
+}
+
 a {
   color: #cccccc;
   text-decoration: none;
 }
+
 input {
   color: #cccccc;
 }
+
+textarea {
+  color: #cccccc;
+}
+
 table {
-  width: 100%;
   font-size: small;
   border-spacing: 0;
   border-collapse: collapse;
 }
+
 tr {
-  text-align: center
 }
+
 td {
   border-color: #000;
   border-width: 1px 0px 0 0;
   border-style: solid;
   margin: 0;
   padding: 4px;
-  text-align: center;
   color: #cccccc;
 }
+
+
 th {
   background-color: purple;
 }
 th.key1, th.key2 {
-  width: 5%;
+  width: 3%;
+  max-width: 3%;
+
 }
 th.count, th.id {
-  width: 3%;
+  width: 2%;
 }
 td.age {
-  color: #000000;
   width: 4%;
 }
 td.seen, th.seen {
-  color: #000000;
   width: 2%;
 }
 td.mailbox, th.seen {
-  color: #000000;
   width: 4%;
 }
 th.key, th.username {
   width: 10%
 }
 th.subject {
-  width: 65%;
+  width: 60%;
+}
+
+pre {
+	font-size: 12px;
+    font-family: Monaco;
 }
 
 </style>

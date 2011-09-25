@@ -71,7 +71,8 @@ the rule will be evaluated.
 
 This method is recursive.  When a rule fires, if that rule contains a
 child 'rules' section, then the react() method will be called to
-process the child rules, and the 'depth' will be incremented.
+process the child rules, and the 'depth' will be incremented.  There
+is no need to pass in the 'depth' option when calling this method.
 
 If the rule fires, and the 'last_rule' param is set on the rule, then
 the 'last_rule' field will be set on the message to prevent any

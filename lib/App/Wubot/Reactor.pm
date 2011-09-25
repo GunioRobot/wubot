@@ -17,6 +17,10 @@ App::Wubot::Reactor - runs reactive rules on a message
 
     use App::Wubot::Reactor;
 
+    my $reactor = App::Wubot::Reactor->new();
+
+    # run rules on message hash
+    $reactor->react( $message_h, $rules_h );
 
 =head1 DESCRIPTION
 

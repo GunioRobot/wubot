@@ -90,6 +90,10 @@ has 'reactor' => ( is => 'ro',
                    default => undef,
                );
 
+has 'novacuum' => ( is => 'ro',
+                    default => undef,
+                );
+
 
 =head1 SUBROUTINES/METHODS
 
@@ -244,7 +248,9 @@ sub delete_seen {
    my $conditions = { seen => { '<' => $time } };
    $self->sqlite->{ $dbfile }->delete( 'message_queue', $conditions );
 
-   $self->sqlite->{ $dbfile }->vacuum();
+   unless ( $self->novacuum ) {
+       $self->sqlite->{ $dbfile }->vacuum();
+   }
 
    return 1;
 }

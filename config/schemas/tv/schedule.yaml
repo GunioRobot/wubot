@@ -1,0 +1,15 @@
+---
+cc: INTEGER
+constraints:
+  - 'UNIQUE( program_id, station_id, start )'
+dolby: INTEGER
+duration: VARCHAR(8)
+hd: INTEGER
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INT
+new: INTEGER
+program_id: VARCHAR(16)
+start: INTEGER
+station_id: INTEGER
+stereo: INTEGER
+tv_rating: VARCHAR(16)

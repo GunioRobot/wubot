@@ -71,6 +71,7 @@ sub check {
         1;
     } or do {                   # catch
 
+        $self->logger->error( "ERROR processing XMLTV Data: $@" );
         $self->reactor->( { subject => "Error processing XMLTV Data: $@" } );
 
     };

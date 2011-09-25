@@ -1,0 +1,7 @@
+---
+constraints:
+  - UNIQUE( program_id )
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INTEGER
+program_id: VARCHAR(16)
+score: INTEGER

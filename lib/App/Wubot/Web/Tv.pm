@@ -6,6 +6,13 @@ use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+use Data::ICal;
+use Data::ICal::Entry::Event;
+use Data::ICal::Entry::Alarm::Audio;
+use Date::ICal;
+use DateTime;
+use Digest::MD5 qw(md5_hex);
+
 use App::Wubot::Logger;
 use App::Wubot::Util::TimeLength;
 use App::Wubot::Util::Colors;

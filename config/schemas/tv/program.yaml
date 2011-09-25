@@ -1,0 +1,19 @@
+---
+color: VARCHAR(8)
+constraints:
+  - 'UNIQUE( program_id, title, subtitle, series_id, episode_id )'
+date: VARCHAR(32)
+description: TEXT
+episode_id: VARCHAR(64)
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INT
+mpaa_rating: VARCHAR(16)
+program_id: VARCHAR(16)
+runtime: VARCHAR(16)
+score_id: VARCHAR(16)
+series_id: VARCHAR(64)
+show_type: VARCHAR(64)
+stars: VARCHAR(8)
+subtitle: VARCHAR(128)
+title: VARCHAR(128)
+year: VARCHAR(16)

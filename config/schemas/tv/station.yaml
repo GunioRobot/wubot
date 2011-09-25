@@ -1,0 +1,11 @@
+---
+affiliate: VARCHAR(64)
+callsign: VARCHAR(16)
+constraints:
+  - 'UNIQUE( station_id, callsign )'
+fccnumber: INTEGER
+hide: INTEGER
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INTEGER
+name: VARCHAR(64)
+station_id: INTEGER

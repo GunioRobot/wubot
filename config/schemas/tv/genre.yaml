@@ -1,0 +1,8 @@
+---
+constraints:
+  - 'UNIQUE( program_id, genre )'
+genre: VARCHAR(32)
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INT
+program_id: VARCHAR(16)
+relevance: INT

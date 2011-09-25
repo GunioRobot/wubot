@@ -1,0 +1,8 @@
+---
+channel: INTEGER
+constraints:
+  - 'UNIQUE( lineup_id, station_id )'
+id: INTEGER PRIMARY KEY AUTOINCREMENT
+lastupdate: INTEGER
+lineup_id: INTEGER
+station_id: INTEGER

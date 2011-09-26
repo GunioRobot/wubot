@@ -1,7 +1,7 @@
 #!/perl
 use strict;
 
-use Test::More tests => 32;
+use Test::More tests => 30;
 
 use File::Temp qw/ tempdir /;
 use Test::Differences;

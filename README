@@ -39,7 +39,10 @@ To install wubot, use the standard CPAN installation methods:
 
 Or simply:
 
-  cpan Wubot
+  cpan App::Wubot
+
+I am still working out some issues with the CPAN install, especially
+with the optional prereqs.
 
 Note that you will probably have to create a ~/wubot and ~/logs
 directory.  In the future these directories should be configurable.

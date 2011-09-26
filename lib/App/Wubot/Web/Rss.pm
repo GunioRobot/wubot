@@ -172,7 +172,7 @@ App::Wubot::Web::Rss - serves outgoing wubot RSS feeds
 
 The web interface can be used to serve out RSS feeds.  You can take
 data from one or more incoming feeds (from wubot-monitor), filter it,
-modify it (e.g. strip html or images), and so forth.  You can combine
+modify it (e.g. strip HTML or images), and so forth.  You can combine
 multiple feeds together into a single RSS feed or you can take a
 single RSS feed and split it out into multiple feeds.  You can even
 take data from other sources (e.g. an mbox, irc), use some rules to

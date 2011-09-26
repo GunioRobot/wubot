@@ -1,5 +1,12 @@
 Revision history for Wubot
 
+0.3.6 2011-09- 2T01:30PDT
+
+  - update docs
+  - remove 'tags' from App::Wubot::Check, replaced by 'mailbox'
+  - updates to notification web interface
+  - fixing broken dist tarball from 0.3.5 which included previous wubot releases
+
 0.3.5 2011-09-12T12:27PDT
 
   - rename 'wubot' to 'App::Wubot' to allow install from CPAN

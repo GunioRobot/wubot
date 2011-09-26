@@ -31,7 +31,7 @@ is an example of a minimalist RSS monitor config:
 
 
 The 'delay' param tells wubot-monitor how frequently to run the check,
-and the 'url' tag is the URL of the RSS/Atom feed.  For more info on
+and the 'url' param is the URL of the RSS/Atom feed.  For more info on
 the RSS monitor, see L<App::Wubot::Plugin::RSS>.
 
 After creating this config file, run wubot-monitor.  It will find the
@@ -237,7 +237,7 @@ To start the reactor, simply run:  wubot-reactor
 =head1 Web UI
 
 For more information on the wubot webui, please see the document
-L<App::Wubot::Guide::WebUI>.
+L<App::Wubot::Guide::WebUI> and L<App::Wubot::Web::Rss>.
 
 The Web UI reads the data out of the rss SQLite database, so before we
 can use the Web UI, we need to go back to the reactor and add some

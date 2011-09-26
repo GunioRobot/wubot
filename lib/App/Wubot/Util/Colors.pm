@@ -61,6 +61,34 @@ This module defines color codes for named colors for the wubot web ui.
 The web ui is still under development.  Current the colors are
 hard-coded.  In the future these will be configurable.
 
+The current colors are based on the solarized color schema.  For more info, see:
+
+  http://ethanschoonover.com/solarized
+
+Here is the current color names represent the following hex codes:
+
+  black      #333333
+  blue       #268bd2
+  brblack    #002b36
+  brblue     #839496
+  brcyan     #93a1a1
+  brgreen    #586e75
+  brmagenta  #d33682
+  brwhite    #fdf6e3
+  bryellow   #657b83
+  cyan       #2aa198
+  dark       black
+  green      #859900
+  magenta    #770077
+  orange     #cb4b16
+  pink       #FF33FF
+  purple     magenta
+  red        #dc322f
+  violet     #6c71c4
+  white      #eee8d5
+  yellow     #b58900
+
+
 TODO: finish docs
 
 =head1 SUBROUTINES/METHODS

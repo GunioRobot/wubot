@@ -263,11 +263,6 @@ sub _react_results {
         return;
     }
 
-    # push any configured 'tags' along with the message
-    if ( $config && $config->{tags} ) {
-        $react->{tags} = $config->{tags};
-    }
-
     # use our class name for the 'plugin' field
     unless ( $react->{plugin} ) {
         $react->{plugin}     = $self->{class};

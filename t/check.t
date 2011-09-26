@@ -56,7 +56,7 @@ my $cache_file = "$tempdir/storage.yaml";
         "Creating a new check instance"
     );
 
-    ok( my $results = $check->check( { param2 => 'value2', param3 => 'value3', tags => 'testcase' } ),
+    ok( my $results = $check->check( { param2 => 'value2', param3 => 'value3' } ),
         "Calling check() method and passing new config"
     );
     is( $results->{cache}->{param1},
@@ -78,10 +78,6 @@ my $cache_file = "$tempdir/storage.yaml";
     is( $results->{react}->[0]->{param3},
         'value3',
         "Checking that param3 set in result hash"
-    );
-    is( $results->{react}->[0]->{tags},
-        'testcase',
-        "Checking that configured 'tag' set in result hash"
     );
 
     ok( my $cache = YAML::LoadFile( $cache_file ),
@@ -107,10 +103,6 @@ my $cache_file = "$tempdir/storage.yaml";
     );
     is( $queue_contents->{param3},
         "value3",
-        "Checking that param1 set to value1 in queue"
-    );
-    is( $queue_contents->{tags},
-        "testcase",
         "Checking that param1 set to value1 in queue"
     );
     is( $queue_contents->{key},

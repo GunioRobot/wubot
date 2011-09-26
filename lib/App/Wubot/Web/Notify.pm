@@ -112,6 +112,8 @@ commands are supported:
   tr xx     translate the subject from the specified language, see L<Lingua::Translate> for more info
   mytag     any unrecognized input will be treated as a tag which will be applied to the item
 
+Multiple commands may be comma separated.
+
 =head1 ICONS
 
 To ensure that the icons show up in the notifications web ui, you

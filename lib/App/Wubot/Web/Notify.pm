@@ -480,13 +480,12 @@ sub _cmd {
         }
         elsif ( $tag eq "rr" ) {
             my ( $entry ) = $sqlite_notify->select( { tablename => 'notifications',
-                                                      fields    => 'subject',
+                                                      fields    => 'mailbox',
                                                       where     => { id => $id },
                                                   } );
-            #print "Marking read: $entry->{subject}\n";
             $sqlite_notify->update( 'notifications',
                                     { seen => $now },
-                                    { subject => $entry->{subject} },
+                                    { mailbox => $entry->{mailbox}, seen => undef },
                                 );
 
         }

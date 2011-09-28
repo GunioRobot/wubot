@@ -6,7 +6,6 @@ use Moose;
 use AnyEvent;
 use AnyEvent::IRC::Client;
 use POSIX qw(strftime);
-use YAML;
 
 use App::Wubot::Logger;
 

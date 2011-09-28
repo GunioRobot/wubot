@@ -4,7 +4,6 @@ use Moose;
 # VERSION
 
 use Date::Manip;
-use YAML;
 
 use App::Wubot::Logger;
 use App::Wubot::SQLite;

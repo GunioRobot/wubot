@@ -386,8 +386,7 @@ __END__
 
 =head1 YAML::XS
 
-Everywhere else, the wubot libraries use YAML.  This module uses
-YAML::XS, as I have experienced issues serializing and/or
-deserializing messages with every other perl YAML library I have
-tried.  YAML::XS has been extremely reliable; I have yet to encounter
-a message that it can not handle.
+This library requires YAML::XS, as I have experienced issues
+serializing and/or deserializing messages with every other perl YAML
+library I have tried.  YAML::XS has been extremely reliable; I have
+yet to encounter a message that it can not handle.

@@ -9,7 +9,6 @@ use Date::Manip;
 use LWP::Simple;
 use POSIX qw(strftime);
 use XML::Twig;
-use YAML;
 
 use App::Wubot::Logger;
 use App::Wubot::SQLite;

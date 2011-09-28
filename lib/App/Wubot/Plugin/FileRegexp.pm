@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+use YAML::XS;
+
 use App::Wubot::Logger;
 use App::Wubot::Util::Tail;
 
@@ -53,7 +55,7 @@ sub init {
 
     $self->tail->callback( $callback );
 
-    $self->tail->reset_callback( sub { print YAML::Dump @_ } );
+    $self->tail->reset_callback( sub { print YAML::XS::Dump @_ } );
 
     if ( $inputs->{cache}->{position} ) {
         $self->tail->position( $inputs->{cache}->{position} );

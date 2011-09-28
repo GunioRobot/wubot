@@ -5,7 +5,6 @@ use Moose;
 
 use AnyEvent;
 use AnyEvent::IRC::Client;
-use YAML;
 
 use App::Wubot::Logger;
 

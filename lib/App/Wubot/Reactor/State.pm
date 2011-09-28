@@ -4,7 +4,7 @@ use Moose;
 # VERSION
 
 use File::Path;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Util::TimeLength;
@@ -57,7 +57,7 @@ sub react {
     my $lastvalue;
 
     if ( -r $cache_file ) {
-        $cache = YAML::LoadFile( $cache_file );
+        $cache = YAML::XS::LoadFile( $cache_file );
     }
 
     if ( $config->{notify_interval} ) {
@@ -142,7 +142,7 @@ sub react {
 
     $cache->{ $key }->{ $field }->{lastupdate} = $message->{lastupdate} || time;
 
-    YAML::DumpFile( $cache_file, $cache );
+    YAML::XS::DumpFile( $cache_file, $cache );
 
     return $message;
 }
@@ -163,7 +163,7 @@ sub monitor {
     while ( defined( my $entry = readdir( $dir_h ) ) ) {
         next unless $entry && $entry =~ m|\.yaml$|;
 
-        my $cache = YAML::LoadFile( "$directory/$entry" );
+        my $cache = YAML::XS::LoadFile( "$directory/$entry" );
 
       KEY:
         for my $key ( sort keys %{ $cache } ) {
@@ -190,7 +190,7 @@ sub monitor {
                         }
 
                         $cache->{$key}->{$field}->{last_notify} = $now;
-                        YAML::DumpFile( "$directory/$entry", $cache );
+                        YAML::XS::DumpFile( "$directory/$entry", $cache );
                     }
 
                     my $check_age_string = $self->timelength->get_human_readable( $check_age );

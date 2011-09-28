@@ -12,7 +12,7 @@ use FindBin;
 use Getopt::Long;
 use POSIX qw(strftime);
 use Sys::Hostname;
-use YAML;
+use YAML::XS;
 
 use lib "$FindBin::Bin/../lib";
 
@@ -40,7 +40,7 @@ $hostname =~ s|\..*$||;
 
 my $reactor_config = "$ENV{HOME}/wubot/config/reactor.yaml.$hostname";
 $logger->info( "loading reactor config: $reactor_config" );
-my $config = YAML::LoadFile( $reactor_config );
+my $config = YAML::XS::LoadFile( $reactor_config );
 
 my $num_rules = scalar @{ $config->{rules} };
 $logger->warn( "Loaded $num_rules rules" );
@@ -79,7 +79,7 @@ push @timers, AnyEvent->timer( after    => 1,
                                        } or do { # catch
                                            my $error = $@;
                                            warn "ERROR in reaction: $@";
-                                           $logger->debug( YAML::Dump $message );
+                                           $logger->debug( YAML::XS::Dump $message );
                                        };
 
                                        # delete the message now that it has been processed
@@ -131,7 +131,7 @@ push @timers, AnyEvent->timer( after => 15,
                                            } or do { # catch
                                                my $error = $@;
                                                warn "ERROR in reaction: $@";
-                                               print YAML::Dump $message;
+                                               print YAML::XS::Dump $message;
                                            };
                                        }
                                    }

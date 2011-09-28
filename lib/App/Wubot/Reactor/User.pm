@@ -9,7 +9,7 @@ use Moose;
 #  - other classes could use other contact back-ends, e.g. emacs contacts
 #  - role for interface, with method to check if file changed
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Reactor;
@@ -186,7 +186,7 @@ sub _read_userfile {
 
     my $userdata;
     eval {                          # try
-        $userdata = YAML::LoadFile( $path );
+        $userdata = YAML::XS::LoadFile( $path );
         1;
     } or do {                       # catch
         $self->logger->error( "Unable to load yaml file: $path: $@" );

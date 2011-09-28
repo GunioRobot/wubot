@@ -183,7 +183,7 @@ sub monitor {
                 $status->{message} = Load $status->{message};
             }
             else {
-                $self->logger->error( "ERROR: queue entry has no message", YAML::Dump $status );
+                $self->logger->error( "ERROR: queue entry has no message", YAML::XS::Dump $status );
             }
 
             $message->{command_status} = $status->{status};

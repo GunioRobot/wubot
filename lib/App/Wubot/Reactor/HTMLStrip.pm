@@ -4,7 +4,6 @@ use Moose;
 # VERSION
 
 use HTML::Strip;
-use YAML;
 
 use App::Wubot::Logger;
 

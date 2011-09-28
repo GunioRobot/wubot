@@ -6,7 +6,6 @@ use Test::Differences;
 use Test::More tests => 33;
 
 use File::Temp qw/ tempdir /;
-use YAML;
 
 use App::Wubot::Logger;
 use App::Wubot::Reactor::Command;

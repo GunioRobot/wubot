@@ -4,7 +4,6 @@ use strict;
 use File::Temp qw/ tempdir /;
 use Sys::Hostname;
 use Test::More 'no_plan';
-use YAML;
 
 use App::Wubot::LocalMessageStore;
 use App::Wubot::Logger;

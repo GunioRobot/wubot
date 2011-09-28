@@ -4,7 +4,6 @@ use strict;
 use Test::More tests => 36;
 
 use File::Temp qw/ tempdir /;
-use YAML;
 
 use App::Wubot::Logger;
 use App::Wubot::Plugin::Pulse;

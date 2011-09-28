@@ -3,9 +3,7 @@ use strict;
 use warnings;
 
 use Test::More tests => 64;
-
 use File::Temp qw/ tempdir /;
-use YAML;
 
 BEGIN {
     $ENV{TZ} = "America/Los_Angeles";

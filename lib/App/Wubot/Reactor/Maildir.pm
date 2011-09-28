@@ -7,7 +7,7 @@ use Maildir::Lite;
 use MIME::Entity;
 use POSIX qw(strftime);
 use Sys::Hostname qw();
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -59,7 +59,7 @@ sub react {
     my $body_text = "FEED:    $key\nSUBJECT: $message->{subject}\n\n$body\n";
 
     if ( $config->{dump} ) {
-        $body = YAML::Dump $message;
+        $body = YAML::XS::Dump $message;
     }
 
     my %message_data = (

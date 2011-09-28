@@ -4,7 +4,7 @@ use strict;
 # VERSION
 
 use Log::Log4perl qw(:easy);
-use YAML;
+use YAML::XS;
 
 Log::Log4perl->easy_init($INFO);
 my $logger = get_logger( 'default' );
@@ -23,7 +23,7 @@ my $config = { tablename  => 'idle',
                period     => $period,
            };
 
-print YAML::Dump $check->check( { config => $config } );
+print YAML::XS::Dump $check->check( { config => $config } );
 
 __END__
 

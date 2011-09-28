@@ -3,8 +3,6 @@ use Moose;
 
 # VERSION
 
-use YAML;
-
 use App::Wubot::Logger;
 use App::Wubot::SQLite;
 

@@ -6,7 +6,7 @@ use Moose;
 use AnyEvent::XMPP::Client;
 use Encode;
 use MIME::Base64;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::LocalMessageStore;
@@ -74,7 +74,7 @@ sub check {
                 $message->{noforward} = 1;
 
                 # convert to text
-                my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::Dump $message ) );
+                my $message_text = MIME::Base64::encode( Encode::encode( "UTF-8", YAML::XS::Dump $message ) );
 
                 # send the message using YAML
                 $self->{cl}->send_message( $message_text => $config->{user}, undef, 'chat' );
@@ -126,7 +126,7 @@ sub check {
                              my $data;
 
                              eval { # try
-                                 $data = YAML::Load( Encode::decode( "UTF-8", MIME::Base64::decode( $body ) ) );
+                                 $data = YAML::XS::Load( Encode::decode( "UTF-8", MIME::Base64::decode( $body ) ) );
 
                                  # set the noforward flag when sending a message
                                  $data->{noforward} = 1;

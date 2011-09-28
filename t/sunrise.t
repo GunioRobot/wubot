@@ -68,6 +68,5 @@ my $cache = {};
 #         "Cache used on second check"
 #     );
 
-#     print YAML::Dump $results;
 # }
 

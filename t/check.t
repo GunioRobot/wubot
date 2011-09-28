@@ -5,7 +5,7 @@ use Test::More tests => 30;
 
 use File::Temp qw/ tempdir /;
 use Test::Differences;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Check;
@@ -35,7 +35,7 @@ my $cache_file = "$tempdir/storage.yaml";
         "Checking that check param set in result data"
     );
 
-    ok( my $cache = YAML::LoadFile( $cache_file ),
+    ok( my $cache = YAML::XS::LoadFile( $cache_file ),
         "Reading check cache file"
     );
 
@@ -80,7 +80,7 @@ my $cache_file = "$tempdir/storage.yaml";
         "Checking that param3 set in result hash"
     );
 
-    ok( my $cache = YAML::LoadFile( $cache_file ),
+    ok( my $cache = YAML::XS::LoadFile( $cache_file ),
         "Reading check cache file"
     );
     is( $cache->{param1},

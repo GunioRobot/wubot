@@ -4,7 +4,7 @@ use Moose;
 # VERSION
 
 use Sys::Hostname qw();
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -86,7 +86,15 @@ sub read_config {
                 my $key = join( "-", $plugin, $instance_entry );
                 $key =~ s|\.yaml.*$||;
 
-                my $instance_config = YAML::LoadFile( "$plugin_dir/$instance_entry" );
+                my $instance_config;
+                eval {                          # try
+                    $instance_config = YAML::XS::LoadFile( "$plugin_dir/$instance_entry" );
+                    1;
+                } or do {                       # catch
+                    $self->logger->fatal( "ERROR loading: $plugin_dir/$instance_entry\n$@" );
+
+                };
+
                 $instance_config->{plugin} = "App::Wubot::Plugin::$plugin";
 
                 $config->{$key} = { file   => $instance_entry,

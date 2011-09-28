@@ -3,7 +3,7 @@ use Moose;
 
 # VERSION
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -26,7 +26,7 @@ sub react {
         $contents = $message->{ $config->{source_field} };
     }
     else {
-        $contents = YAML::Dump $message;
+        $contents = YAML::XS::Dump $message;
     }
 
     my $path;

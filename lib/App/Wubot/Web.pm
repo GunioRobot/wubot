@@ -6,11 +6,11 @@ use warnings;
 
 use Mojo::Base 'Mojolicious';
 
-use YAML;
+use YAML::XS;
 
 my $config_file = join( "/", $ENV{HOME}, "wubot", "config", "webui.yaml" );
 
-my $config = YAML::LoadFile( $config_file );
+my $config = YAML::XS::LoadFile( $config_file );
 
 # This method will run once at server start
 sub startup {

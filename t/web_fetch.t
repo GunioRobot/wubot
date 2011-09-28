@@ -3,7 +3,6 @@ use strict;
 
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
-use YAML;
 
 use App::Wubot::Logger;
 use App::Wubot::Plugin::WebFetch;

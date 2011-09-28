@@ -4,7 +4,7 @@ use Moose;
 # VERSION
 
 use Benchmark;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::LocalMessageStore;
@@ -259,7 +259,7 @@ sub _react_results {
     }
 
     unless ( ref $react eq "HASH" ) {
-        $self->logger->error( "React results called without a hash ref: ", YAML::Dump $react );
+        $self->logger->error( "React results called without a hash ref: ", YAML::XS::Dump $react );
         return;
     }
 
@@ -284,7 +284,7 @@ sub _react_results {
 
     if ( $react->{last_rule} ) {
         $self->logger->debug( " - check instance reaction set last_rule" );
-        $self->logger->trace( YAML::Dump $react );
+        $self->logger->trace( YAML::XS::Dump $react );
     }
     else {
         $self->logger->debug( " - sending check results to queue" );
@@ -318,7 +318,7 @@ sub enqueue_results {
 
     unless ( ref $results eq "HASH" ) {
         my ($package, $file, $line) = caller();
-        warn "ERROR: enqueue_results called without a hash: $package:$line: ", YAML::Dump $results;
+        warn "ERROR: enqueue_results called without a hash: $package:$line: ", YAML::XS::Dump $results;
         return;
     }
 

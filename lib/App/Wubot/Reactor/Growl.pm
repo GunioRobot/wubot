@@ -4,7 +4,6 @@ use Moose;
 # VERSION
 
 use POSIX qw(strftime);
-use YAML;
 
 my $growl_enabled = 1;
 eval "use Growl::Tiny";  ## no critic (ProhibitStringyEval)

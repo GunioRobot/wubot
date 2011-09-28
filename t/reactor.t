@@ -3,7 +3,7 @@ use strict;
 
 use Test::More tests => 21;
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Reactor;
@@ -94,7 +94,7 @@ rules:
 
 EOF
 
-my $config = YAML::Load( $config_src );
+my $config = YAML::XS::Load( $config_src );
 
 my $reactor = App::Wubot::Reactor->new( config => $config );
 
@@ -218,7 +218,7 @@ rules:
 EOF
 
 
-is_deeply( [ $reactor->find_plugins( YAML::Load( $test_config )->{rules} ) ],
+is_deeply( [ $reactor->find_plugins( YAML::XS::Load( $test_config )->{rules} ) ],
            [ qw( ABC DEF GHI ) ],
            "Checking that plugins were found in rule tree"
        );

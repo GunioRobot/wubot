@@ -5,8 +5,6 @@ use Moose;
 
 # todo: enable using Regexp::Common regexps here
 
-use YAML;
-
 use App::Wubot::Logger;
 
 sub react {

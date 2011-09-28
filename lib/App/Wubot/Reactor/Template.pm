@@ -4,7 +4,6 @@ use Moose;
 # VERSION
 
 use Text::Template;
-use YAML;
 
 use App::Wubot::Logger;
 

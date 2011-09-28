@@ -4,7 +4,6 @@ use strict;
 use File::Temp qw/ tempdir /;
 use Test::More 'no_plan';
 use Test::Differences;
-use YAML;
 
 BEGIN {
     $ENV{TZ} = "America/Los_Angeles";

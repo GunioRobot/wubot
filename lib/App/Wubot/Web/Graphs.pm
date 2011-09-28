@@ -6,11 +6,11 @@ use warnings;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use YAML;
+use YAML::XS;
 
 my $config_file = join( "/", $ENV{HOME}, "wubot", "config", "webui.yaml" );
 
-my $graphs = YAML::LoadFile( $config_file )->{graphs};
+my $graphs = YAML::XS::LoadFile( $config_file )->{graphs};
 
 sub graphs {
     my $self = shift;

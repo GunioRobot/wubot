@@ -8,6 +8,7 @@ use AnyEvent;
 use FindBin;
 use Log::Log4perl;
 use Sys::Hostname;
+use YAML::XS;
 
 use lib "$FindBin::Bin/../lib";
 
@@ -35,32 +36,32 @@ unless ( $config_file ) {
 unless ( -r $config_file ) {
     $logger->logdie( "ERROR: config file not found: $config_file" );
 }
-my $config = YAML::LoadFile( $config_file );
+my $config = YAML::XS::LoadFile( $config_file );
 $config->{nofork} = 1;
-$logger->info( "CONFIG: ", YAML::Dump $config );
+$logger->info( "CONFIG: ", YAML::XS::Dump $config );
 
 my $cache_file = "$ENV{HOME}/wubot/cache/$plugin-$key.yaml";
 if ( -r $cache_file ) {
     $logger->info( "Found cache file: $cache_file" );
 }
 
-my $check = App::Wubot::Check->new( { key        => "$plugin-$key",
-                                 class      => "App::Wubot::Plugin::$plugin",
-                                 cache_file => $cache_file,
-                             } );
+my $check = App::Wubot::Check->new( { key           => "$plugin-$key",
+                                      class         => "App::Wubot::Plugin::$plugin",
+                                      cache_file    => $cache_file,
+                                  } );
 
 my $j = AnyEvent->condvar;
 
 $logger->info( "Initializing" );
-print YAML::Dump $check->init( $config );
+print YAML::XS::Dump $check->init( $config );
 
 $logger->info( "Checking" );
 
 eval {                          # try
-    print YAML::Dump $config;
+    print YAML::XS::Dump $config;
 
     my $results = $check->check( $config );
-    print YAML::Dump $results;
+    print YAML::XS::Dump $results;
     1;
 } or do {                       # catch
     print "ERROR RUNNING CHECK: $@\n";

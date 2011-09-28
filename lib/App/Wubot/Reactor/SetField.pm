@@ -3,7 +3,7 @@ use Moose;
 
 # VERSION
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -39,7 +39,7 @@ sub react {
 
     }
     else {
-        $self->logger->warn( "ERROR: No 'field' or 'set' in SetField config: ", YAML::Dump $config );
+        $self->logger->warn( "ERROR: No 'field' or 'set' in SetField config: ", YAML::XS::Dump $config );
     }
 
 

@@ -3,7 +3,7 @@ use Moose::Role;
 
 # VERSION
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -112,7 +112,7 @@ sub read_cache {
     my $yaml;
 
     eval {                      # try
-        $yaml = YAML::LoadFile( $self->cache_file );
+        $yaml = YAML::XS::LoadFile( $self->cache_file );
         1;
     } or do {                   # catch
         my $error = $@;
@@ -159,7 +159,7 @@ sub write_cache {
     $self->cache_data( $cache );
 
     $self->logger->debug( "Writing cache file: $tempfile" );
-    YAML::DumpFile( $tempfile, $cache );
+    YAML::XS::DumpFile( $tempfile, $cache );
 
     my $cache_file = $self->cache_file;
 

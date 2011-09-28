@@ -6,6 +6,7 @@ use File::Temp qw/ tempdir /;
 use Test::More;
 use Test::Routine;
 use Test::Routine::Util;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Reactor::User;
@@ -133,13 +134,13 @@ test "read contact files" => sub {
     my $directory = $self->reactor->directory;
 
     my $dude = { aliases => [ 'lebowski' ], color => 'red' };
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     my $walter = { abc => 'def' };
-    YAML::DumpFile( "$directory/walter.yaml", $walter );
+    YAML::XS::DumpFile( "$directory/walter.yaml", $walter );
 
     my $donny = { abc => 'xyz', def => 'pdq' };
-    YAML::DumpFile( "$directory/donny.yaml", $donny );
+    YAML::XS::DumpFile( "$directory/donny.yaml", $donny );
 
     $dude->{username} = 'dude';
     $walter->{username} = 'walter';
@@ -218,7 +219,7 @@ test "userdb info is not case sensitive" => sub {
     my $directory = $self->reactor->directory;
 
     my $dude = { aliases => [ 'Lebowski' ], color => 'red' };
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     $dude->{username} = 'dude';
     $dude->{aliases}  = [ 'lebowski' ];
@@ -252,7 +253,7 @@ test "read changes to contact files" => sub {
     my $directory = $self->reactor->directory;
 
     my $dude = { aliases => [ 'lebowski' ] };
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
                { username       => 'dude',
@@ -266,7 +267,7 @@ test "read changes to contact files" => sub {
     sleep 1;
 
     $dude->{color} = 'red';
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'dude' }, {} ),
                { username       => 'dude',
@@ -297,7 +298,7 @@ test "read newly added aliases" => sub {
     my $directory = $self->reactor->directory;
 
     my $dude = { aliases => [ 'lebowski' ] };
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'lebowski' }, {} ),
                { username       => 'dude',
@@ -311,7 +312,7 @@ test "read newly added aliases" => sub {
     sleep 1;
 
     push @{ $dude->{aliases} }, 'el duderino';
-    YAML::DumpFile( "$directory/dude.yaml",  $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml",  $dude );
 
     is_deeply( $self->reactor->react( { username => 'el duderino' }, {} ),
                { username       => 'dude',
@@ -373,7 +374,7 @@ rules:
 
 ...
 
-    YAML::DumpFile( "$directory/dude.yaml", $dude );
+    YAML::XS::DumpFile( "$directory/dude.yaml", $dude );
 
     is_deeply( $self->reactor->react( { username => 'dude' }, {} )->{foo},
                'bar',

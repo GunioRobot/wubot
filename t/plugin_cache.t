@@ -4,7 +4,7 @@ use strict;
 use File::Temp qw/ tempdir /;
 use LWP::Simple;
 use Test::More 'no_plan';
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::Plugin::TestCase;
@@ -41,7 +41,7 @@ my $class = "TestCase";
     my $cache_file = "$tempdir/$key.yaml";
     my $fake_cache_data = { test => 1, abc => 'xyz' };
 
-    YAML::DumpFile( $cache_file, $fake_cache_data );
+    YAML::XS::DumpFile( $cache_file, $fake_cache_data );
 
     ok( my $test = App::Wubot::Plugin::TestCase->new( { key        => $key,
                                                       class      => $class,

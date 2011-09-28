@@ -9,7 +9,7 @@ use DBD::SQLite;
 use Devel::StackTrace;
 use FindBin;
 use SQL::Abstract;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -430,7 +430,7 @@ sub select {
     }
 
     # if ( $self->logger->is_trace() ) {
-    #     my $log_text = YAML::Dump $options;
+    #     my $log_text = YAML::XS::Dump $options;
     #     $self->logger->trace( "SQL Select: $log_text" );
     # }
 
@@ -452,7 +452,7 @@ sub select {
         $statement .= " LIMIT $1";
     }
 
-    #$self->logger->debug( "SQLITE: $statement", YAML::Dump @bind );
+    #$self->logger->debug( "SQLITE: $statement", YAML::XS::Dump @bind );
 
     my $schema = $self->check_schema( $tablename, $options->{schema}, 1 );
 
@@ -768,7 +768,7 @@ sub get_schema {
 
             # file updated since last load
             $self->logger->warn( "Re-loading $table schema: $schema_file" );
-            $schema = YAML::LoadFile( $schema_file );
+            $schema = YAML::XS::LoadFile( $schema_file );
         }
         else {
             # no updates, return from memory
@@ -780,7 +780,7 @@ sub get_schema {
 
         # hasn't yet been loaded from memory
         $self->logger->info( "Loading $table schema: $schema_file" );
-        $schema = YAML::LoadFile( $schema_file );
+        $schema = YAML::XS::LoadFile( $schema_file );
 
     }
 

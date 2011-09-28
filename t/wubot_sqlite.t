@@ -8,7 +8,7 @@ use Test::Routine::Util;
 use Capture::Tiny;
 use File::Temp qw/ tempdir /;
 use Test::Exception;
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 use App::Wubot::SQLite;
@@ -545,12 +545,12 @@ test "testing schema yaml files" => sub {
     my $xyz_schema = { abc => 'INT',
                        def => 'TEXT',
                    };
-    YAML::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
+    YAML::XS::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
 
     my $foo_schema = { bar => 'INT',
                        baz => 'TEXT',
                    };
-    YAML::DumpFile( "$tempdir/foo.yaml", $foo_schema );
+    YAML::XS::DumpFile( "$tempdir/foo.yaml", $foo_schema );
 
     $self->reset_sqlite;
 
@@ -586,7 +586,7 @@ test "testing schema yaml files" => sub {
     # update schema
     $xyz_schema->{ghi} = 'TEXT';
     sleep 1; # ensure date stamp is at least one second later
-    YAML::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
+    YAML::XS::DumpFile( "$tempdir/xyz.yaml", $xyz_schema );
 
     ok( $self->sqlite->insert( $table, { abc => 234, def => 567, ghi => 890 } ),
         "Inserting data, after adding column to schema file"
@@ -612,7 +612,7 @@ test "testing schema config file with named schema" => sub {
                    };
 
     system( "mkdir", "$tempdir2/$dir" );
-    YAML::DumpFile( "$tempdir2/$dir/$table.yaml", $xyz_schema );
+    YAML::XS::DumpFile( "$tempdir2/$dir/$table.yaml", $xyz_schema );
 
     system( "find $tempdir2" );
     system( "cat $tempdir2/$dir/$table.yaml" );

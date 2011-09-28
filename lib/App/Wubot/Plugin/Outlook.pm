@@ -7,7 +7,6 @@ use Date::Manip;
 use Encode;
 use HTML::TableExtract;
 use LWP::UserAgent;
-use YAML;
 
 use App::Wubot::Logger;
 

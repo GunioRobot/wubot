@@ -3,7 +3,7 @@ use Moose;
 
 # VERSION
 
-use YAML;
+use YAML::XS;
 
 use App::Wubot::Logger;
 
@@ -20,10 +20,10 @@ sub react {
     my ( $self, $message, $config ) = @_;
 
     if ( $config->{field} ) {
-        print YAML::Dump $message->{ $config->{field} };
+        print YAML::XS::Dump $message->{ $config->{field} };
     }
     else {
-        print YAML::Dump $message;
+        print YAML::XS::Dump $message;
     }
 
     return $message;

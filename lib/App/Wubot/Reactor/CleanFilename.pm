@@ -3,6 +3,8 @@ use Moose;
 
 # VERSION
 
+use YAML::XS;
+
 use App::Wubot::Logger;
 
 has 'logger'  => ( is => 'ro',
@@ -17,7 +19,7 @@ sub react {
     my ( $self, $message, $config ) = @_;
 
     unless ( $config->{field} ) {
-        $self->logger->error( "ERROR: CleanFilename: field not defined in config", YAML::Dump $config );
+        $self->logger->error( "ERROR: CleanFilename: field not defined in config", YAML::XS::Dump $config );
         return $message;
     }
 

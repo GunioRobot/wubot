@@ -137,15 +137,12 @@ my $cases = [
 
 for my $testcase ( @{ $cases } ) {
 
-    #print YAML::Dump { testcase => $testcase };
-
     my $tempdir = tempdir( "/tmp/tmpdir-XXXXXXXXXX", CLEANUP => 1 );
 
     my $state = App::Wubot::Reactor::State->new( { cachedir => $tempdir } );
 
     for my $idx ( 0 .. $#{ $testcase->{cases} } - 1 ) {
         $state->react( $testcase->{cases}->[$idx], $testcase->{config} );
-        #print YAML::Dump { cases => $testcase->{cases} };
     }
 
     my $got = $state->react( $testcase->{cases}->[-1], $testcase->{config} );

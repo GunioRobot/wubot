@@ -572,12 +572,11 @@ sub vacuum {
     eval {
         $self->logger->warn( "starting to vacuum database" );
         $self->dbh->do( 'vacuum' );
+        $self->logger->warn( "done vacuuming database" );
         1;
     } or do {
-        $self->logger->logcroak( "can't vacuum database: $@" );
+        $self->logger->fatal( "can't vacuum database: $@" );
     };
-
-    $self->logger->warn( "done vacuuming database" );
 
 }
 
@@ -681,6 +680,10 @@ sub connect {
     my ( $self ) = @_;
 
     my $datafile = $self->file;
+
+    unless ( $datafile ) {
+        $self->logger->logconfess( "SQLite connect method called but no datafile specified!" );
+    }
 
     if ( $sql_handles{ $datafile } ) {
         return $sql_handles{ $datafile };

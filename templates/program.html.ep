@@ -14,12 +14,12 @@
       }
      }
      </script>
-    
+
   </head>
   <body bgcolor=gray>
 
 <table width=100%><tr><td valign='top'>
-    
+
     <table width=100% border=1 cellpadding=3>
       <tr>
         <td>lastupdate</td>
@@ -112,7 +112,7 @@
         <td>Roles</td>
         <td>
           <table border=1 cellspacing=0 cellpadding=5>
-            
+
             <% for my $row ( @{ $program->{crew} } ) { %>
             <tr>
               <td>
@@ -144,7 +144,7 @@
 
                 <% } %>
                 </table>
-                
+
               </td>
             </tr>
             <% } %>
@@ -161,7 +161,7 @@
       <tr>
         <td>
           <table border=1 cellspacing=0 cellpadding=5>
-            
+
             <% for my $row ( sort { $a->{date} cmp $b->{date}  } @{ $program->{episodes} } ) { %>
             <tr>
               <td>

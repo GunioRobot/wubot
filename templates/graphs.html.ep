@@ -21,7 +21,7 @@
     <% for my $graph ( @$images ) { %>
       <img src="<%= $graph %>">
     <% } %>
-    
+
   </body>
 
 </html>

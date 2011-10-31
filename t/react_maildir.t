@@ -74,9 +74,9 @@ BODY
     my $body = <<'BODY';
 
 <div><p>Thanks to <a href="http://search.cpan.org/dist/Catalyst-Stats">Catalyst::Stats</a>, it's already a breeze to profile the
-time taken by requests, and last week I found myself looking for the same kind 
+time taken by requests, and last week I found myself looking for the same kind
 of profiling ability for memory usage.  A quick look around made me discover
-the dynamic duo <a href="http://search.cpan.org/dist/Catalyst-Plugin-LeakTracker">Catalyst::Plugin::LeakTracker</a> and 
+the dynamic duo <a href="http://search.cpan.org/dist/Catalyst-Plugin-LeakTracker">Catalyst::Plugin::LeakTracker</a> and
 <a href="http://search.cpan.org/dist/Catalyst-Controller-LeakTracker">Catalyst::Controller::LeakTracker</a>, but they were not
 exactly what I'm looking for.  So... say <em>hi</em> to <code>Catalyst::Plugin::MemoryUsage</code>. </p>
 

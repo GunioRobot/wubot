@@ -19,8 +19,8 @@ sub react {
 
     $text =~ s|$regexp_search|$regexp_replace|eg;
 
-    for( reverse 0 .. $#items ){ 
-        my $n = $_ + 1; 
+    for( reverse 0 .. $#items ){
+        my $n = $_ + 1;
         $text =~ s/\\$n/${items[$_]}/g ;
         $text =~ s/\$$n/${items[$_]}/g ;
     }

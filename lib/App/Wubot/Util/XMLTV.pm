@@ -156,7 +156,7 @@ sub process_data {
     my $now = time;
 
     my $twig=XML::Twig->new(
-        twig_handlers => 
+        twig_handlers =>
             { station     => sub {
 
                   my $station = { station_id => $_->att( 'id' ),

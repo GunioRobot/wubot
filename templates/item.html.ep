@@ -96,7 +96,7 @@
             <% } %>
           </td>
         </tr>
-      
+
       </table>
 
       <input type="image" src="/images/wubot.png" border=0 height=32 width=32 alt="submit">

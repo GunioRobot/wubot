@@ -13,10 +13,10 @@
       }
      }
      </script>
-    
+
   </head>
   <body bgcolor=gray>
-    
+
     <table border=1 cellpadding=3>
       <tr>
         <td>lastupdate</td>

@@ -1,8 +1,8 @@
 /**
- * Written by Neil Crosby. 
+ * Written by Neil Crosby.
  * http://www.workingwith.me.uk/articles/scripting/standardista_table_sorting
  *
- * This module is based on Stuart Langridge's "sorttable" code.  Specifically, 
+ * This module is based on Stuart Langridge's "sorttable" code.  Specifically,
  * the determineSortFunction, sortCaseInsensitive, sortDate, sortNumeric, and
  * sortCurrency functions are heavily based on his code.  This module would not
  * have been possible without Stuart's earlier outstanding work.
@@ -11,22 +11,22 @@
  *
  * Copyright (c) 2006 Neil Crosby
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
- * of this software and associated documentation files (the "Software"), to deal 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
- * copies of the Software, and to permit persons to whom the Software is 
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in 
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  **/
 var standardistaTableSorting = {
@@ -47,65 +47,65 @@ var standardistaTableSorting = {
 		if (!document.getElementsByTagName) {
 			return;
 		}
-		
+
 		this.that = this;
-		
+
 		this.run();
-		
+
 	},
-	
+
 	/**
 	 * Runs over each table in the document, making it sortable if it has a class
 	 * assigned named "sortable" and an id assigned.
 	 **/
 	run : function() {
 		var tables = document.getElementsByTagName("table");
-		
+
 		for (var i=0; i < tables.length; i++) {
 			var thisTable = tables[i];
-			
+
 			if (css.elementHasClass(thisTable, 'sortable')) {
 				this.makeSortable(thisTable);
 			}
 		}
 	},
-	
+
 	/**
 	 * Makes the given table sortable.
 	 **/
 	makeSortable : function(table) {
-	
+
 		// first, check if the table has an id.  if it doesn't, give it one
 		if (!table.id) {
 			table.id = 'sortableTable'+this.lastAssignedId++;
 		}
-		
+
 		// if this table does not have a thead, we don't want to know about it
 		if (!table.tHead || !table.tHead.rows || 0 == table.tHead.rows.length) {
 			return;
 		}
-		
-		// we'll assume that the last row of headings in the thead is the row that 
+
+		// we'll assume that the last row of headings in the thead is the row that
 		// wants to become clickable
 		var row = table.tHead.rows[table.tHead.rows.length - 1];
-		
+
 		for (var i=0; i < row.cells.length; i++) {
-		
-			// create a link with an onClick event which will 
+
+			// create a link with an onClick event which will
 			// control the sorting of the table
 			var linkEl = createElement('a');
 			linkEl.href = '#';
 			linkEl.onclick = this.headingClicked;
 			linkEl.setAttribute('columnId', i);
 			linkEl.title = 'Click to sort';
-			
-			// move the current contents of the cell that we're 
+
+			// move the current contents of the cell that we're
 			// hyperlinking into the hyperlink
 			var innerEls = row.cells[i].childNodes;
 			for (var j = 0; j < innerEls.length; j++) {
 				linkEl.appendChild(innerEls[j]);
 			}
-			
+
 			// and finally add the new link back into the cell
 			row.cells[i].appendChild(linkEl);
 
@@ -115,32 +115,32 @@ var standardistaTableSorting = {
 			row.cells[i].appendChild(spanEl);
 
 		}
-	
+
 		if (css.elementHasClass(table, 'autostripe')) {
 			this.isOdd = false;
 			var rows = table.tBodies[0].rows;
-		
+
 			// We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
-			for (var i=0;i<rows.length;i++) { 
+			for (var i=0;i<rows.length;i++) {
 				this.doStripe(rows[i]);
 			}
 		}
 	},
-	
+
 	headingClicked: function(e) {
-		
+
 		var that = standardistaTableSorting.that;
-		
+
 		// linkEl is the hyperlink that was clicked on which caused
 		// this method to be called
 		var linkEl = getEventTarget(e);
-		
+
 		// directly outside it is a td, tr, thead and table
 		var td     = linkEl.parentNode;
 		var tr     = td.parentNode;
 		var thead  = tr.parentNode;
 		var table  = thead.parentNode;
-		
+
 		// if the table we're looking at doesn't have any rows
 		// (or only has one) then there's no point trying to sort it
 		if (!table.tBodies || table.tBodies[0].rows.length <= 1) {
@@ -150,14 +150,14 @@ var standardistaTableSorting = {
 		// the column we want is indicated by td.cellIndex
 		var column = linkEl.getAttribute('columnId') || td.cellIndex;
 		//var column = td.cellIndex;
-		
+
 		// find out what the current sort order of this column is
 		var arrows = css.getElementsByClass(td, 'tableSortArrow', 'span');
 		var previousSortOrder = '';
 		if (arrows.length > 0) {
 			previousSortOrder = arrows[0].getAttribute('sortOrder');
 		}
-		
+
 		// work out how we want to sort this column using the data in the first cell
 		// but just getting the first cell is no good if it contains no data
 		// so if the first cell just contains white space then we need to track
@@ -170,7 +170,7 @@ var standardistaTableSorting = {
 		}
 		var sortfn = that.determineSortFunction(itm);
 
-		// if the last column that was sorted was this one, then all we need to 
+		// if the last column that was sorted was this one, then all we need to
 		// do is reverse the sorting on this column
 		if (table.id == that.lastSortedTable && column == that.sortColumnIndex) {
 			newRows = that.newRows;
@@ -180,8 +180,8 @@ var standardistaTableSorting = {
 			that.sortColumnIndex = column;
 			var newRows = new Array();
 
-			for (var j = 0; j < table.tBodies[0].rows.length; j++) { 
-				newRows[j] = table.tBodies[0].rows[j]; 
+			for (var j = 0; j < table.tBodies[0].rows.length; j++) {
+				newRows[j] = table.tBodies[0].rows[j];
 			}
 
 			newRows.sort(sortfn);
@@ -190,9 +190,9 @@ var standardistaTableSorting = {
 		that.moveRows(table, newRows);
 		that.newRows = newRows;
 		that.lastSortedTable = table.id;
-		
+
 		// now, give the user some feedback about which way the column is sorted
-		
+
 		// first, get rid of any arrows in any heading cells
 		var arrows = css.getElementsByClass(tr, 'tableSortArrow', 'span');
 		for (var j = 0; j < arrows.length; j++) {
@@ -206,8 +206,8 @@ var standardistaTableSorting = {
 				arrowParent.appendChild(spanEl);
 			}
 		}
-		
-		// now, add back in some feedback 
+
+		// now, add back in some feedback
 		var spanEl = createElement('span');
 		spanEl.className = 'tableSortArrow';
 		if (null == previousSortOrder || '' == previousSortOrder || 'DESC' == previousSortOrder) {
@@ -217,18 +217,18 @@ var standardistaTableSorting = {
 			spanEl.appendChild(document.createTextNode(' \u2193'));
 			spanEl.setAttribute('sortOrder', 'DESC');
 		}
-		
+
 		td.appendChild(spanEl);
-		
+
 		return false;
 	},
 
 	getInnerText : function(el) {
-		
+
 		if ('string' == typeof el || 'undefined' == typeof el) {
 			return el;
 		}
-		
+
 		if (el.innerText) {
 			return el.innerText;  // Not needed but it is faster
 		}
@@ -242,8 +242,8 @@ var standardistaTableSorting = {
 		var cs = el.childNodes;
 		var l = cs.length;
 		for (var i = 0; i < l; i++) {
-			// 'if' is considerably quicker than a 'switch' statement, 
-			// in Internet Explorer which translates up to a good time 
+			// 'if' is considerably quicker than a 'switch' statement,
+			// in Internet Explorer which translates up to a good time
 			// reduction since this is a very often called recursive function
 			if (1 == cs[i].nodeType) { // ELEMENT NODE
 				str += this.getInnerText(cs[i]);
@@ -253,19 +253,19 @@ var standardistaTableSorting = {
 				break;
 			}
 		}
-		
+
 		// set the innertext for this element directly on the element
 		// so that it can be retrieved early next time the innertext
 		// is requested
 		el.setAttribute('standardistaTableSortingInnerText', str);
-		
+
 		return str;
 	},
 
 	determineSortFunction : function(itm) {
-		
+
 		var sortfn = this.sortCaseInsensitive;
-		
+
 		if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) {
 			sortfn = this.sortDate;
 		}
@@ -287,10 +287,10 @@ var standardistaTableSorting = {
 
 		return sortfn;
 	},
-	
+
 	sortCaseInsensitive : function(a, b) {
 		var that = standardistaTableSorting.that;
-		
+
 		var aa = that.getInnerText(a.cells[that.sortColumnIndex]).toLowerCase();
 		var bb = that.getInnerText(b.cells[that.sortColumnIndex]).toLowerCase();
 		if (aa==bb) {
@@ -301,40 +301,40 @@ var standardistaTableSorting = {
 			return 1;
 		}
 	},
-	
+
 	sortDate : function(a,b) {
 		var that = standardistaTableSorting.that;
 
 		// y2k notes: two digit years less than 50 are treated as 20XX, greater than 50 are treated as 19XX
 		var aa = that.getInnerText(a.cells[that.sortColumnIndex]);
 		var bb = that.getInnerText(b.cells[that.sortColumnIndex]);
-		
+
 		var dt1, dt2, yr = -1;
-		
+
 		if (aa.length == 10) {
 			dt1 = aa.substr(6,4)+aa.substr(3,2)+aa.substr(0,2);
 		} else {
 			yr = aa.substr(6,2);
-			if (parseInt(yr) < 50) { 
-				yr = '20'+yr; 
-			} else { 
-				yr = '19'+yr; 
+			if (parseInt(yr) < 50) {
+				yr = '20'+yr;
+			} else {
+				yr = '19'+yr;
 			}
 			dt1 = yr+aa.substr(3,2)+aa.substr(0,2);
 		}
-		
+
 		if (bb.length == 10) {
 			dt2 = bb.substr(6,4)+bb.substr(3,2)+bb.substr(0,2);
 		} else {
 			yr = bb.substr(6,2);
-			if (parseInt(yr) < 50) { 
-				yr = '20'+yr; 
-			} else { 
-				yr = '19'+yr; 
+			if (parseInt(yr) < 50) {
+				yr = '20'+yr;
+			} else {
+				yr = '19'+yr;
 			}
 			dt2 = yr+bb.substr(3,2)+bb.substr(0,2);
 		}
-		
+
 		if (dt1==dt2) {
 			return 0;
 		} else if (dt1<dt2) {
@@ -343,7 +343,7 @@ var standardistaTableSorting = {
 		return 1;
 	},
 
-	sortCurrency : function(a,b) { 
+	sortCurrency : function(a,b) {
 		var that = standardistaTableSorting.that;
 
 		var aa = that.getInnerText(a.cells[that.sortColumnIndex]).replace(/[^0-9.]/g,'');
@@ -351,15 +351,15 @@ var standardistaTableSorting = {
 		return parseFloat(aa) - parseFloat(bb);
 	},
 
-	sortNumeric : function(a,b) { 
+	sortNumeric : function(a,b) {
 		var that = standardistaTableSorting.that;
 
 		var aa = parseFloat(that.getInnerText(a.cells[that.sortColumnIndex]));
-		if (isNaN(aa)) { 
+		if (isNaN(aa)) {
 			aa = 0;
 		}
-		var bb = parseFloat(that.getInnerText(b.cells[that.sortColumnIndex])); 
-		if (isNaN(bb)) { 
+		var bb = parseFloat(that.getInnerText(b.cells[that.sortColumnIndex]));
+		if (isNaN(bb)) {
 			bb = 0;
 		}
 		return aa-bb;
@@ -382,7 +382,7 @@ var standardistaTableSorting = {
 		return val;
 	},
 
-	sortIP : function(a,b) { 
+	sortIP : function(a,b) {
 		var that = standardistaTableSorting.that;
 
 		var aa = that.makeStandardIPAddress(that.getInnerText(a.cells[that.sortColumnIndex]).toLowerCase());
@@ -400,22 +400,22 @@ var standardistaTableSorting = {
 		this.isOdd = false;
 
 		// We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
-		for (var i=0;i<newRows.length;i++) { 
+		for (var i=0;i<newRows.length;i++) {
 			var rowItem = newRows[i];
 
 			this.doStripe(rowItem);
 
-			table.tBodies[0].appendChild(rowItem); 
+			table.tBodies[0].appendChild(rowItem);
 		}
 	},
-	
+
 	doStripe : function(rowItem) {
 		if (this.isOdd) {
 			css.addClassToElement(rowItem, 'odd');
 		} else {
 			css.removeClassFromElement(rowItem, 'odd');
 		}
-		
+
 		this.isOdd = !this.isOdd;
 	}
 

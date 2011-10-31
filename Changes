@@ -101,7 +101,7 @@ Revision history for Wubot
   - WebFetcher - failure getting content now returns  'failure fetching' message rather than die
 
   - update EmacsOrgModule plugin, rework Wubot::Util::Tasks
-  
+
   - some new monitor prototypes
     - safari bookmarks on OS X
     - locally installed modules with newer version available on CPAN
@@ -268,7 +268,7 @@ Revision history for Wubot
 
 0.0.3 Wed Jun 29, 2011  1:20 am
 
-  - Added a prototype Twitter plugin with OAuth 
+  - Added a prototype Twitter plugin with OAuth
 
   - WebMatches support for compression, thanks to Erik Meade
 
